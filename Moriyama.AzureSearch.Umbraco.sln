@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moriyama.AzureSearch.Umbraco", "Moriyama.AzureSearch.Umbraco\Moriyama.AzureSearch.Umbraco.csproj", "{3D341B68-8C61-411B-9475-0E87F5A9D120}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moriyama.AzureSearch.Umbraco.Application", "Moriyama.AzureSearch.Umbraco.Application\Moriyama.AzureSearch.Umbraco.Application.csproj", "{16C2B0B3-A208-4498-96BA-DEE25A49A581}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3D341B68-8C61-411B-9475-0E87F5A9D120}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D341B68-8C61-411B-9475-0E87F5A9D120}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D341B68-8C61-411B-9475-0E87F5A9D120}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D341B68-8C61-411B-9475-0E87F5A9D120}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16C2B0B3-A208-4498-96BA-DEE25A49A581}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16C2B0B3-A208-4498-96BA-DEE25A49A581}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16C2B0B3-A208-4498-96BA-DEE25A49A581}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16C2B0B3-A208-4498-96BA-DEE25A49A581}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
