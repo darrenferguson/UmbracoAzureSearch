@@ -223,10 +223,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             
             foreach(var field in searchFields)
             {
-                if(!c.ContainsKey(field.Name))
-                    continue;
+                //if(!c.ContainsKey(field.Name))
+                //    continue;
 
-                if (content.HasProperty(field.Name))
+                if (!content.HasProperty(field.Name))
                     continue;
 
                 c.Add(field.Name, content.Properties[field.Name].Value);
