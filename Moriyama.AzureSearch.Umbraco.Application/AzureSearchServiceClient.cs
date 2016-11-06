@@ -10,6 +10,8 @@ using Newtonsoft.Json;
 using Umbraco.Core.Models;
 using Umbraco.Core.Persistence;
 using Umbraco.Web;
+using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
@@ -79,8 +81,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     Type = t,
                     IsFacetable = field.IsFacetable,
                     IsFilterable = field.IsFilterable,
-                    IsSortable = field.IsSortable
-                    
+                    IsSortable = field.IsSortable,
+                    IsSearchable = field.IsSearchable
                 };
                 
                 customFields.Add(f);
@@ -314,7 +316,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             
             foreach(var field in searchFields)
             {
-                if (!content.HasProperty(field.Name))
+                if (!content.HasProperty(field.Name) || content.Properties[field.Name].Value == null)
                 {
                     if (field.Type == "collection")
                         c.Add(field.Name, new List<string>());
@@ -331,16 +333,39 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 }
                 else
                 {
+                    var value = content.Properties[field.Name].Value;
 
                     if (field.Type == "collection")
                     {
-                        var value = content.Properties[field.Name].Value;
-
                         if (!string.IsNullOrEmpty(value.ToString()))
                             c.Add(field.Name, value.ToString().Split(','));
                     }
                     else
-                        c.Add(field.Name, content.Properties[field.Name].Value);
+                    {
+                        if(field.IsGridJson)
+                        {
+                            // #filth #sorrymarc
+                            JObject jObject = JObject.Parse(value.ToString());
+                            var tokens = jObject.SelectTokens("..value");
+
+                            try
+                            {
+                                var values = tokens.Where(x => x != null).Select(x => (x as JValue).Value);
+                                value = string.Join(" ", values);
+                                value = Regex.Replace(value.ToString(), "<.*?>", String.Empty);
+                                value = value.ToString().Replace(Environment.NewLine, " ");
+                                value = value.ToString().Replace(@"\n", " ");
+                            }
+                            catch (Exception ex)
+                            {
+                                value = string.Empty;
+                            }
+
+                            
+                        }
+
+                        c.Add(field.Name, value);
+                    }
                 }
             }
 

@@ -8,10 +8,11 @@
         // Azure config
         public bool IsKey { get; set; }
         public bool IsSortable { get; set; }
+        public bool IsSearchable { get; set; }
         public bool IsFacetable { get; set; }
         public bool IsFilterable { get; set; }
 
         // Custom/Umbraco config
-        public bool IsJson { get; set; }
+        public bool IsGridJson { get; set; }
     }
 }
