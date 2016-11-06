@@ -1,7 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
+using System.Web;
 using Umbraco.Core;
+using Umbraco.Core.Events;
+using Umbraco.Core.Models;
+using Umbraco.Core.Publishing;
+using Umbraco.Core.Services;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 {
@@ -15,6 +20,17 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
               ));
 
             Mapper.CreateMap<Index, SearchIndex>();
+
+            ContentService.Published += ContentServicePublished;
+        }
+
+        private void ContentServicePublished(IPublishingStrategy sender, PublishEventArgs<IContent> e)
+        {
+            var azureSearchServiceClient = new AzureSearchServiceClient(HttpContext.Current.Server.MapPath("/"));
+            foreach (var entity in e.PublishedEntities)
+            {
+                azureSearchServiceClient.ReIndexContent(entity);
+            }
         }
     }
 }

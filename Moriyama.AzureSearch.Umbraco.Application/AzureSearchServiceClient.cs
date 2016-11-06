@@ -178,6 +178,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return ReIndex("media.json", sessionId, page);
         }
 
+        public void ReIndexContent(IContent content)
+        {
+            var documents = new List<Document>();
+            var config = GetConfiguration();
+
+            documents.Add(FromUmbracoContent(content, config.SearchFields));
+            IndexContentBatch(documents);
+        }
+
         public AzureSearchReindexStatus ReIndex(string filename, string sessionId, int page)
         {
             var ids = GetIds(sessionId, filename);
@@ -402,5 +411,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("CreatorId", DataType.Int64) { IsSortable = true, IsFacetable = true }
             };
         }
+
+        
     }
 }
