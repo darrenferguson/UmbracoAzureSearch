@@ -68,6 +68,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     case "int":
                         t = DataType.Int64;
                         break;
+                    case "collection":
+                        t = DataType.Collection(DataType.String);
+                        break;
                 }
 
                 var f = new Field()
@@ -312,9 +315,33 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             foreach(var field in searchFields)
             {
                 if (!content.HasProperty(field.Name))
-                    continue;
+                {
+                    if (field.Type == "collection")
+                        c.Add(field.Name, new List<string>());
 
-                c.Add(field.Name, content.Properties[field.Name].Value);
+                    if (field.Type == "string")
+                        c.Add(field.Name, string.Empty);
+
+                    if (field.Type == "int")
+                        c.Add(field.Name, 0);
+
+                    if (field.Type == "bool")
+                        c.Add(field.Name, false);
+
+                }
+                else
+                {
+
+                    if (field.Type == "collection")
+                    {
+                        var value = content.Properties[field.Name].Value;
+
+                        if (!string.IsNullOrEmpty(value.ToString()))
+                            c.Add(field.Name, value.ToString().Split(','));
+                    }
+                    else
+                        c.Add(field.Name, content.Properties[field.Name].Value);
+                }
             }
 
             return c;

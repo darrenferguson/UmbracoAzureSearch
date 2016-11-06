@@ -13,6 +13,5 @@
 
         // Custom/Umbraco config
         public bool IsJson { get; set; }
-        public bool IsCommaDelimited { get; set; }
     }
 }
