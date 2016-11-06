@@ -19,11 +19,11 @@
         </div>
 
         <div ng-show="showReIndexContent" class="alert alert-success">
-            <p>Reindexing has started</p>
+            <p>Reindexing has started.</p>
 
             <p>Session id: {{reIndexContentResult.SessionId}}</p>
 
-            <p>{{reIndexContentResult.DocumentsProcessed}} of {{reIndexContentResult.DocumentCount}} processed.</p>
+            <p>{{reIndexContentResult.DocumentsProcessed}} of {{reIndexContentResult.DocumentCount}} {{TypeProcessing}} processed.</p>
         </div>
 
         <input type="button" class="btn btn-default" value="Drop/Create Index" ng-click="dropCreateIndex()" />

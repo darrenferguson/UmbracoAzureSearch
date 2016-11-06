@@ -70,5 +70,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
             var result = _azureSearchServiceClient.ReIndexContent(sessionId, page);
             return result;
         }
+
+        public AzureSearchReindexStatus GetReIndexMedia(string sessionId, int page)
+        {
+            var result = _azureSearchServiceClient.ReIndexMedia(sessionId, page);
+            return result;
+        }
+
     }
 }
