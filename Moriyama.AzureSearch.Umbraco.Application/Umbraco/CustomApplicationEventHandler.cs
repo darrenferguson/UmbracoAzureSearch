@@ -22,6 +22,16 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             Mapper.CreateMap<Index, SearchIndex>();
 
             ContentService.Published += ContentServicePublished;
+            MediaService.Saved += MediaServiceSaved;
+        }
+
+        private void MediaServiceSaved(IMediaService sender, SaveEventArgs<IMedia> e)
+        {
+            var azureSearchServiceClient = new AzureSearchServiceClient(HttpContext.Current.Server.MapPath("/"));
+            foreach(var entity in e.SavedEntities)
+            {
+                azureSearchServiceClient.ReIndexContent(entity);
+            }   
         }
 
         private void ContentServicePublished(IPublishingStrategy sender, PublishEventArgs<IContent> e)

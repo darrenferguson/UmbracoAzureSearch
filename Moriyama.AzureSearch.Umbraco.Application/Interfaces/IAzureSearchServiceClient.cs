@@ -19,5 +19,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
 
         void ReIndexContent(IContent content);
+        void ReIndexContent(IMedia content);
     }
 }

@@ -187,6 +187,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             IndexContentBatch(documents);
         }
 
+        public void ReIndexContent(IMedia content)
+        {
+            var documents = new List<Document>();
+            var config = GetConfiguration();
+
+            documents.Add(FromUmbracoContent(content, config.SearchFields));
+            IndexContentBatch(documents);
+        }
+
         public AzureSearchReindexStatus ReIndex(string filename, string sessionId, int page)
         {
             var ids = GetIds(sessionId, filename);
