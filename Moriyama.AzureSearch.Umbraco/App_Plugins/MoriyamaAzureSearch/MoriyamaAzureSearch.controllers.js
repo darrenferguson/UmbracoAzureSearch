@@ -38,7 +38,7 @@
         
         if (!confirm('Are you sure!'))
             return;
-
+        $scope.finishedIndexing = false;
         $scope.TypeProcessing = 'content';
         $scope.showReIndexContent = false;
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexContent').then(function (response) {
@@ -67,6 +67,8 @@
             $scope.reIndexContentResult = response.data;
             if (!response.data.Error && !response.data.Finished) {
                 $scope.reindexMediaPage(sessionId, page + 1);
+            } else if (response.data.Finished) {
+                $scope.finishedIndexing = true;
             }
         });
     };

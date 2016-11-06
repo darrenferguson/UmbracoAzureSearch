@@ -24,6 +24,9 @@
             <p>Session id: {{reIndexContentResult.SessionId}}</p>
 
             <p>{{reIndexContentResult.DocumentsProcessed}} of {{reIndexContentResult.DocumentCount}} {{TypeProcessing}} processed.</p>
+            
+            <p ng-show="finishedIndexing">Finished re-indexing all content and media.</p>
+
         </div>
 
         <input type="button" class="btn btn-default" value="Drop/Create Index" ng-click="dropCreateIndex()" />
