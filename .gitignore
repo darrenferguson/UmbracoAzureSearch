@@ -176,3 +176,4 @@ Moriyama.AzureSearch.Umbraco/App_Data/TEMP/ClientDependency/
 Moriyama.AzureSearch.Umbraco/App_Plugins/ModelsBuilder/
 Moriyama.AzureSearch.Umbraco/App_Data/Models/
 Moriyama.AzureSearch.Umbraco/Views/Partials/Grid/
+.nuget/NuGet.exe
