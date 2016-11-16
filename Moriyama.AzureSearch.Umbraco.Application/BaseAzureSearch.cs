@@ -7,8 +7,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public abstract class BaseAzureSearch
     {
-        private readonly AzureSearchConfig _config;
-        private readonly string _path;
+        protected readonly AzureSearchConfig _config;
+        protected readonly string _path;
 
         // Number of docs to be processed at a time.
         const int BatchSize = 999;
@@ -16,7 +16,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public BaseAzureSearch(string path)
         {
             _path = path;
-            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(System.IO.File.ReadAllText(Path.Combine(path, @"config\AzureSearch.config")));
+            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(File.ReadAllText(Path.Combine(path, @"config\AzureSearch.config")));
         }
 
         public AzureSearchConfig GetConfiguration()

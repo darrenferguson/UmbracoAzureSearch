@@ -17,9 +17,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchServiceClient : BaseAzureSearch, IAzureSearchIndexClient
     {
-        private readonly AzureSearchConfig _config;
-        private readonly string _path;
-
+        
         // Number of docs to be processed at a time.
         const int BatchSize = 999;
 
@@ -295,6 +293,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             result.Add("WriterId", content.WriterId);
             result.Add("ContentTypeAlias", content.ContentType.Alias);
 
+            //var isProtected = UmbracoContext.Current.Application.Services.PublicAccessService.IsProtected(content.Path);
+            //result.Add("IsProtected", content.ContentType.Alias);
+            
             if (content.Template != null)
                 result.Add("Template", content.Template.Alias);
 
@@ -309,10 +310,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {"Name", content.Name},             
                 {"SortOrder", content.SortOrder},
                 {"Level", content.Level},
-                {"Path", content.Path},
+                {"Path", content.Path.Split(',') },
                 {"ParentId", content.ParentId},
                 {"UpdateDate", content.UpdateDate},
-                {"Trashed", content.Trashed},
+                {"Trashed", content.Trashed}
                 
             };
 

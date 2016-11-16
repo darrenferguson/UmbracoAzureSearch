@@ -1,4 +1,5 @@
 ﻿using Moriyama.AzureSearch.Umbraco.Application;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 
@@ -11,19 +12,23 @@ namespace Moriyama.AzureSearch.Umbraco.Sandbox
 
             var client = new AzureSearchClient(Directory.GetCurrentDirectory());
 
-            var results = client.Search("umbraco");
+            var results = client.Term("umbraco").Results();
+            Console.WriteLine();
+            Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
 
-            foreach(var result in results)
-            {
-                Console.WriteLine(result.Name);
-            }
-            
-            // TODO:
-            // All Documents by type
-            // Sort
-            // 
-            // IsProtected - Index
-            // Search by Path
+            client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            results = client.DocumentType("TextPage").Results();
+            Console.WriteLine();
+            Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
+
+
+            client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            results = client.Media().Results();
+            Console.WriteLine();
+            Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
+
+
+            // IsProtected - Index         
             // Paging
         }
     }
