@@ -406,7 +406,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                  new Field("Path", DataType.String) { IsSearchable = true },
                  new Field("Template", DataType.String) { IsSearchable = true, IsFacetable = true },
-                 new Field("ContentTypeAlias", DataType.String) { IsSearchable = true, IsFacetable = true },
+                 new Field("ContentTypeAlias", DataType.String) { IsSearchable = true, IsFacetable = true, IsFilterable = true },
 
                  new Field("UpdateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
                  new Field("CreateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },

@@ -14,6 +14,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
     {
         protected override void ApplicationStarted(UmbracoApplicationBase umbracoApplication, ApplicationContext applicationContext)
         {
+
+            
+
             Mapper.CreateMap<Field, SearchField>().ForMember(dest => dest.Type,
                opts => opts.MapFrom(
                    src => src.Type.ToString()
