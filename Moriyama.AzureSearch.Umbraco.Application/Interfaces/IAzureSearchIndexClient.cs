@@ -4,7 +4,7 @@ using Umbraco.Core.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 {
-    public interface IAzureSearchServiceClient
+    public interface IAzureSearchIndexClient
     {
         AzureSearchConfig GetConfiguration();
 

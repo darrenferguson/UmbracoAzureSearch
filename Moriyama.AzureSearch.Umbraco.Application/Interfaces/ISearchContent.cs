@@ -6,6 +6,5 @@
 
         string Name { get; set; }
         
-        
     }
 }

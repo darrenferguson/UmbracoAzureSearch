@@ -10,7 +10,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
 {
     public class AzureSearchApiController : UmbracoAuthorizedApiController
     {
-        private readonly IAzureSearchServiceClient _azureSearchServiceClient;
+        private readonly IAzureSearchIndexClient _azureSearchServiceClient;
 
         public AzureSearchApiController()
         {

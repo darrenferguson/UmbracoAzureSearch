@@ -273,11 +273,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AzureSearchClient.cs" />
     <Compile Include="AzureSearchServiceClient.cs" />
+    <Compile Include="BaseAzureSearch.cs" />
+    <Compile Include="Interfaces\IAzureSearchClient.cs" />
+    <Compile Include="Interfaces\ISearchContent.cs" />
     <Compile Include="Models\AzureSearchIndexResult.cs" />
+    <Compile Include="Models\SearchContent.cs" />
     <Compile Include="Umbraco\CustomApplicationEventHandler.cs" />
     <Compile Include="Controllers\AzureSearchApiController.cs" />
-    <Compile Include="Interfaces\IAzureSearchServiceClient.cs" />
+    <Compile Include="Interfaces\IAzureSearchIndexClient.cs" />
     <Compile Include="Models\AzureSearchConfig.cs" />
     <Compile Include="Models\AzureSearchContent.cs" />
     <Compile Include="Models\AzureSearchReindexStatus.cs" />

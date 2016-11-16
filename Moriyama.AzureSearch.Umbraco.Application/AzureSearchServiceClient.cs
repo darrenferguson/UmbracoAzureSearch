@@ -15,7 +15,7 @@ using System.Text.RegularExpressions;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
-    public class AzureSearchServiceClient : IAzureSearchServiceClient
+    public class AzureSearchServiceClient : BaseAzureSearch, IAzureSearchIndexClient
     {
         private readonly AzureSearchConfig _config;
         private readonly string _path;
@@ -23,21 +23,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         // Number of docs to be processed at a time.
         const int BatchSize = 999;
 
-        public AzureSearchServiceClient(string path)
+        public AzureSearchServiceClient(string path) : base(path)
         {
-            _path = path;
-            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(System.IO.File.ReadAllText(Path.Combine(path, @"config\AzureSearch.config")));
-        }
-
-        public AzureSearchConfig GetConfiguration()
-        {
-            return _config;
-        }
-
-        private SearchServiceClient GetClient()
-        {
-            var serviceClient = new SearchServiceClient(_config.SearchServiceName, new SearchCredentials(_config.SearchServiceAdminApiKey));
-            return serviceClient;
+            
         }
 
         private string SessionFile(string sessionId)
@@ -404,7 +392,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("Published", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
                  new Field("Trashed", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
 
-                 new Field("Path", DataType.String) { IsSearchable = true },
+                 new Field("Path", DataType.Collection(DataType.String)) { IsSearchable = true, IsFilterable = true },
                  new Field("Template", DataType.String) { IsSearchable = true, IsFacetable = true },
                  new Field("ContentTypeAlias", DataType.String) { IsSearchable = true, IsFacetable = true, IsFilterable = true },
 
