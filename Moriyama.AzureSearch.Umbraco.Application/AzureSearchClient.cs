@@ -164,5 +164,29 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _populateContentProperties = populate;
             return this;
         }
+
+        public IAzureSearchClient Filter(string field, string value)
+        {
+            _filters.Add(string.Format("{0} eq '{1}'", field, value));
+            return this;
+        }
+
+        public IAzureSearchClient Filter(string field, int value)
+        {
+            _filters.Add(string.Format("{0} eq {1}", field, value));
+            return this;
+        }
+
+        public IAzureSearchClient Filter(string field, bool value)
+        {
+            _filters.Add(string.Format("{0} eq {1}", field, value));
+            return this;
+        }
+
+        public IAzureSearchClient Contains(string field, string value)
+        {
+            _filters.Add(string.Format("{0}/any(x: x eq '{1}')", field, value));
+            return this;
+        }
     }
 }
