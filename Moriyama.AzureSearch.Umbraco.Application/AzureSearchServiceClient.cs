@@ -16,8 +16,7 @@ using System.Text.RegularExpressions;
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchServiceClient : BaseAzureSearch, IAzureSearchIndexClient
-    {
-        
+    { 
         // Number of docs to be processed at a time.
         const int BatchSize = 999;
 
@@ -33,8 +32,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         }
 
         public string DropCreateIndex()
-        {
-            
+        {    
             var serviceClient = GetClient();
             var indexes = serviceClient.Indexes.List().Indexes;
 
@@ -54,7 +52,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                         t = DataType.Boolean;
                         break;
                     case "int":
-                        t = DataType.Int64;
+                        t = DataType.Int32;
                         break;
                     case "collection":
                         t = DataType.Collection(DataType.String);
@@ -209,7 +207,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 foreach (var content in contents)
                     if (content != null)
                         documents.Add(FromUmbracoContent(content, config.SearchFields));
-
             }
             else
             {
@@ -366,9 +363,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                             catch (Exception ex)
                             {
                                 value = string.Empty;
-                            }
-
-                            
+                            }                          
                         }
 
                         c.Add(field.Name, value);
@@ -400,16 +395,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("UpdateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
                  new Field("CreateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
 
-                 new Field("ContentTypeId", DataType.Int64) { IsFilterable = true },
-                 new Field("ParentId", DataType.Int64) { IsFilterable = true },
-                 new Field("Level", DataType.Int64) { IsSortable = true, IsFacetable = true },
-                 new Field("SortOrder", DataType.Int64) { IsSortable = true },
+                 new Field("ContentTypeId", DataType.Int32) { IsFilterable = true },
+                 new Field("ParentId", DataType.Int32) { IsFilterable = true },
+                 new Field("Level", DataType.Int32) { IsSortable = true, IsFacetable = true },
+                 new Field("SortOrder", DataType.Int32) { IsSortable = true },
 
-                 new Field("WriterId", DataType.Int64) { IsSortable = true, IsFacetable = true },
-                 new Field("CreatorId", DataType.Int64) { IsSortable = true, IsFacetable = true }
+                 new Field("WriterId", DataType.Int32) { IsSortable = true, IsFacetable = true },
+                 new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true }
             };
         }
-
-        
     }
 }

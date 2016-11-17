@@ -19,6 +19,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private bool _media;
 
         private int _pageSize;
+        private bool _populateContentProperties = true;
 
         public AzureSearchClient(string path) : base(path)
         {
@@ -84,17 +85,43 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private ISearchContent FromDocument(Document d)
         {
             var searchContent = new SearchContent();
-            
+            searchContent.Properties = new Dictionary<string, object>();
+
+
+            var t = searchContent.GetType();
             searchContent.Id = Convert.ToInt32(d["Id"]);
-            searchContent.Name = (string)d["Name"];
-            searchContent.ContentTypeAlias = (string)d["ContentTypeAlias"];
-            searchContent.Template = (string)d["Template"];
-            
+
+            foreach (var key in d.Keys)
+            {
+                var property = t.GetProperty(key);
+                if(property == null && _populateContentProperties)
+                {
+                    searchContent.Properties.Add(key, d[key]);
+                } else if(property.CanWrite && property.Name != "Id")
+                {
+
+                    object val = d[key];
+
+                    if (val == null)
+                        continue;
+
+                    if (val.GetType() == typeof(System.Int64))
+                        val = Convert.ToInt32(val);
+
+                    if (val.GetType() == typeof(System.DateTimeOffset))
+                        val = ((DateTimeOffset)val).DateTime;
+
+                    if (property.PropertyType == val.GetType())
+                        property.SetValue(searchContent, val);
+                }
+            }
+                        
             return searchContent;
         }
 
         public IEnumerable<ISearchContent> Results(int page)
         {
+
             var sp = GetSearchParameters();
             sp.Top = _pageSize;
             sp.Skip = (page -1) * _pageSize;
@@ -129,6 +156,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public IAzureSearchClient Media()
         {
             _media = true;
+            return this;
+        }
+
+        public IAzureSearchClient PopulateContentProperties(bool populate)
+        {
+            _populateContentProperties = populate;
             return this;
         }
     }

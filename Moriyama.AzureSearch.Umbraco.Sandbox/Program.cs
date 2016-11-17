@@ -26,10 +26,13 @@ namespace Moriyama.AzureSearch.Umbraco.Sandbox
             results = client.Media().Results();
             Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
-
+            
+            client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            results = client.Media().PageSize(1).Results(1);
+            Console.WriteLine();
+            Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
 
             // IsProtected - Index         
-            // Paging
         }
     }
 }

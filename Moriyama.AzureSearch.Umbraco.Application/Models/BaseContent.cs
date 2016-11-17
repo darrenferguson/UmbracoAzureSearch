@@ -6,8 +6,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
     {
 
         public string Name { get; set; }
-        public string Path { get; set; }
-
+        
         public bool Published { get; set; }
 
         public int SortOrder { get; set; }

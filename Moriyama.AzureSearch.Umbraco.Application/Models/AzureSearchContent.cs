@@ -2,6 +2,8 @@
 {
     public class AzureSearchContent : BaseContent
     {
-        public string Id { get; set; }   
+        public string Id { get; set; }
+        public string Path { get; set; }
+
     }
 }

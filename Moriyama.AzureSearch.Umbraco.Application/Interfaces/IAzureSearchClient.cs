@@ -15,6 +15,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchClient Media();
 
         IAzureSearchClient PageSize(int pageSize);
+        IAzureSearchClient PopulateContentProperties(bool populate);
 
     }
 }
