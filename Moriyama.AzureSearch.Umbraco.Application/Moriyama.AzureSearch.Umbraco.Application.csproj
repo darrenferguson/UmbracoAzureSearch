@@ -290,6 +290,7 @@
     <Compile Include="Models\SearchField.cs" />
     <Compile Include="Models\SearchIndex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Umbraco\UmbracoHelperExetnsion.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
