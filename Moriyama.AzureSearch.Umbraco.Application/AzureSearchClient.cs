@@ -61,7 +61,19 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public IEnumerable<ISearchContent> Results()
         {       
             var sp = GetSearchParameters();
+            
+            //Reset the filters to allow multiple Results calls in a single instance
+            _resetFilters();
+
             return Results(sp);        
+        }
+
+        private void _resetFilters()
+        {
+            _filters = new List<string>();
+            _orderBy = new List<string>();
+            _content = false;
+            _media = false;
         }
 
         private IEnumerable<ISearchContent> Results(SearchParameters sp)
@@ -78,6 +90,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             {              
                 results.Add(FromDocument(result.Document));
             }
+
+            //Reset the filters to allow multiple Results calls in a single instance
+            _resetFilters();
 
             return results;
         }
@@ -125,6 +140,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var sp = GetSearchParameters();
             sp.Top = _pageSize;
             sp.Skip = (page -1) * _pageSize;
+
+            //Reset the filters to allow multiple Results calls in a single instance
+            _resetFilters();
 
             return Results(sp);
         }
@@ -187,6 +205,23 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             _filters.Add(string.Format("{0}/any(x: x eq '{1}')", field, value));
             return this;
+        }
+
+        public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
+        {
+            var client = GetClient();
+            var config = GetConfiguration();
+
+            ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
+
+            SuggestParameters sp = new SuggestParameters()
+            {
+                UseFuzzyMatching = fuzzy,
+                Top = count,
+                Filter = "IsContent eq true"
+            };
+
+            return indexClient.Documents.Suggest(value, "sg", sp).Results;
         }
     }
 }
