@@ -188,5 +188,22 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _filters.Add(string.Format("{0}/any(x: x eq '{1}')", field, value));
             return this;
         }
+
+        public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
+        {
+            var client = GetClient();
+            var config = GetConfiguration();
+
+            ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
+
+            SuggestParameters sp = new SuggestParameters()
+            {
+                UseFuzzyMatching = fuzzy,
+                Top = count,
+                Filter = "IsContent eq true"
+            };
+
+            return indexClient.Documents.Suggest(value, "sg", sp).Results;
+        }
     }
 }
