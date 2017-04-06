@@ -1,3 +1,5 @@
 # UmbracoAzureSearch
 
-Hello Wolf
+Index and search Umbraco content in Azure search - replacing Examine
+
+
