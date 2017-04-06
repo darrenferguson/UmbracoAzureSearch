@@ -1,6 +1,5 @@
 ﻿using Examine;
 using Examine.SearchCriteria;
-using System;
 using System.IO;
 using UmbracoExamine;
 
@@ -10,8 +9,9 @@ namespace Moriyama.AzureSearch.Examine
     {
         public override ISearchResults Search(ISearchCriteria searchParams)
         {
-            throw new FileNotFoundException("");
-            
+            // var s = searchParams.ToString();
+           
+            throw new FileNotFoundException("");           
         }
     }
 }

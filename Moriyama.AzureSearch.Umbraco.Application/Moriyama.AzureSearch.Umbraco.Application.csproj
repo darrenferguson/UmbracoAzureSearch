@@ -276,6 +276,7 @@
     <Compile Include="AzureSearchClient.cs" />
     <Compile Include="AzureSearchServiceClient.cs" />
     <Compile Include="BaseAzureSearch.cs" />
+    <Compile Include="Controllers\BackOffice\BackOfficeAzureSearchApiController.cs" />
     <Compile Include="Interfaces\IAzureSearchClient.cs" />
     <Compile Include="Interfaces\ISearchContent.cs" />
     <Compile Include="Models\AzureSearchIndexResult.cs" />
