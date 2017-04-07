@@ -243,6 +243,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
+        public IAzureSearchClient Any(string field)
+        {
+            _filters.Add(string.Format("{0}/any()", field));
+            return this;
+        }
         public IAzureSearchClient Contains(string field, string value)
         {
             _filters.Add(string.Format("{0}/any(x: x eq '{1}')", field, value));
