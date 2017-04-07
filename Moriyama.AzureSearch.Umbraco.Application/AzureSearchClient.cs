@@ -254,6 +254,92 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
+        public IAzureSearchClient Contains(string field, IEnumerable<string> values)
+        {
+            if (values.Count() > 1)
+            {
+                var combinedFilter = string.Format("({0})",
+                    string.Join(" or ",
+                                    values.Select(x =>
+                                    string.Format("{0}/any(x: x eq '{1}')", field, x)).ToList())
+                            );
+
+                _filters.Add(combinedFilter);
+            }
+            else
+            {
+                Contains(field, values.FirstOrDefault());
+            }
+
+            return this;
+        }
+        public IAzureSearchClient Contains(IEnumerable<string> fields, string value)
+        {
+            if (fields.Count() > 1)
+            {
+                var combinedFilter = string.Format("({0})",
+                    string.Join(" or ",
+                                    fields.Select(x =>
+                                    string.Format("{0}/any(x: x eq '{1}')", x, value)).ToList())
+                            );
+
+                _filters.Add(combinedFilter);
+            }
+            else
+            {
+                Contains(fields.FirstOrDefault(), value);
+            }
+
+            return this;
+        }
+        public IAzureSearchClient Contains(IEnumerable<string> fields, IEnumerable<string> values)
+        {
+            if (fields.Count() > 1 && values.Count() > 1)
+            {
+                // uber filter
+                var combinedFilter = string.Format("({0})",
+                    string.Join(" or ",
+                                    fields.SelectMany(x => values, (x, y) =>
+                                    string.Format("{0}/any(x: x eq '{1}')", x, y)).ToList())
+                            );
+
+                _filters.Add(combinedFilter);
+            }
+            else if (fields.Count() > 1)
+            {
+                Contains(fields, values.FirstOrDefault());
+            }
+            else if (values.Count() > 1)
+            {
+                Contains(fields.FirstOrDefault(), values);
+            }
+            else
+            {
+                Contains(fields.FirstOrDefault(), values.FirstOrDefault());
+            }
+
+            return this;
+        }
+
+        public IAzureSearchClient Filter(string field, string[] values)
+        {
+            if (values.Count() > 1)
+            {
+                var combinedFilter = string.Format("({0})",
+                    string.Join(" or ",
+                                    values.Select(x =>
+                                    string.Format("({0} eq '{1}')", field, x)).ToList())
+                            );
+
+                _filters.Add(combinedFilter);
+            }
+            else
+            {
+                Filter(field, values.FirstOrDefault());
+            }
+
+            return this;
+        }
         public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
         {
             var client = GetClient();
