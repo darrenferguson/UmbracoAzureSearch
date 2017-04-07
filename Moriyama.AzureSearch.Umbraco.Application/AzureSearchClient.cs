@@ -14,6 +14,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private string _conjunctive = " and ";
         private string _searchTerm = "*";
         private IList<string> _orderBy;
+        private IList<string> _facets;
 
         private bool _content;
         private bool _media;
@@ -27,6 +28,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             _filters = new List<string>();
             _orderBy = new List<string>();
+            _facets = new List<string>();
         }
         
         public IAzureSearchClient DocumentType(string typeAlias)
@@ -67,7 +69,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 sp.Filter = string.Join(_conjunctive, _filters);
             }
 
+            sp.IncludeTotalResultCount = true;
             sp.OrderBy = _orderBy;
+            sp.Facets = _facets;
             return sp;
         }
 
@@ -102,6 +106,19 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             foreach (var result in response.Results)
             {              
                 results.Add(FromDocument(result.Document));
+            if (response.Facets != null)
+            {
+                foreach (var facet in response.Facets)
+                {
+                    foreach (var facetResult in facet.Value)
+                    {
+                        results.Facets.Add(new SearchFacet()
+                        {
+                            Count = facetResult.Count,
+                            Name = facetResult.Value.ToString()
+                        });
+                    }
+                }
             }
 
             //Reset the filters to allow multiple Results calls in a single instance
@@ -243,6 +260,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
+        public IAzureSearchClient Facet(string facet)
+        {
+            _facets.Add(facet);
+            return this;
+        }
         public IAzureSearchClient Any(string field)
         {
             _filters.Add(string.Format("{0}/any()", field));
