@@ -182,6 +182,35 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _populateContentProperties = populate;
             return this;
         }
+        public IAzureSearchClient DateRange(string field, DateTime? start, DateTime? end)
+        {
+            if (start != null || end != null)
+            {
+                if (start != null && end != null)
+                {
+                    // is there a better way to format this datetime into a string for azure search?
+                    var startDateUtc = (start ?? DateTime.MinValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                    var endDateUtc = (end ?? DateTime.MaxValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                    // with a range dates that are greater than or equal to start date, but less than and not equal to end date?
+                    _filters.Add(string.Format("({0} ge {1} and {0} lt {2})", field, startDateUtc, endDateUtc));
+
+                }
+                //probably don't need these could default to min max values ?
+                else if (end != null)
+                {
+                    //filter before end date
+                    var endDateUtc = (end ?? DateTime.MaxValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                    _filters.Add(string.Format("({0} lt {1})", field, endDateUtc));
+                }
+                else
+                {
+                    // filter after start date
+                    var startDateUtc = (start ?? DateTime.MinValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                    _filters.Add(string.Format("({0} ge {1})", field, startDateUtc));
+                }
+            }
+            return this;
+        }
 
         public IAzureSearchClient Filter(string field, string value)
         {
