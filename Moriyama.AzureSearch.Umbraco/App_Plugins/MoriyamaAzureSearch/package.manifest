@@ -1,5 +1,5 @@
 ﻿{
     "javascript" : [
-        '~/App_Plugins/MoriyamaAzureSearch/MoriyamaAzureSearch.controllers.js',
+        '~/App_Plugins/MoriyamaAzureSearch/httpProvider.js'
     ]
 }

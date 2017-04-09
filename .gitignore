@@ -179,3 +179,4 @@ Moriyama.AzureSearch.Umbraco/Views/Partials/Grid/
 .nuget/NuGet.exe
 Moriyama.AzureSearch.Umbraco/App_Data/cache/
 Moriyama.AzureSearch.Umbraco/Media/
+.vs/config/applicationhost.config
