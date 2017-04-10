@@ -280,10 +280,14 @@
     <Compile Include="Helper\SearchContentToEntityBasicMapper.cs" />
     <Compile Include="Interfaces\IAzureSearchClient.cs" />
     <Compile Include="Interfaces\ISearchContent.cs" />
+    <Compile Include="Interfaces\ISearchFacet.cs" />
+    <Compile Include="Interfaces\ISearchResult.cs" />
     <Compile Include="Models\AzureSearchIndexResult.cs" />
     <Compile Include="Models\BackOfficeSearchResult.cs" />
     <Compile Include="Models\BaseContent.cs" />
     <Compile Include="Models\SearchContent.cs" />
+    <Compile Include="Models\SearchFacet.cs" />
+    <Compile Include="Models\SearchResult.cs" />
     <Compile Include="SearchContentExtensions.cs" />
     <Compile Include="Umbraco\CustomApplicationEventHandler.cs" />
     <Compile Include="Controllers\AzureSearchApiController.cs" />
