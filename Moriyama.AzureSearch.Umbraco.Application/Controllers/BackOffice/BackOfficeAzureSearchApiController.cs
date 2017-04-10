@@ -29,7 +29,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
             {
 
                 var entities = new List<EntityBasic>();
-                foreach (var searchResult in searchResults)
+                foreach (var searchResult in searchResults.Content)
                 {                   
                     var entity = SearchContentToEntityBasicMapper.Map(searchResult);
                     entities.Add(entity);

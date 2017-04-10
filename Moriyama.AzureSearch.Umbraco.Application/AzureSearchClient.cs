@@ -4,13 +4,27 @@ using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using System;
+using System.Linq;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchClient : BaseAzureSearch, IAzureSearchClient
     {
 
-        private IList<string> _filters;
+        public IList<string> _filters;
+
+        public IList<string> Filters
+        {
+            get
+            {
+                return _filters;
+            }
+            set
+            {
+                _filters = value;
+            }
+        }
+
         private string _conjunctive = " and ";
         private string _searchTerm = "*";
         private IList<string> _orderBy;
@@ -30,7 +44,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _orderBy = new List<string>();
             _facets = new List<string>();
         }
-        
+
         public IAzureSearchClient DocumentType(string typeAlias)
         {
             _filters.Add(string.Format("ContentTypeAlias eq '{0}'", typeAlias));
@@ -54,12 +68,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var sp = new SearchParameters();
 
-            if(_content)
+            if (_content)
             {
                 _filters.Add("IsContent eq true");
             }
 
-            if(_media)
+            if (_media)
             {
                 _filters.Add("IsMedia eq true");
             }
@@ -70,30 +84,19 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
 
             sp.IncludeTotalResultCount = true;
+
             sp.OrderBy = _orderBy;
             sp.Facets = _facets;
             return sp;
         }
 
-        public IEnumerable<ISearchContent> Results()
-        {       
-            var sp = GetSearchParameters();
-            
-            //Reset the filters to allow multiple Results calls in a single instance
-            _resetFilters();
-
-            return Results(sp);        
-        }
-
-        private void _resetFilters()
+        public ISearchResult Results()
         {
-            _filters = new List<string>();
-            _orderBy = new List<string>();
-            _content = false;
-            _media = false;
+            var sp = GetSearchParameters();
+            return Results(sp);
         }
 
-        private IEnumerable<ISearchContent> Results(SearchParameters sp)
+        private ISearchResult Results(SearchParameters sp)
         {
             var client = GetClient();
             var config = GetConfiguration();
@@ -101,11 +104,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
             var response = indexClient.Documents.Search(_searchTerm, sp);
 
-            var results = new List<ISearchContent>();
+            var results = new Models.SearchResult();
 
             foreach (var result in response.Results)
-            {              
-                results.Add(FromDocument(result.Document));
+            {
+                results.Content.Add(FromDocument(result.Document));
+            }
+
             if (response.Facets != null)
             {
                 foreach (var facet in response.Facets)
@@ -121,8 +126,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 }
             }
 
-            //Reset the filters to allow multiple Results calls in a single instance
-            _resetFilters();
+            if (response.Count != null)
+                results.Count = (int)response.Count;
 
             return results;
         }
@@ -139,10 +144,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             foreach (var key in d.Keys)
             {
                 var property = t.GetProperty(key);
-                if(property == null && _populateContentProperties)
+                if (property == null && _populateContentProperties)
                 {
                     searchContent.Properties.Add(key, d[key]);
-                } else if(property.CanWrite && property.Name != "Id")
+                }
+                else if (property.CanWrite && property.Name != "Id")
                 {
 
                     object val = d[key];
@@ -160,23 +166,20 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                         property.SetValue(searchContent, val);
                 }
             }
-                        
+
             return searchContent;
         }
 
-        public IEnumerable<ISearchContent> Results(int page)
+        public ISearchResult Results(int page)
         {
 
             var sp = GetSearchParameters();
             sp.Top = _pageSize;
-            sp.Skip = (page -1) * _pageSize;
-
-            //Reset the filters to allow multiple Results calls in a single instance
-            _resetFilters();
+            sp.Skip = (page - 1) * _pageSize;
 
             return Results(sp);
         }
-        
+
         public IAzureSearchClient Term(string query)
         {
             _searchTerm = query;
@@ -256,7 +259,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public IAzureSearchClient Filter(string field, bool value)
         {
-            _filters.Add(string.Format("{0} eq {1}", field, value));
+            _filters.Add(string.Format("{0} eq {1}", field, value.ToString().ToLower()));
             return this;
         }
 
