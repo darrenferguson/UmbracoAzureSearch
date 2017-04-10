@@ -107,6 +107,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             List<int> contentIds;
             List<int> mediaIds;
+            List<int> memberIds;
 
             using (var db = new UmbracoDatabase("umbracoDbDSN"))
             {
@@ -119,7 +120,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     from cmsContent, umbracoNode where
                     cmsContent.nodeId = umbracoNode.id and
                     umbracoNode.nodeObjectType = 'B796F64C-1F99-4FFB-B886-4BF4BC011A9C'");
+
+                memberIds = db.Fetch<int>(@"select distinct cmsContent.NodeId
+                    from cmsContent, umbracoNode where
+                    cmsContent.nodeId = umbracoNode.id and
+                    umbracoNode.nodeObjectType = '39EB0F98-B348-42A1-8662-E7EB18487560'");
             }
+            
+
 
             var contentCount = contentIds.Count;
 
@@ -128,6 +136,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                    
             System.IO.File.WriteAllText(Path.Combine(path, "content.json"), JsonConvert.SerializeObject(contentIds));
             System.IO.File.WriteAllText(Path.Combine(path, "media.json"), JsonConvert.SerializeObject(mediaIds));
+            System.IO.File.WriteAllText(Path.Combine(path, "member.json"), JsonConvert.SerializeObject(memberIds));
 
             return new AzureSearchReindexStatus
             {
@@ -136,6 +145,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 Error = false,
                 Finished = false
             };
+
         }
 
         private int[] GetIds(string sessionId, string filename)
@@ -162,6 +172,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return ReIndex("media.json", sessionId, page);
         }
 
+        public AzureSearchReindexStatus ReIndexMember(string sessionId, int page)
+        {
+            return ReIndex("member.json", sessionId, page);
+        }
+
         public void ReIndexContent(IContent content)
         {
             var documents = new List<Document>();
@@ -177,6 +192,52 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var config = GetConfiguration();
 
             documents.Add(FromUmbracoContent(content, config.SearchFields));
+            IndexContentBatch(documents);
+        }
+
+        public void Delete(int id)
+        {
+            var result = new AzureSearchIndexResult();
+
+            var serviceClient = GetClient();
+
+            var actions = new List<IndexAction>();
+            var d = new Document();
+            d.Add("Id", id.ToString());
+            
+            actions.Add(IndexAction.Delete(d));
+
+            var batch = IndexBatch.New(actions);
+            var indexClient = serviceClient.Indexes.GetClient(_config.IndexName);
+
+            try
+            {
+                indexClient.Documents.Index(batch);
+            }
+            catch (IndexBatchException e)
+            {
+                // Sometimes when your Search service is under load, indexing will fail for some of the documents in
+                // the batch. Depending on your application, you can take compensating actions like delaying and
+                // retrying. For this simple demo, we just log the failed document keys and continue.
+                var error =
+                     "Failed to index some of the documents: {0}" + String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key));
+
+                result.Success = false;
+                result.Message = error;
+
+               
+            }
+
+            result.Success = true;
+        
+        }
+
+        public void ReIndexMember(IMember content)
+        {
+            var documents = new List<Document>();
+            var config = GetConfiguration();
+
+            documents.Add(FromUmbracoMember(content, config.SearchFields));
             IndexContentBatch(documents);
         }
 
@@ -208,13 +269,23 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     if (content != null)
                         documents.Add(FromUmbracoContent(content, config.SearchFields));
             }
-            else
+            else if(filename == "media.json")
             {
                 var contents = UmbracoContext.Current.Application.Services.MediaService.GetByIds(idsToProcess);
 
                 foreach (var content in contents)
                     if (content != null)
                         documents.Add(FromUmbracoMedia(content, config.SearchFields));
+            } else
+            {
+                var contents = new List<IMember>();
+
+                foreach(var id in idsToProcess)
+                    contents.Add(UmbracoContext.Current.Application.Services.MemberService.GetById(id));
+
+                foreach (var content in contents)
+                    if (content != null)
+                        documents.Add(FromUmbracoMember(content, config.SearchFields));
             }
 
             var indexStatus = IndexContentBatch(documents);
@@ -232,6 +303,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             return result;                 
         }
+
+
 
         private AzureSearchIndexResult IndexContentBatch(IEnumerable<Document> contents)
         {
@@ -269,32 +342,55 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
+        private Document FromUmbracoMember(IMember content, SearchField[] searchFields)
+        {
+            var result = FromUmbracoContent((ContentBase)content, searchFields);
+
+            result.Add("IsMedia", false);
+            result.Add("IsContent", false);
+            result.Add("IsMember", true);
+            result.Add("ContentTypeAlias", content.ContentType.Alias);
+
+            result.Add("Icon", content.ContentType.Icon);
+
+            return result;
+        }
+
         private Document FromUmbracoMedia(IMedia content, SearchField[] searchFields)
         {
             var result = FromUmbracoContent((ContentBase)content, searchFields);
 
             result.Add("IsMedia", true);
             result.Add("IsContent", false);
+            result.Add("IsMember", false);
             result.Add("ContentTypeAlias", content.ContentType.Alias);
+
+            result.Add("Icon", content.ContentType.Icon);
+
             return result;
         }
 
         private Document FromUmbracoContent(IContent content, SearchField[] searchFields)
         {
             var result = FromUmbracoContent((ContentBase) content, searchFields);
+            
 
             result.Add("IsContent", true);
             result.Add("IsMedia", false);
+            result.Add("IsMember", false);
 
             result.Add("Published", content.Published);
             result.Add("WriterId", content.WriterId);
             result.Add("ContentTypeAlias", content.ContentType.Alias);
 
+            // SLOW:
             //var isProtected = UmbracoContext.Current.Application.Services.PublicAccessService.IsProtected(content.Path);
             //result.Add("IsProtected", content.ContentType.Alias);
             
             if (content.Template != null)
                 result.Add("Template", content.Template.Alias);
+
+            result.Add("Icon", content.ContentType.Icon);
 
             return result;
         }
@@ -313,7 +409,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {"Trashed", content.Trashed}
                 
             };
-
+            
             c.Add("ContentTypeId", content.ContentTypeId);
             c.Add("CreateDate", content.CreateDate);
             c.Add("CreatorId", content.CreatorId);
@@ -384,12 +480,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                  new Field("IsContent", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
                  new Field("IsMedia", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
-            
+                 new Field("IsMember", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
+
                  new Field("Published", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
                  new Field("Trashed", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
 
                  new Field("Path", DataType.Collection(DataType.String)) { IsSearchable = true, IsFilterable = true },
                  new Field("Template", DataType.String) { IsSearchable = true, IsFacetable = true },
+                 new Field("Icon", DataType.String) { IsSearchable = true, IsFacetable = true },
+
                  new Field("ContentTypeAlias", DataType.String) { IsSearchable = true, IsFacetable = true, IsFilterable = true },
 
                  new Field("UpdateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },

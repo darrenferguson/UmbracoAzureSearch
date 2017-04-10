@@ -68,10 +68,24 @@
             if (!response.data.Error && !response.data.Finished) {
                 $scope.reindexMediaPage(sessionId, page + 1);
             } else if (response.data.Finished) {
+                $scope.TypeProcessing = 'member';
+                $scope.reindexMemberPage(response.data.SessionId, 1);
+            }
+        });
+    };
+
+    $scope.reindexMemberPage = function (sessionId, page) {
+
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexMember?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
+            $scope.reIndexContentResult = response.data;
+            if (!response.data.Error && !response.data.Finished) {
+                $scope.reindexMemberPage(sessionId, page + 1);
+            } else if (response.data.Finished) {
                 $scope.finishedIndexing = true;
             }
         });
     };
+
 }
 
 angular.module("umbraco").controller("Umbraco.Dashboard.MoriyamaAzureSearchController", moriyamaAzureSearchController);

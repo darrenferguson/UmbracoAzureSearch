@@ -14,9 +14,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
     {
         protected override void ApplicationStarted(UmbracoApplicationBase umbracoApplication, ApplicationContext applicationContext)
         {
-
-            
-
             Mapper.CreateMap<Field, SearchField>().ForMember(dest => dest.Type,
                opts => opts.MapFrom(
                    src => src.Type.ToString()
@@ -24,8 +21,85 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 
             Mapper.CreateMap<Index, SearchIndex>();
 
+            ContentService.Saved += ContentServiceSaved;
             ContentService.Published += ContentServicePublished;
+            ContentService.Trashed += ContentServiceTrashed;
+            ContentService.Deleted += ContentServiceDeleted;
+
+
             MediaService.Saved += MediaServiceSaved;
+            MediaService.Trashed += MediaServiceTrashed;
+            MediaService.Deleted += MediaServiceDeleted;
+
+            MemberService.Saved += MemberServiceSaved;
+            MemberService.Deleted += MemberServiceDeleted;
+        }
+
+        private void MediaServiceDeleted(IMediaService sender, DeleteEventArgs<IMedia> e)
+        {
+            var azureSearchServiceClient = new AzureSearchServiceClient(HttpContext.Current.Server.MapPath("/"));
+
+            foreach (var entity in e.DeletedEntities)
+            {
+                azureSearchServiceClient.Delete(entity.Id);
+            }
+        }
+
+        private void ContentServiceDeleted(IContentService sender, DeleteEventArgs<IContent> e)
+        {
+            var azureSearchServiceClient = new AzureSearchServiceClient(HttpContext.Current.Server.MapPath("/"));
+
+            foreach (var entity in e.DeletedEntities)
+            {
+                azureSearchServiceClient.Delete(entity.Id);
+            }
+        }
+
+        private void ContentServiceSaved(IContentService sender, SaveEventArgs<IContent> e)
+        {
+            var azureSearchServiceClient = new AzureSearchServiceClient(HttpContext.Current.Server.MapPath("/"));
+
+            foreach (var entity in e.SavedEntities)
+            {
+                azureSearchServiceClient.ReIndexContent(entity);
+            }
+        }
+
+        private void MemberServiceDeleted(IMemberService sender, DeleteEventArgs<IMember> e)
+        {
+            var azureSearchServiceClient = new AzureSearchServiceClient(HttpContext.Current.Server.MapPath("/"));
+
+            foreach (var entity in e.DeletedEntities)
+            {
+                azureSearchServiceClient.Delete(entity.Id);
+            }
+        }
+
+        private void ContentServiceTrashed(IContentService sender, MoveEventArgs<IContent> e)
+        {
+            var azureSearchServiceClient = new AzureSearchServiceClient(HttpContext.Current.Server.MapPath("/"));
+            foreach(var item in e.MoveInfoCollection)
+            {
+                azureSearchServiceClient.ReIndexContent(item.Entity);
+            }
+        }
+
+        private void MediaServiceTrashed(IMediaService sender, MoveEventArgs<IMedia> e)
+        {
+            var azureSearchServiceClient = new AzureSearchServiceClient(HttpContext.Current.Server.MapPath("/"));
+            foreach (var item in e.MoveInfoCollection)
+            {
+                azureSearchServiceClient.ReIndexContent(item.Entity);
+            }
+        }
+
+        private void MemberServiceSaved(IMemberService sender, SaveEventArgs<IMember> e)
+        {
+            var azureSearchServiceClient = new AzureSearchServiceClient(HttpContext.Current.Server.MapPath("/"));
+            foreach (var entity in e.SavedEntities)
+            {
+                azureSearchServiceClient.ReIndexMember(entity);
+            }
         }
 
         private void MediaServiceSaved(IMediaService sender, SaveEventArgs<IMedia> e)

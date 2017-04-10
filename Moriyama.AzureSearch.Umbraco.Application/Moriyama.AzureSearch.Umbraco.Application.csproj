@@ -277,11 +277,14 @@
     <Compile Include="AzureSearchServiceClient.cs" />
     <Compile Include="BaseAzureSearch.cs" />
     <Compile Include="Controllers\BackOffice\BackOfficeAzureSearchApiController.cs" />
+    <Compile Include="Helper\SearchContentToEntityBasicMapper.cs" />
     <Compile Include="Interfaces\IAzureSearchClient.cs" />
     <Compile Include="Interfaces\ISearchContent.cs" />
     <Compile Include="Models\AzureSearchIndexResult.cs" />
+    <Compile Include="Models\BackOfficeSearchResult.cs" />
     <Compile Include="Models\BaseContent.cs" />
     <Compile Include="Models\SearchContent.cs" />
+    <Compile Include="SearchContentExtensions.cs" />
     <Compile Include="Umbraco\CustomApplicationEventHandler.cs" />
     <Compile Include="Controllers\AzureSearchApiController.cs" />
     <Compile Include="Interfaces\IAzureSearchIndexClient.cs" />
