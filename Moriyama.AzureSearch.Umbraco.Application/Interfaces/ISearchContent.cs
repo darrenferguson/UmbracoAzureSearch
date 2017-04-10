@@ -11,6 +11,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         
         bool Published { get; set; }
 
+        bool IsContent { get; set; }
+        bool IsMedia { get; set; }
+        bool IsMember { get; set; }
+
         int SortOrder { get; set; }
         int Level { get; set; }
 

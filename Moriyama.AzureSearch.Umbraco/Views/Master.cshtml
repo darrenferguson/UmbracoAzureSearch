@@ -57,8 +57,10 @@
       </div>
     </header>
 	
-			@Umbraco.TypedMedia(1081).Url
-			
+			@*@Umbraco.TypedMedia(1081).Url*@
+			@*@foreach(var media in @Umbraco.TypedMediaAtRoot()) {
+                <p>@media.Url</p>
+            }*@
     @RenderBody()
 
 			

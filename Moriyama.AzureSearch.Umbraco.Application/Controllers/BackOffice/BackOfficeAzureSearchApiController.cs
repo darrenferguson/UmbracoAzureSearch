@@ -30,9 +30,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 
                 var entities = new List<EntityBasic>();
                 foreach (var searchResult in searchResults)
-                {                   
-                    var entity = SearchContentToEntityBasicMapper.Map(searchResult);
-                    entities.Add(entity);
+                {
+                    if (searchResult.IsContent)
+                    {
+                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                        entities.Add(entity);
+                    }
                 }
 
                 result.Add(new EntityTypeSearchResult
@@ -44,18 +47,39 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 
             if (allowedSections.InvariantContains(Constants.Applications.Media))
             {
+                var entities = new List<EntityBasic>();
+                foreach (var searchResult in searchResults)
+                {
+                    if (searchResult.IsMedia)
+                    {
+                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                        entities.Add(entity);
+                    }
+                }
+
                 result.Add(new EntityTypeSearchResult
                 {
-                    Results = new List<EntityBasic>(),
+                    Results = entities,
                     EntityType = UmbracoEntityTypes.Media.ToString()
                 });
             }
 
             if (allowedSections.InvariantContains(Constants.Applications.Members))
             {
+
+                var entities = new List<EntityBasic>();
+                foreach (var searchResult in searchResults)
+                {
+                    if (searchResult.IsMember)
+                    {
+                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                        entities.Add(entity);
+                    }
+                }
+
                 result.Add(new EntityTypeSearchResult
                 {
-                    Results = new List<EntityBasic>(),
+                    Results = entities,
                     EntityType = UmbracoEntityTypes.Member.ToString()
                 });
             }

@@ -16,7 +16,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Helper
             e.Icon = item.GetPropertyValue<string>("Icon");
             e.Trashed = item.GetPropertyValue<bool>("Trashed");
             e.Alias = null;
-            e.Path = string.Join(",", item.GetPropertyValue<IEnumerable<string>>("Path"));
+
+            var path = item.GetPropertyValue<string[]>("Path");
+
+            if(path !=null )
+                e.Path = string.Join(",", path);
 
             return e;
         }
