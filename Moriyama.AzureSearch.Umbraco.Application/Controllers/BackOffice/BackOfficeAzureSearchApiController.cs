@@ -29,13 +29,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
             {
 
                 var entities = new List<EntityBasic>();
-                foreach (var searchResult in searchResults)
+
+                foreach (var searchResult in searchResults.Content)
                 {
                     if (searchResult.IsContent)
                     {
                         var entity = SearchContentToEntityBasicMapper.Map(searchResult);
                         entities.Add(entity);
                     }
+
                 }
 
                 result.Add(new EntityTypeSearchResult
@@ -48,7 +50,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
             if (allowedSections.InvariantContains(Constants.Applications.Media))
             {
                 var entities = new List<EntityBasic>();
-                foreach (var searchResult in searchResults)
+                foreach (var searchResult in searchResults.Content)
                 {
                     if (searchResult.IsMedia)
                     {
@@ -68,7 +70,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
             {
 
                 var entities = new List<EntityBasic>();
-                foreach (var searchResult in searchResults)
+                foreach (var searchResult in searchResults.Content)
                 {
                     if (searchResult.IsMember)
                     {
