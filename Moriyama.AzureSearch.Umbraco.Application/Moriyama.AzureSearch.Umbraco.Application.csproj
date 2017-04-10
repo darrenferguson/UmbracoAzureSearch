@@ -284,6 +284,7 @@
     <Compile Include="Models\BackOfficeSearchResult.cs" />
     <Compile Include="Models\BaseContent.cs" />
     <Compile Include="Models\SearchContent.cs" />
+    <Compile Include="SearchContentExtensions.cs" />
     <Compile Include="Umbraco\CustomApplicationEventHandler.cs" />
     <Compile Include="Controllers\AzureSearchApiController.cs" />
     <Compile Include="Interfaces\IAzureSearchIndexClient.cs" />

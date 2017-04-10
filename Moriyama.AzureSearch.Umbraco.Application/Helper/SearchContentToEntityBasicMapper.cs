@@ -1,4 +1,5 @@
 ﻿using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
+using System.Collections.Generic;
 using Umbraco.Web.Models.ContentEditing;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Helper
@@ -12,13 +13,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Helper
             e.Id = item.Id;
             e.ParentId = item.ParentId;
             e.Key = new System.Guid();
-            e.Icon = "icon-windows color-blue";
-            e.Trashed = false;
+            e.Icon = item.GetPropertyValue<string>("Icon");
+            e.Trashed = item.GetPropertyValue<bool>("Trashed");
             e.Alias = null;
-            e.Path = "-1,1063,2652,2662,2921,23153";
-            
+            e.Path = string.Join(",", item.GetPropertyValue<IEnumerable<string>>("Path"));
+
             return e;
         }
-
     }
 }
