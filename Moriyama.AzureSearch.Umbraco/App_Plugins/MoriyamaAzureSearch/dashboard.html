@@ -8,6 +8,45 @@
     <div class="row">
         <h3>Azure Search</h3>
 
+        <h4>Configuration</h4>
+
+        <table class="table table-striped">
+            <tr ng-show="updating">
+                <td colspan="2">
+                    Updating....
+                </td>
+            </tr>
+            <tr>
+                <td>Search Service Name</td>
+                <td>
+                    <input type="text" ng-model="config.SearchServiceName" />
+                    <input type="button" class="btn btn-default" value="Update" ng-click="updateServiceName()"/>
+                </td>
+            </tr>
+            <tr>
+                <td>Search Service Admin Api Key</td>
+                <td>
+                    <input type="text" ng-model="config.SearchServiceAdminApiKey" />
+                    <input type="button" class="btn btn-default" value="Update" ng-click="updateServiceApiKey()"/>
+                </td>
+            </tr>
+            <tr>
+                <td>Index Name</td>
+                <td>{{config.IndexName}}</td>
+            </tr>
+        </table>
+
+        <div ng-show="showConfigTest" class="alert alert-info">
+            Connection test result: {{configTest}}
+        </div>
+
+        <input type="button" class="btn btn-default" value="Test Configuration" ng-click="testConfig()" ng-show="configLoaded" />
+    </div>
+
+
+    <div class="row">
+        
+
         <h4>Index Manager</h4>
 
         <ul>
@@ -33,30 +72,7 @@
 
         <input type="button" class="btn btn-default" value="Reindex Content" ng-click="reindexContent()" />
     </div>
-    <div class="row">
-        <h4>Configuration</h4>
-
-        <table class="table table-striped">
-            <tr>
-                <td>Search Service Name</td>
-                <td>{{config.SearchServiceName}}</td>
-            </tr>
-            <tr>
-                <td>Search Service Admin Api Key</td>
-                <td>{{config.SearchServiceAdminApiKey}}</td>
-            </tr>
-            <tr>
-                <td>Index Name</td>
-                <td>{{config.IndexName}}</td>
-            </tr>
-        </table>
-
-        <div ng-show="showConfigTest" class="alert alert-info">
-            Connection test result: {{configTest}}
-        </div>
-
-        <input type="button" class="btn btn-default" value="Test Configuration" ng-click="testConfig()" ng-show="configLoaded" />
-    </div>
+    
     <h3>Standard Umbraco Fields</h3>
 
     <table class="table table-striped">

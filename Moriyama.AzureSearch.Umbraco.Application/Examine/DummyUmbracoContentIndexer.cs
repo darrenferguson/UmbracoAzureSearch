@@ -1,8 +1,7 @@
-﻿using System.Collections.Specialized;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using UmbracoExamine;
 
-namespace Moriyama.AzureSearch.Umbraco.Examine
+namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 {
     public class DummyUmbracoContentIndexer : UmbracoContentIndexer
     {

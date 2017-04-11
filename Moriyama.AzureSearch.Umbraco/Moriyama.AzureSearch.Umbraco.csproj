@@ -368,6 +368,8 @@
     <Content Include="Views\Partials\Grid\Fanoe.cshtml" />
     <Content Include="Views\Partials\MainNavigation.cshtml" />
     <Content Include="Views\AzureSearch.cshtml" />
+    <Content Include="App_Plugins\MoriyamaAzureSearch\Examine\ExamineSettings.config" />
+    <Content Include="App_Plugins\MoriyamaAzureSearch\Examine\ExamineIndex.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

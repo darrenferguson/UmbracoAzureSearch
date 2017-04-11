@@ -5,6 +5,7 @@ using Microsoft.Azure.Search;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using Umbraco.Web.WebApi;
+using System.Web.Http;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
 {
@@ -20,6 +21,24 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
         public AzureSearchConfig GetConfiguration()
         {
             return _azureSearchServiceClient.GetConfiguration();
+        }
+
+        [HttpGet]
+        public bool ServiceName(string value)
+        {
+            var config = _azureSearchServiceClient.GetConfiguration();
+            config.SearchServiceName = value;
+            _azureSearchServiceClient.SaveConfiguration(config);
+            return true;
+        }
+
+        [HttpGet]
+        public bool ServiceApiKey(string value)
+        {
+            var config = _azureSearchServiceClient.GetConfiguration();
+            config.SearchServiceAdminApiKey = value;
+            _azureSearchServiceClient.SaveConfiguration(config);
+            return true;
         }
 
         public string GetTestConfig()

@@ -7,7 +7,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public abstract class BaseAzureSearch
     {
-        protected readonly AzureSearchConfig _config;
+        protected AzureSearchConfig _config;
         protected readonly string _path;
 
         // Number of docs to be processed at a time.
@@ -17,6 +17,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             _path = path;
             _config = JsonConvert.DeserializeObject<AzureSearchConfig>(File.ReadAllText(Path.Combine(path, @"config\AzureSearch.config")));
+        }
+
+        public void SaveConfiguration(AzureSearchConfig config)
+        {
+            _config = config;
+            File.WriteAllText(Path.Combine(_path, @"config\AzureSearch.config"), JsonConvert.SerializeObject(config, Formatting.Indented));
         }
 
         public AzureSearchConfig GetConfiguration()

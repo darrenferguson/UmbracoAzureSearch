@@ -1,11 +1,9 @@
 ﻿using Examine;
 using Examine.SearchCriteria;
-using Moriyama.AzureSearch.Umbraco.Application;
-using System;
 using System.IO;
 using UmbracoExamine;
 
-namespace Moriyama.AzureSearch.Umbraco.Examine
+namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 {
     public class DummyUmbracoExamineSearcher : UmbracoExamineSearcher
     {
