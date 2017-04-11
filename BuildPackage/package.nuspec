@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>AzureSearch.Umbraco</id>
+        <version>1.0.0</version>
+        <title>Azure Search For Umbraco</title>
+        <authors>Moriyama</authors>
+        <owners>Darren Ferguson</owners>
+        <projectUrl>http://www.moriyama.co.uk/</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>
+		  Readme
+		</description>
+        <summary>
+		God Mode is a custom Umbraco 7 tree aimed at Developers to make it easy to locate, search and query your Umbraco 7 assets (doctypes, templates, property editors, media, content, controllers, models etc)
+        </summary>
+        <copyright>Moriyama</copyright>
+        <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+        <language>en-GB</language>
+        <tags>umbraco umbraco7 developer backoffice</tags>
+        <dependencies>
+          <dependency id="UmbracoCms.Core" version="7.4.3" />
+        </dependencies>
+    </metadata>    
+</package>

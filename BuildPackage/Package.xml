@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<umbPackage>
+  <info>
+    <package>
+      <name>Azure Search for Umbraco</name>
+      <version>1.0.0</version>
+      <license url="http://opensource.org/licenses/MIT">MIT License</license>
+      <url>https://our.umbraco.org/projects/developer-tools/diplo-god-mode/</url>
+      <requirements>
+        <major>7</major>
+        <minor>4</minor>
+        <patch>0</patch>
+      </requirements>
+    </package>
+    <author>
+      <name>Moriyama</name>
+      <website>http://www.moriyama.co.uk/</website>
+    </author>
+    <readme>
+      <![CDATA[Please See: the url]]>
+    </readme>
+  </info>
+
+  <DocumentTypes />
+  <Templates />
+  <Stylesheets />
+  <Macros />
+  <DictionaryItems />
+  <Languages />
+  <DataTypes />
+
+  <Actions/>
+
+  <control />
+
+  <files />
+
+</umbPackage>
