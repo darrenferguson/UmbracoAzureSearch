@@ -15,12 +15,12 @@ using System.Text.RegularExpressions;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
-    public class AzureSearchServiceClient : BaseAzureSearch, IAzureSearchIndexClient
+    public class AzureSearchIndexClient : BaseAzureSearch, IAzureSearchIndexClient
     { 
         // Number of docs to be processed at a time.
         const int BatchSize = 999;
 
-        public AzureSearchServiceClient(string path) : base(path)
+        public AzureSearchIndexClient(string path) : base(path)
         {
             
         }

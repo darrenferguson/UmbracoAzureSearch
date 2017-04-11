@@ -274,6 +274,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AzureSearchClient.cs" />
+    <Compile Include="AzureSearchContext.cs" />
     <Compile Include="AzureSearchServiceClient.cs" />
     <Compile Include="BaseAzureSearch.cs" />
     <Compile Include="Controllers\BackOffice\BackOfficeAzureSearchApiController.cs" />
@@ -288,7 +289,7 @@
     <Compile Include="Models\SearchContent.cs" />
     <Compile Include="Models\SearchFacet.cs" />
     <Compile Include="Models\SearchResult.cs" />
-    <Compile Include="SearchContentExtensions.cs" />
+    <Compile Include="Helper\SearchContentExtensions.cs" />
     <Compile Include="Umbraco\CustomApplicationEventHandler.cs" />
     <Compile Include="Controllers\AzureSearchApiController.cs" />
     <Compile Include="Interfaces\IAzureSearchIndexClient.cs" />

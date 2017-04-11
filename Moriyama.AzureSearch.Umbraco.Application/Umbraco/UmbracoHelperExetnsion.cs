@@ -7,7 +7,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
     {
         public static AzureSearchClient SearchContent(this UmbracoHelper helper)
         {
-            return new AzureSearchClient(HttpContext.Current.Server.MapPath("/"));
+            return (AzureSearchClient)AzureSearchContext.Instance.SearchClient;
         }
     }
 }

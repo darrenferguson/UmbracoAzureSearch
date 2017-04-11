@@ -21,7 +21,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 
             var result = new List<EntityTypeSearchResult>();
 
-            var client = new AzureSearchClient(HttpContext.Current.Server.MapPath("/"));
+            var client = AzureSearchContext.Instance.SearchClient;
 
             var searchResults = client.Term(query + "*").Results();
 

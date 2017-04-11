@@ -1,11 +1,6 @@
 ﻿using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Moriyama.AzureSearch.Umbraco.Application
+namespace Moriyama.AzureSearch.Umbraco.Application.Helper
 {
     /// <summary>
     ///  extensions to the ISearchContent item we get back 
