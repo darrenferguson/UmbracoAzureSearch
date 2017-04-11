@@ -18,7 +18,7 @@
   <PropertyGroup >
     <BasePackageVersion>1.0.0.0</BasePackageVersion>
     <VersionSuffix></VersionSuffix>
-    <MinUmbracoVersion>7.4.3</MinUmbracoVersion>
+    <MinUmbracoVersion>7.5.3</MinUmbracoVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -62,21 +62,42 @@
 
   <!-- PREPARE FILES -->
   <Target Name="PrepairFiles" DependsOnTargets="Compile">
-
     <ItemGroup>
       <CoreBinFile Include="$(CoreProjectDir)\Bin\Release\Moriyama.AzureSearch.Umbraco.Application.dll" />
       <PackageFile Include="$(MSBuildProjectDirectory)\Package.xml" />
       <NuSpecFile Include="$(MSBuildProjectDirectory)\package.nuspec" />
       <AppPluginFiles Include="$(PropertyEditorProjectDir)\App_Plugins\MoriyamaAzureSearch\**\*" />
-    </ItemGroup>
+      <SampleViews Include="$(PropertyEditorProjectDir)\Views\AzureSearch.cshtml"></SampleViews>
+	  
+	  <ConfigFiles Include="$(PropertyEditorProjectDir)\config\AzureSearch.config"></ConfigFiles>
+	  
+	  
+	</ItemGroup>
+	
     <Copy SourceFiles="@(CoreBinFile)" DestinationFolder="$(BuildDir)\bin" />
     <Copy SourceFiles="@(PackageFile)" DestinationFolder="$(BuildDir)" />
     <Copy SourceFiles="@(CoreBinFile)" DestinationFolder="$(BuildNuGetDir)\lib\net45" />
     <Copy SourceFiles="@(NuSpecFile)" DestinationFolder="$(BuildNuGetDir)" />
+	
     <Copy SourceFiles="@(AppPluginFiles)"
    DestinationFiles="@(AppPluginFiles->'$(BuildDir)\App_Plugins\MoriyamaAzureSearch\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(AppPluginFiles)"
+    
+	<Copy SourceFiles="@(AppPluginFiles)"
    DestinationFiles="@(AppPluginFiles->'$(BuildNuGetDir)\Content\App_Plugins\MoriyamaAzureSearch\%(RecursiveDir)%(Filename)%(Extension)')" />
+   
+    <Copy SourceFiles="@(SampleViews)"
+   DestinationFiles="@(SampleViews->'$(BuildDir)\Views\%(RecursiveDir)%(Filename)%(Extension)')" />
+   
+    <Copy SourceFiles="@(SampleViews)"
+   DestinationFiles="@(SampleViews->'$(BuildNuGetDir)\Content\Views\%(RecursiveDir)%(Filename)%(Extension)')" />
+    
+	 <Copy SourceFiles="@(ConfigFiles)"
+   DestinationFiles="@(ConfigFiles->'$(BuildDir)\config\%(RecursiveDir)%(Filename)%(Extension)')" />
+   
+    <Copy SourceFiles="@(ConfigFiles)"
+   DestinationFiles="@(ConfigFiles->'$(BuildNuGetDir)\Content\config\%(RecursiveDir)%(Filename)%(Extension)')" />
+	
+   
   </Target>
 
   <!-- MANIFEST -->

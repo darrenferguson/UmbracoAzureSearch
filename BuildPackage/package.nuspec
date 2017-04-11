@@ -19,7 +19,7 @@
         <language>en-GB</language>
         <tags>umbraco umbraco7 developer backoffice</tags>
         <dependencies>
-          <dependency id="UmbracoCms.Core" version="7.4.3" />
+          <dependency id="UmbracoCms.Core" version="7.5.3" />
         </dependencies>
     </metadata>    
 </package>

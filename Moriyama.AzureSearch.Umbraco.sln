@@ -16,8 +16,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8B171B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moriyama.AzureSearch.Umbraco.Sandbox", "Moriyama.AzureSearch.Umbraco.Sandbox\Moriyama.AzureSearch.Umbraco.Sandbox.csproj", "{04BACB38-CEB6-4337-9CE8-41D38CCD084E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moriyama.AzureSearch.Examine", "Moriyama.AzureSearch.Examine\Moriyama.AzureSearch.Examine.csproj", "{28FFBE11-840F-42E5-9695-85D4FB2F64EA}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,10 +34,6 @@ Global
 		{04BACB38-CEB6-4337-9CE8-41D38CCD084E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{04BACB38-CEB6-4337-9CE8-41D38CCD084E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{04BACB38-CEB6-4337-9CE8-41D38CCD084E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{28FFBE11-840F-42E5-9695-85D4FB2F64EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{28FFBE11-840F-42E5-9695-85D4FB2F64EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{28FFBE11-840F-42E5-9695-85D4FB2F64EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{28FFBE11-840F-42E5-9695-85D4FB2F64EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

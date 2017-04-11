@@ -8,8 +8,8 @@
       <url>https://our.umbraco.org/projects/developer-tools/diplo-god-mode/</url>
       <requirements>
         <major>7</major>
-        <minor>4</minor>
-        <patch>0</patch>
+        <minor>5</minor>
+        <patch>3</patch>
       </requirements>
     </package>
     <author>

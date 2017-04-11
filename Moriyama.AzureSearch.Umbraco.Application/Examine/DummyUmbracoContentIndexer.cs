@@ -2,7 +2,7 @@
 using System.Xml.Linq;
 using UmbracoExamine;
 
-namespace Moriyama.AzureSearch.Examine
+namespace Moriyama.AzureSearch.Umbraco.Examine
 {
     public class DummyUmbracoContentIndexer : UmbracoContentIndexer
     {

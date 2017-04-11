@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using UmbracoExamine;
 
-namespace Moriyama.AzureSearch.Examine
+namespace Moriyama.AzureSearch.Umbraco.Examine
 {
     public class DummyUmbracoExamineSearcher : UmbracoExamineSearcher
     {

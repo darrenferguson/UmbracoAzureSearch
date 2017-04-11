@@ -177,6 +177,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SqlServerCe, Version=4.0.0.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\UmbracoCms.Core.7.5.3\lib\System.Data.SqlServerCe.dll</HintPath>
@@ -279,6 +280,8 @@
     <Compile Include="AzureSearchServiceClient.cs" />
     <Compile Include="BaseAzureSearch.cs" />
     <Compile Include="Controllers\BackOffice\BackOfficeAzureSearchApiController.cs" />
+    <Compile Include="Examine\DummyUmbracoContentIndexer.cs" />
+    <Compile Include="Examine\DummyUmbracoExamineSearcher.cs" />
     <Compile Include="Helper\SearchContentToEntityBasicMapper.cs" />
     <Compile Include="Interfaces\IAzureSearchClient.cs" />
     <Compile Include="Interfaces\ISearchContent.cs" />
