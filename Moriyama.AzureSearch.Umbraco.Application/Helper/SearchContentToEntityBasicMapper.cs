@@ -12,12 +12,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Helper
             e.Name = item.Name;
             e.Id = item.Id;
             e.ParentId = item.ParentId;
-            e.Key = new System.Guid();
+            e.Key = new System.Guid(item.Key);
             e.Icon = item.GetPropertyValue<string>("Icon");
             e.Trashed = item.GetPropertyValue<bool>("Trashed");
             e.Alias = null;
 
-            var path = item.GetPropertyValue<string[]>("Path");
+            var path = item.Path;
 
             if(path !=null )
                 e.Path = string.Join(",", path);

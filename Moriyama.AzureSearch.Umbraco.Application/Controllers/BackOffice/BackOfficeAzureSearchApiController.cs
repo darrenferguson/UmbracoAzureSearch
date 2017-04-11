@@ -23,7 +23,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 
             var client = new AzureSearchClient(HttpContext.Current.Server.MapPath("/"));
 
-            var searchResults = client.Term(query).Results();
+            var searchResults = client.Term(query + "*").Results();
 
             if (allowedSections.InvariantContains(Constants.Applications.Content))
             {
@@ -37,7 +37,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
                         var entity = SearchContentToEntityBasicMapper.Map(searchResult);
                         entities.Add(entity);
                     }
-
                 }
 
                 result.Add(new EntityTypeSearchResult
@@ -68,7 +67,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 
             if (allowedSections.InvariantContains(Constants.Applications.Members))
             {
-
                 var entities = new List<EntityBasic>();
                 foreach (var searchResult in searchResults.Content)
                 {
@@ -88,10 +86,5 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 
             return result;
         }
-
-        // name":"Antonio Da Ros","id":23153,"icon":"icon-windows color-blue","trashed":false,
-        // "key":"00000000-0000-0000-0000-000000000000","parentId":2921,"alias":null,
-        // "path":"-1,1063,2652,2662,2921,23153",
-        // "metaData":{"contentType":"brandtag","Url":"/categories/decorative-art/glassware/antonio-da-ros/"}
     }
 }

@@ -406,10 +406,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {"Path", content.Path.Split(',') },
                 {"ParentId", content.ParentId},
                 {"UpdateDate", content.UpdateDate},
-                {"Trashed", content.Trashed}
-                
+                {"Trashed", content.Trashed},
+                {"Key", content.Key.ToString() }
             };
             
+            
+
             c.Add("ContentTypeId", content.ContentTypeId);
             c.Add("CreateDate", content.CreateDate);
             c.Add("CreatorId", content.CreatorId);
@@ -476,7 +478,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return new[]
             {
                  new Field("Id", DataType.String) { IsKey = true, IsFilterable = true, IsSortable = true },
+
                  new Field("Name", DataType.String) { IsSortable = true, IsSearchable = true, IsRetrievable = true},
+                 new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
 
                  new Field("IsContent", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
                  new Field("IsMedia", DataType.Boolean) { IsFilterable = true, IsFacetable = true },

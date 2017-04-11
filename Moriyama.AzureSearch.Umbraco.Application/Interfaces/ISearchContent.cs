@@ -8,7 +8,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         int Id { get; set; }
 
         string Name { get; set; }
-        
+        string Key { get; set; }
         bool Published { get; set; }
 
         bool IsContent { get; set; }
@@ -17,6 +17,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         int SortOrder { get; set; }
         int Level { get; set; }
+
+        string[] Path { get; set; }
 
         int ParentId { get; set; }
 
