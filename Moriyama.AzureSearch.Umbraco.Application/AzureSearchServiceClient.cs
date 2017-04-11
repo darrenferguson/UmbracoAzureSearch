@@ -364,7 +364,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             result.Add("IsContent", false);
             result.Add("IsMember", false);
             result.Add("ContentTypeAlias", content.ContentType.Alias);
-
             result.Add("Icon", content.ContentType.Icon);
 
             return result;
@@ -374,7 +373,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var result = FromUmbracoContent((ContentBase) content, searchFields);
             
-
             result.Add("IsContent", true);
             result.Add("IsMedia", false);
             result.Add("IsMember", false);
@@ -397,6 +395,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         
         private Document FromUmbracoContent(IContentBase content, SearchField[] searchFields)
         {
+
+            
             var c = new Document
             {
                 {"Id", content.Id.ToString()},
@@ -409,8 +409,19 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {"Trashed", content.Trashed},
                 {"Key", content.Key.ToString() }
             };
-            
-            
+
+            bool cancelIndex = AzureSearch.FireContentIndexing(
+                new AzureSearchEventArgs()
+                {
+                    Item = content,
+                    Entry = c
+                });
+
+            if (cancelIndex)
+            {
+                // cancel was set in an event, so we don't index this item. 
+                return null;
+            }
 
             c.Add("ContentTypeId", content.ContentTypeId);
             c.Add("CreateDate", content.CreateDate);
@@ -468,6 +479,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     }
                 }
             }
+
+            AzureSearch.FireContentIndexed(
+                new AzureSearchEventArgs()
+                {
+                    Item = content,
+                    Entry = c
+                });
 
             return c;
         }

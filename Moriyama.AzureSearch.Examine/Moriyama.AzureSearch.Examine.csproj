@@ -261,6 +261,12 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Moriyama.AzureSearch.Umbraco.Application\Moriyama.AzureSearch.Umbraco.Application.csproj">
+      <Project>{16c2b0b3-a208-4498-96ba-dee25a49a581}</Project>
+      <Name>Moriyama.AzureSearch.Umbraco.Application</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

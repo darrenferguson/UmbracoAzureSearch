@@ -273,6 +273,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AzureSearch.cs" />
     <Compile Include="AzureSearchClient.cs" />
     <Compile Include="AzureSearchContext.cs" />
     <Compile Include="AzureSearchServiceClient.cs" />

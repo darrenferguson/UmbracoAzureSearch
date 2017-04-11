@@ -1,11 +1,21 @@
 ﻿@inherits Umbraco.Web.Mvc.UmbracoTemplatePage
 @using Moriyama.AzureSearch.Umbraco.Application
+@using Moriyama.AzureSearch.Umbraco.Application.Interfaces
 @{
-	Layout = "Master.cshtml";
+    Layout = "Master.cshtml";
 
     // This logic should be in a controller - just here in the package as an example of use.
 
     var azureSearchClient = AzureSearchContext.Instance.SearchClient;
+
+
+    var term = Request["search"];
+
+    ISearchResult result = null;
+    if(!string.IsNullOrEmpty(term))
+    {
+        result = azureSearchClient.Term(term).Results();
+    }
 
 }
 <div role="content">
@@ -16,10 +26,27 @@
                 <h1>Azure Search</h1>
 
                 <form action="@(Model.Content.Url)AzureSearch" method="GET">
-                    <input type="text" name="search" placeholder="Enter a search term" />
+                    <input type="text" name="search" id="search" placeholder="Enter a search term" />
                     <input type="submit" value="Search" />
                 </form>
 
+                @if(!string.IsNullOrEmpty(term))
+                {
+                    <h2>You search for <b>@term</b></h2>
+
+                    if(result != null) { 
+                    <p>
+                        <em>Your search returned @result.Count results</em>
+                    </p>
+
+                        foreach(var item in result.Content)
+                        {
+                            <p>
+                                @item.Name
+                            </p>
+                        }
+                   }
+                }
             </div>
         </div>
     </section>
