@@ -1,0 +1,29 @@
+﻿@inherits Umbraco.Web.Mvc.UmbracoTemplatePage
+@using Moriyama.AzureSearch.Umbraco.Application
+@{
+	Layout = "Master.cshtml";
+
+    // This logic should be in a controller - just here in the package as an example of use.
+
+    var azureSearchClient = AzureSearchContext.Instance.SearchClient;
+
+}
+<div role="content">
+    <section class="light blogarchive equalizer">
+        <div class="container">
+            <div class="row">
+                
+                <h1>Azure Search</h1>
+
+                <form action="@(Model.Content.Url)AzureSearch" method="GET">
+                    <input type="text" name="search" placeholder="Enter a search term" />
+                    <input type="submit" value="Search" />
+                </form>
+
+            </div>
+        </div>
+    </section>
+</div>
+
+
+	

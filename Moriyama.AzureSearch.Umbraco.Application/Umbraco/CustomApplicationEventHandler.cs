@@ -29,6 +29,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             ContentService.Published += ContentServicePublished;
             ContentService.Trashed += ContentServiceTrashed;
             ContentService.Deleted += ContentServiceDeleted;
+            ContentService.EmptiedRecycleBin += ContentServiceEmptiedRecycleBin;
 
             MediaService.Saved += MediaServiceSaved;
             MediaService.Trashed += MediaServiceTrashed;
@@ -36,6 +37,16 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 
             MemberService.Saved += MemberServiceSaved;
             MemberService.Deleted += MemberServiceDeleted;
+        }
+
+        private void ContentServiceEmptiedRecycleBin(IContentService sender, RecycleBinEventArgs e)
+        {
+            var azureSearchServiceClient = AzureSearchContext.Instance.SearchIndexClient;
+
+            foreach (var id in e.Ids)
+            {
+                azureSearchServiceClient.Delete(id);
+            }
         }
 
         private void MediaServiceDeleted(IMediaService sender, DeleteEventArgs<IMedia> e)

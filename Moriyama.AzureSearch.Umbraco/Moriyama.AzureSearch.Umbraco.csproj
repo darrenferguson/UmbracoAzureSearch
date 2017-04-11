@@ -364,6 +364,10 @@
     <Content Include="Views\Home.cshtml" />
     <Content Include="Views\Master.cshtml" />
     <Content Include="Views\TextPage.cshtml" />
+    <Content Include="Views\Partials\BottomNavigation.cshtml" />
+    <Content Include="Views\Partials\Grid\Fanoe.cshtml" />
+    <Content Include="Views\Partials\MainNavigation.cshtml" />
+    <Content Include="Views\AzureSearch.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
