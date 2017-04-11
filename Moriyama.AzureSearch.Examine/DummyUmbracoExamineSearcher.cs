@@ -11,36 +11,40 @@ namespace Moriyama.AzureSearch.Examine
     {
         public override ISearchResults Search(ISearchCriteria searchParams)
         {
-            // Video Nasty
-            var s = searchParams.ToString();
-            int id = 0;
+            // Doing this will make Umbraco fallback to the database.
+            // We could in future implement this to make it come from Azure search.
+            throw new FileNotFoundException("");
 
-            try
-            {
-                s = s.Substring(s.IndexOf("NodeId:") + 7);
-                s = s.Substring(0, s.IndexOf(" "));
+            //// Video Nasty
+            //var s = searchParams.ToString();
+            //int id = 0;
 
-                int.TryParse(s, out id);
+            //try
+            //{
+            //    s = s.Substring(s.IndexOf("NodeId:") + 7);
+            //    s = s.Substring(0, s.IndexOf(" "));
 
-                if(id > 0)
-                {
-                    var client = AzureSearchContext.Instance;
-                    var media = client.SearchClient.Media().Filter("Id", id.ToString()).Results();
+            //    int.TryParse(s, out id);
 
-                    if(media.Count == 1)
-                    {
-                        var mediaItem = media.Content[0];
+            //    if(id > 0)
+            //    {
+            //        var client = AzureSearchContext.Instance;
+            //        var media = client.SearchClient.Media().Filter("Id", id.ToString()).Results();
 
-                    }
-                }
+            //        if(media.Count == 1)
+            //        {
+            //            var mediaItem = media.Content[0];
 
-            }
-            catch (Exception ex)
-            {
+            //        }
+            //    }
 
-            }
+            //}
+            //catch (Exception ex)
+            //{
 
-            throw new FileNotFoundException("");       
+            //}
+
+            //throw new FileNotFoundException("");       
                     
         }
     }

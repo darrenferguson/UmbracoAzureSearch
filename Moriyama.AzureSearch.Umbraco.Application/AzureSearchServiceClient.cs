@@ -360,6 +360,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var result = FromUmbracoContent((ContentBase)content, searchFields);
 
+            var helper = new UmbracoHelper(UmbracoContext.Current);
+            var media = helper.TypedMedia(content.Id);
+
+            if (media != null)
+            {
+                result.Add("Url", media.Url);
+            }
+
             result.Add("IsMedia", true);
             result.Add("IsContent", false);
             result.Add("IsMember", false);
@@ -381,10 +389,21 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             result.Add("WriterId", content.WriterId);
             result.Add("ContentTypeAlias", content.ContentType.Alias);
 
+            if (content.Published)
+            {
+                var helper = new UmbracoHelper(UmbracoContext.Current);
+                var publishedContent = helper.TypedContent(content.Id);
+
+                if (publishedContent != null)
+                {
+                    result.Add("Url", publishedContent.Url);
+                }
+            }
+
             // SLOW:
             //var isProtected = UmbracoContext.Current.Application.Services.PublicAccessService.IsProtected(content.Path);
             //result.Add("IsProtected", content.ContentType.Alias);
-            
+
             if (content.Template != null)
                 result.Add("Template", content.Template.Alias);
 
@@ -499,6 +518,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                  new Field("Name", DataType.String) { IsSortable = true, IsSearchable = true, IsRetrievable = true},
                  new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
+
+                 new Field("Url", DataType.String) { IsSearchable = true, IsRetrievable = true},
 
                  new Field("IsContent", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
                  new Field("IsMedia", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
