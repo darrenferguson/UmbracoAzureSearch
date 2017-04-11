@@ -7,8 +7,7 @@
     // This logic should be in a controller - just here in the package as an example of use.
 
     var azureSearchClient = AzureSearchContext.Instance.SearchClient;
-
-
+    
     var term = Request["search"];
 
     ISearchResult result = null;
@@ -16,7 +15,6 @@
     {
         result = azureSearchClient.Term(term).Results();
     }
-
 }
 <div role="content">
     <section class="light blogarchive equalizer">
@@ -39,12 +37,14 @@
                         <em>Your search returned @result.Count results</em>
                     </p>
 
-                        foreach(var item in result.Content)
+                        <ul>
+                        @foreach(var item in result.Content)
                         {
-                            <p>
-                                @item.Name
-                            </p>
+                            <li>
+                                <a href="@item.Url">@item.Id @item.Name</a>
+                            </li>
                         }
+                        </ul>
                    }
                 }
             </div>

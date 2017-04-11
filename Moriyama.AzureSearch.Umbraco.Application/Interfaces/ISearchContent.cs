@@ -10,6 +10,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         string Name { get; set; }
         string Key { get; set; }
         bool Published { get; set; }
+        string Url { get; set; }
 
         bool IsContent { get; set; }
         bool IsMedia { get; set; }

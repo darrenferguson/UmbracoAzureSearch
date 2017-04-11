@@ -9,6 +9,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 
         public string Key { get; set; }
 
+        public string Url { get; set; }
+
         public bool IsContent { get; set; }
         public bool IsMedia { get; set; }
         public bool IsMember { get; set; }
