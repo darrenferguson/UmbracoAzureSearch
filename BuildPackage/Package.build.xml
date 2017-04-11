@@ -17,7 +17,7 @@
   <!-- PROPERTIES -->
   <PropertyGroup >
     <BasePackageVersion>1.0.0.0</BasePackageVersion>
-    <VersionSuffix>b</VersionSuffix>
+    <VersionSuffix></VersionSuffix>
     <MinUmbracoVersion>7.4.3</MinUmbracoVersion>
   </PropertyGroup>
 
@@ -74,9 +74,9 @@
     <Copy SourceFiles="@(CoreBinFile)" DestinationFolder="$(BuildNuGetDir)\lib\net45" />
     <Copy SourceFiles="@(NuSpecFile)" DestinationFolder="$(BuildNuGetDir)" />
     <Copy SourceFiles="@(AppPluginFiles)"
-   DestinationFiles="@(AppPluginFiles->'$(BuildDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+   DestinationFiles="@(AppPluginFiles->'$(BuildDir)\App_Plugins\MoriyamaAzureSearch\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(AppPluginFiles)"
-   DestinationFiles="@(AppPluginFiles->'$(BuildNuGetDir)\Content\%(RecursiveDir)%(Filename)%(Extension)')" />
+   DestinationFiles="@(AppPluginFiles->'$(BuildNuGetDir)\Content\App_Plugins\MoriyamaAzureSearch\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
   <!-- MANIFEST -->
