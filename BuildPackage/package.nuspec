@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
-        <id>AzureSearch.Umbraco</id>
+        <id>Moriyama.AzureSearch.Umbraco</id>
         <version>1.0.0</version>
-        <title>Azure Search For Umbraco</title>
+        <title>Moriyama Azure Search For Umbraco</title>
         <authors>Moriyama</authors>
         <owners>Darren Ferguson</owners>
         <projectUrl>http://www.moriyama.co.uk/</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>
-		  Readme
+		  Azure search for Umbraco allows the replacement of Examine for back office and Front end website search.
 		</description>
         <summary>
-		God Mode is a custom Umbraco 7 tree aimed at Developers to make it easy to locate, search and query your Umbraco 7 assets (doctypes, templates, property editors, media, content, controllers, models etc)
+		This may be useful if you are load balancing or have large amounts of content in the Umbraco database.
+
+When you have large amounts of content - Examine indexes can take a long time to build at startup - and if you scale out your Umbraco site, each new instance needs to build indexes causing a slow statup.
+
+Azure search, is search as a service, which means a highly scalable index, that is shared by all Umbraco instances and doesn't require app pool resources when Umbraco starts.
         </summary>
         <copyright>Moriyama</copyright>
         <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
@@ -20,6 +24,12 @@
         <tags>umbraco umbraco7 developer backoffice</tags>
         <dependencies>
           <dependency id="UmbracoCms.Core" version="7.5.3" />
+		  <dependency id="Microsoft.Azure.Search" version="1.1.2" />
+		  <dependency id="Microsoft.Rest.ClientRuntime" version="1.8.3" />
+		  <dependency id="Microsoft.Rest.ClientRuntime.Azure" version="2.5.2" />
+		  
+		  <dependency id="Microsoft.Web.Xdt" version="2.1.1" />
+		    
         </dependencies>
     </metadata>    
 </package>

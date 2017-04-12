@@ -63,7 +63,12 @@
   <!-- PREPARE FILES -->
   <Target Name="PrepairFiles" DependsOnTargets="Compile">
     <ItemGroup>
-      <CoreBinFile Include="$(CoreProjectDir)\Bin\Release\Moriyama.AzureSearch.Umbraco.Application.dll" />
+      <CoreBinFile Include="$(CoreProjectDir)\Bin\Release\Moriyama.AzureSearch.Umbraco.Application.dll" />  
+	  <AzureFiles Include="$(CoreProjectDir)\Bin\Release\Microsoft.Azure.Search.*" />
+	  <RestFiles Include="$(CoreProjectDir)\Bin\Release\Microsoft.Rest.*" />	  
+	  <XdtFiles Include="$(CoreProjectDir)\Bin\Release\Microsoft.Web.XmlTransform.*" />
+	  
+	  
       <PackageFile Include="$(MSBuildProjectDirectory)\Package.xml" />
       <NuSpecFile Include="$(MSBuildProjectDirectory)\package.nuspec" />
       <AppPluginFiles Include="$(PropertyEditorProjectDir)\App_Plugins\MoriyamaAzureSearch\**\*" />
@@ -75,6 +80,10 @@
 	</ItemGroup>
 	
     <Copy SourceFiles="@(CoreBinFile)" DestinationFolder="$(BuildDir)\bin" />
+	<Copy SourceFiles="@(AzureFiles)" DestinationFolder="$(BuildDir)\bin" />
+	<Copy SourceFiles="@(RestFiles)" DestinationFolder="$(BuildDir)\bin" />
+	<Copy SourceFiles="@(XdtFiles)" DestinationFolder="$(BuildDir)\bin" />
+	
     <Copy SourceFiles="@(PackageFile)" DestinationFolder="$(BuildDir)" />
     <Copy SourceFiles="@(CoreBinFile)" DestinationFolder="$(BuildNuGetDir)\lib\net45" />
     <Copy SourceFiles="@(NuSpecFile)" DestinationFolder="$(BuildNuGetDir)" />

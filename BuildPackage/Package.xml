@@ -2,10 +2,10 @@
 <umbPackage>
   <info>
     <package>
-      <name>Azure Search for Umbraco</name>
+      <name>Moriyama Azure Search for Umbraco</name>
       <version>1.0.0</version>
       <license url="http://opensource.org/licenses/MIT">MIT License</license>
-      <url>https://our.umbraco.org/projects/developer-tools/diplo-god-mode/</url>
+      <url>https://our.umbraco.org/projects/developer-tools/moriyama-azure-search/</url>
       <requirements>
         <major>7</major>
         <minor>5</minor>
@@ -17,7 +17,16 @@
       <website>http://www.moriyama.co.uk/</website>
     </author>
     <readme>
-      <![CDATA[Please See: the url]]>
+      <![CDATA[<p>Azure search for Umbraco allows the replacement of Examine for back office and Front end website search.</p>
+	  
+	  <p><b>Important: </b>Please do refer to the installation instructions on the project page. Post install you may need to modify your web.config to redirect from NewtonSoftJson 0.0.0.0-10.0.0.0 to 6.0.0.0 (by default it redirects 0.0.0.0-7.0.0.0 to 6.0.0.0). If you aren't sure how to do this, you shouldn't continue with this install, and your Umbraco install will likely be broken if you do.</p>
+
+<p>This package may be useful if you are load balancing or have large amounts of content in the Umbraco database.</p>
+
+<p>When you have large amounts of content - Examine indexes can take a long time to build at startup - and if you scale out your Umbraco site, each new instance needs to build indexes causing a slow statup.</p>
+
+<p>Azure search, is search as a service, which means a highly scalable index, that is shared by all Umbraco instances and doesn't require app pool resources when Umbraco starts.</p>
+	  ]]>
     </readme>
   </info>
 
@@ -29,10 +38,25 @@
   <Languages />
   <DataTypes />
 
-  <Actions/>
+  <Actions>
+  
+ 
+    <Action runat="install" alias="addDashboardSection" dashboardAlias="moriyamaAzureSearch">
+      <section>
+        <areas>
+          <area>developer</area>
+        </areas>
+        <tab caption="Moriyama Azure Search">
+          <control>/App_Plugins/MoriyamaAzureSearch/dashboard.html</control>
+        </tab>
+      </section>
+    </Action>
+	
+	<Action runat="install" undo="false" alias="PNFM.TransformConfig" file="~/web.config" xdtfile="~/App_Plugins/MoriyamaAzureSearch/Config/install.xdt"></Action>
+	
+  </Actions>
 
   <control />
-
   <files />
 
 </umbPackage>
