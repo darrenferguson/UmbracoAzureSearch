@@ -22,7 +22,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             Mapper.CreateMap<Index, SearchIndex>();
 
             var appRoot = HttpContext.Current.Server.MapPath("/");
-            AzureSearchContext.Instance.SearchClient = new AzureSearchClient(appRoot);
+            AzureSearchContext.Instance.SetupSearchClient<AzureSearchClient>(appRoot);
             AzureSearchContext.Instance.SearchIndexClient = new AzureSearchIndexClient(appRoot);
 
             ContentService.Saved += ContentServiceSaved;

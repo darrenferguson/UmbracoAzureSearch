@@ -1,5 +1,4 @@
-﻿using System.Web;
-using Umbraco.Web;
+﻿using Umbraco.Web;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 {
@@ -7,7 +6,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
     {
         public static AzureSearchClient SearchContent(this UmbracoHelper helper)
         {
-            return (AzureSearchClient)AzureSearchContext.Instance.SearchClient;
+            return (AzureSearchClient)AzureSearchContext.Instance.GetSearchClient();
         }
     }
 }

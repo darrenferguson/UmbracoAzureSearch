@@ -1,10 +1,13 @@
-﻿using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
+﻿using System;
+using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchContext
     {
-        private static AzureSearchContext instance;
+        private static AzureSearchContext _instance;
+        private object[] _args;
+        private Type _azureSearchClientType;
 
         private AzureSearchContext() { }
 
@@ -12,15 +15,30 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    instance = new AzureSearchContext();
+                    _instance = new AzureSearchContext();
                 }
-                return instance;
+                return _instance;
             }
         }
 
-        public IAzureSearchClient SearchClient { get; set; }
         public IAzureSearchIndexClient SearchIndexClient { get; set; }
+
+        public void SetupSearchClient<T>(params object[] args) where T : IAzureSearchClient
+        {
+            _args = args;
+            _azureSearchClientType = typeof(T);
+        }
+
+        public IAzureSearchClient GetSearchClient()
+        {
+            if (_azureSearchClientType == null)
+            {
+                throw new ArgumentException("_azureSearchClientType has not been set");
+            }
+
+            return (IAzureSearchClient)Activator.CreateInstance(_azureSearchClientType, _args);
+        }
     }
 }
