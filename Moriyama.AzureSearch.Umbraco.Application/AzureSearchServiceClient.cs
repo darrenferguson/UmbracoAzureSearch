@@ -191,7 +191,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var documents = new List<Document>();
             var config = GetConfiguration();
 
-            documents.Add(FromUmbracoContent(content, config.SearchFields));
+            documents.Add(FromUmbracoMedia(content, config.SearchFields));
             IndexContentBatch(documents);
         }
 
