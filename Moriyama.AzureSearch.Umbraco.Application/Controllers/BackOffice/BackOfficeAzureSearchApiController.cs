@@ -1,8 +1,7 @@
-﻿using Moriyama.AzureSearch.Umbraco.Application.Helper;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Http;
+using Moriyama.AzureSearch.Umbraco.Application.Helper;
 using Umbraco.Core;
 using Umbraco.Web.Editors;
 using Umbraco.Web.Models.ContentEditing;
@@ -21,7 +20,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 
             var result = new List<EntityTypeSearchResult>();
 
-            var client = AzureSearchContext.Instance.SearchClient;
+            var client = AzureSearchContext.Instance.GetSearchClient();
 
             var searchResults = client.Term(query + "*").Results();
 
