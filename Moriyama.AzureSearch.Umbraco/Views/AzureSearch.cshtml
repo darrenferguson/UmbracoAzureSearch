@@ -1,26 +1,46 @@
 ﻿@inherits Umbraco.Web.Mvc.UmbracoTemplatePage
+@using System.Text
 @using Moriyama.AzureSearch.Umbraco.Application
+@using Moriyama.AzureSearch.Umbraco.Application.Helper
 @using Moriyama.AzureSearch.Umbraco.Application.Interfaces
 @{
     Layout = "Master.cshtml";
 
     // This logic should be in a controller - just here in the package as an example of use.
 
-    var azureSearchClient = AzureSearchContext.Instance.SearchClient;
-    
+    var azureSearchClient = AzureSearchContext.Instance.GetSearchClient();
+
     var term = Request["search"];
 
     ISearchResult result = null;
-    if(!string.IsNullOrEmpty(term))
+    var facetLabel = string.Empty;
+
+    if (!string.IsNullOrEmpty(term))
     {
-        result = azureSearchClient.Term(term).Results();
+        // set query term
+        azureSearchClient.Term(term + "*");
+
+        // set facetable fields
+        var facetableFields = new[] { "IsContent", "IsMedia", "IsMember" };
+        facetableFields.ForEach(x => azureSearchClient.Facet(x));
+
+        // get results
+        result = azureSearchClient.Page(1).PageSize(5).Results();
+
+        facetLabel = string.Join(", ",
+                result.Facets.Select(x =>
+                {
+                    var boolFacet = SearchFacetHelper.AsBoolSearchFacet(x);
+                    return string.Format("{0} {1}", boolFacet.Name, boolFacet.TrueCount);
+                })
+            );
     }
 }
 <div role="content">
     <section class="light blogarchive equalizer">
         <div class="container">
             <div class="row">
-                
+
                 <h1>Azure Search</h1>
 
                 <form action="@(Model.Content.Url)AzureSearch" method="GET">
@@ -28,29 +48,27 @@
                     <input type="submit" value="Search" />
                 </form>
 
-                @if(!string.IsNullOrEmpty(term))
+                @if (!string.IsNullOrEmpty(term))
                 {
                     <h2>You search for <b>@term</b></h2>
 
-                    if(result != null) { 
-                    <p>
-                        <em>Your search returned @result.Count results</em>
-                    </p>
-
+                    if (result != null)
+                    {
+                        <p>
+                            <em>Your search returned @result.Count results</em>
+                        </p>
+                        <p>@facetLabel</p>
                         <ul>
-                        @foreach(var item in result.Content)
-                        {
-                            <li>
-                                <a href="@item.Url">@item.Id @item.Name</a>
-                            </li>
-                        }
+                            @foreach (var item in result.Content)
+                            {
+                                <li>
+                                    <a href="@item.Url">@item.Id @item.Name</a>
+                                </li>
+                            }
                         </ul>
-                   }
+                    }
                 }
             </div>
         </div>
     </section>
 </div>
-
-
-	

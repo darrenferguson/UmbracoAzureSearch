@@ -33,13 +33,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private bool _content;
         private bool _media;
 
+        private int _page;
         private int _pageSize;
         private bool _populateContentProperties = true;
 
         public AzureSearchClient(string path) : base(path)
         {
             _pageSize = 999;
-
+            _page = 1;
             _filters = new List<string>();
             _orderBy = new List<string>();
             _facets = new List<string>();
@@ -85,8 +86,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             sp.IncludeTotalResultCount = true;
 
+            sp.Top = _pageSize;
+            sp.Skip = (_page - 1) * _pageSize;
             sp.OrderBy = _orderBy;
             sp.Facets = _facets;
+
             return sp;
         }
 
@@ -115,28 +119,30 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             {
                 foreach (var facet in response.Facets)
                 {
-                    foreach (var facetResult in facet.Value)
+                    var searchFacet = new SearchFacet()
                     {
-                        results.Facets.Add(new SearchFacet()
-                        {
-                            Count = facetResult.Count,
-                            Name = facetResult.Value.ToString()
-                        });
-                    }
+                        Name = facet.Key,
+                        Items = facet.Value.Select(x => new KeyValuePair<string, long>(x.Value.ToString(), x.Count.HasValue ? x.Count.Value : 0))
+                    };
+
+                    results.Facets.Add(searchFacet);
                 }
             }
 
             if (response.Count != null)
+            {
                 results.Count = (int)response.Count;
+            }
 
             return results;
         }
 
         private ISearchContent FromDocument(Document d)
         {
-            var searchContent = new SearchContent();
-            searchContent.Properties = new Dictionary<string, object>();
-
+            var searchContent = new SearchContent
+            {
+                Properties = new Dictionary<string, object>()
+            };
 
             var t = searchContent.GetType();
             searchContent.Id = Convert.ToInt32(d["Id"]);
@@ -148,7 +154,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {
                     searchContent.Properties.Add(key, d[key]);
                 }
-                else if (property.CanWrite && property.Name != "Id")
+                else if (property != null && (property.CanWrite && property.Name != "Id"))
                 {
 
                     object val = d[key];
@@ -156,10 +162,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     if (val == null)
                         continue;
 
-                    if (val.GetType() == typeof(System.Int64))
+                    if (val is long)
                         val = Convert.ToInt32(val);
 
-                    if (val.GetType() == typeof(System.DateTimeOffset))
+                    if (val is DateTimeOffset)
                         val = ((DateTimeOffset)val).DateTime;
 
                     if (property.PropertyType == val.GetType())
@@ -168,16 +174,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
 
             return searchContent;
-        }
-
-        public ISearchResult Results(int page)
-        {
-
-            var sp = GetSearchParameters();
-            sp.Top = _pageSize;
-            sp.Skip = (page - 1) * _pageSize;
-
-            return Results(sp);
         }
 
         public IAzureSearchClient Term(string query)
@@ -189,6 +185,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public IAzureSearchClient OrderBy(string fieldName)
         {
             _orderBy.Add(fieldName);
+            return this;
+        }
+
+        public IAzureSearchClient Page(int page)
+        {
+            _page = page;
             return this;
         }
 
