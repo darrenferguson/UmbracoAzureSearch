@@ -6,7 +6,7 @@
 
     // This logic should be in a controller - just here in the package as an example of use.
 
-    var azureSearchClient = AzureSearchContext.Instance.SearchClient;
+    var azureSearchClient = AzureSearchContext.Instance.GetSearchClient();
     
     var term = Request["search"];
 
