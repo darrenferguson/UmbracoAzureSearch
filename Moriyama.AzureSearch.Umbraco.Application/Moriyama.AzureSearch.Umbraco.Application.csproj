@@ -287,6 +287,7 @@
     <Compile Include="Examine\DummyUmbracoContentIndexer.cs" />
     <Compile Include="Examine\DummyUmbracoExamineSearcher.cs" />
     <Compile Include="Helper\SearchContentToEntityBasicMapper.cs" />
+    <Compile Include="Helper\SearchFacetHelper.cs" />
     <Compile Include="Interfaces\IAzureSearchClient.cs" />
     <Compile Include="Interfaces\ISearchContent.cs" />
     <Compile Include="Interfaces\ISearchFacet.cs" />
@@ -295,6 +296,7 @@
     <Compile Include="Models\BackOfficeSearchResult.cs" />
     <Compile Include="Models\BaseContent.cs" />
     <Compile Include="Models\SearchContent.cs" />
+    <Compile Include="Models\BoolSearchFacet.cs" />
     <Compile Include="Models\SearchFacet.cs" />
     <Compile Include="Models\SearchResult.cs" />
     <Compile Include="Helper\SearchContentExtensions.cs" />

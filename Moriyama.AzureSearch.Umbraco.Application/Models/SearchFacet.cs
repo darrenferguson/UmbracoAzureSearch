@@ -1,16 +1,12 @@
-﻿using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Models
 {
     public class SearchFacet : ISearchFacet
     {
-        public long? Count { get; set; }
-
         public string Name { get; set; }
+
+        public IEnumerable<KeyValuePair<string, long>> Items { get; set; }
     }
 }
