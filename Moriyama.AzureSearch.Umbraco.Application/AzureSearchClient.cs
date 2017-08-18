@@ -270,6 +270,17 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _facets.Add(facet);
             return this;
         }
+
+        public IAzureSearchClient Facet(string[] facets)
+        {
+            foreach (var facet in facets)
+            {
+                _facets.Add(facet);
+            }
+
+            return this;
+        }
+
         public IAzureSearchClient Any(string field)
         {
             _filters.Add(string.Format("{0}/any()", field));
