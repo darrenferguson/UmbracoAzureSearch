@@ -378,6 +378,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             return this;
         }
+
         public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
         {
             var client = GetClient();

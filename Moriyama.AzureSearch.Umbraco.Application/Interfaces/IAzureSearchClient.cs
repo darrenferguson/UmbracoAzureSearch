@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Azure.Search.Models;
+using System;
 using System.Collections.Generic;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
@@ -37,5 +38,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchClient Contains(IEnumerable<string> fields, IEnumerable<string> values);
 
         IAzureSearchClient Any(string field);
+
+        IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true);
     }
 }
