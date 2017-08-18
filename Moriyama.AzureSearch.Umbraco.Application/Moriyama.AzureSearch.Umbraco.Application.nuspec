@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Umbraco.Azure.Search.Core</id>
+    <version>1.2.0</version>
+    <title>Umbraco Azure Search Core</title>
+    <authors>Moriyama Ldt</authors>
+    <owners>Moriyama Ldt</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>UmbracoAzureSearch allows you to completely replace Examine from your Umbraco website and replace it with Azure Search.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>Umbraco Azure Search Moriyama</tags>
+	 <!-- Dependencies are automatically installed when the package is installed -->
+    <dependencies>
+        <dependency id="UmbracoCms.Core" version="7.5.3" />        
+		<dependency id="Microsoft.Azure.Search" version="1.1.2" />
+    </dependencies>
+  </metadata>
+</package>
