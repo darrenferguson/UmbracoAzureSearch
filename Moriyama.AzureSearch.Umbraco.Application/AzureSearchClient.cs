@@ -52,9 +52,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
-        public IAzureSearchClient DocumentTypes(string[] typeAliases)
+        public IAzureSearchClient DocumentTypes(IEnumerable<string> typeAliases)
         {
-
             var combinedFilter = string.Format("({0})",
                 string.Join(" or ",
                     typeAliases.Select(x =>

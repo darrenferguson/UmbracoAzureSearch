@@ -12,7 +12,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         IAzureSearchClient Term(string query);
         IAzureSearchClient DocumentType(string typeAlias);
-        IAzureSearchClient DocumentTypes(string[] typeAlias);
+        IAzureSearchClient DocumentTypes(IEnumerable<string> typeAlias);
         IAzureSearchClient OrderBy(string fieldName);
 
         IAzureSearchClient Content();
