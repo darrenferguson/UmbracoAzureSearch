@@ -52,7 +52,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
-        public IAzureSearchClient DocumentTypes(IEnumerable<string> typeAliases)
+        public IAzureSearchClient DocumentTypes(string[] typeAliases)
         {
 
             var combinedFilter = string.Format("({0})",
@@ -271,7 +271,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
-        public IAzureSearchClient Facet(string[] facets)
+        public IAzureSearchClient Facets(string[] facets)
         {
             foreach (var facet in facets)
             {

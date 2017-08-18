@@ -11,6 +11,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         IAzureSearchClient Term(string query);
         IAzureSearchClient DocumentType(string typeAlias);
+        IAzureSearchClient DocumentTypes(string[] typeAlias);
         IAzureSearchClient OrderBy(string fieldName);
 
         IAzureSearchClient Content();
@@ -28,7 +29,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchClient DateRange(string field, DateTime? start, DateTime? end);
 
         IAzureSearchClient Facet(string facet);
-        IAzureSearchClient Facet(string[] facets);
+        IAzureSearchClient Facets(string[] facets);
 
         IAzureSearchClient Contains(string field, string value);
         IAzureSearchClient Contains(string field, IEnumerable<string> values);
