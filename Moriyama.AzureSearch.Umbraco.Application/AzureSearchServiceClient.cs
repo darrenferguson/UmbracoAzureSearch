@@ -12,17 +12,18 @@ using Umbraco.Core.Persistence;
 using Umbraco.Web;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using Moriyama.AzureSearch.Umbraco.Application.Extensions;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchIndexClient : BaseAzureSearch, IAzureSearchIndexClient
-    { 
+    {
         // Number of docs to be processed at a time.
         const int BatchSize = 999;
 
         public AzureSearchIndexClient(string path) : base(path)
         {
-            
+
         }
 
         private string SessionFile(string sessionId)
@@ -32,45 +33,17 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         }
 
         public string DropCreateIndex()
-        {    
+        {
             var serviceClient = GetClient();
             var indexes = serviceClient.Indexes.List().Indexes;
 
-            foreach(var index in indexes)
-                if(index.Name == _config.IndexName)
+            foreach (var index in indexes)
+                if (index.Name == _config.IndexName)
                     serviceClient.Indexes.Delete(_config.IndexName);
 
             var customFields = new List<Field>();
             customFields.AddRange(GetStandardUmbracoFields());
-
-            foreach(var field in _config.SearchFields)
-            {
-                DataType t = DataType.String;
-                switch (field.Type.ToLower())
-                {
-                    case "bool":
-                        t = DataType.Boolean;
-                        break;
-                    case "int":
-                        t = DataType.Int32;
-                        break;
-                    case "collection":
-                        t = DataType.Collection(DataType.String);
-                        break;
-                }
-
-                var f = new Field()
-                {
-                    Name = field.Name,
-                    Type = t,
-                    IsFacetable = field.IsFacetable,
-                    IsFilterable = field.IsFilterable,
-                    IsSortable = field.IsSortable,
-                    IsSearchable = field.IsSearchable
-                };
-                
-                customFields.Add(f);
-            }
+            customFields.AddRange(_config.SearchFields.Select(x => x.ToAzureField()));
 
             var definition = new Index
             {
@@ -126,14 +99,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     cmsContent.nodeId = umbracoNode.id and
                     umbracoNode.nodeObjectType = '39EB0F98-B348-42A1-8662-E7EB18487560'");
             }
-            
+
 
 
             var contentCount = contentIds.Count;
 
             var path = Path.Combine(_path, @"App_Data\MoriyamaAzureSearch\" + sessionId);
             EnsurePath(path);
-                   
+
             System.IO.File.WriteAllText(Path.Combine(path, "content.json"), JsonConvert.SerializeObject(contentIds));
             System.IO.File.WriteAllText(Path.Combine(path, "media.json"), JsonConvert.SerializeObject(mediaIds));
             System.IO.File.WriteAllText(Path.Combine(path, "member.json"), JsonConvert.SerializeObject(memberIds));
@@ -161,7 +134,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             return collection.Skip((page - 1) * BatchSize).Take(BatchSize).ToArray();
         }
-      
+
         public AzureSearchReindexStatus ReIndexContent(string sessionId, int page)
         {
             return ReIndex("content.json", sessionId, page);
@@ -204,7 +177,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var actions = new List<IndexAction>();
             var d = new Document();
             d.Add("Id", id.ToString());
-            
+
             actions.Add(IndexAction.Delete(d));
 
             var batch = IndexBatch.New(actions);
@@ -225,11 +198,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 result.Success = false;
                 result.Message = error;
 
-               
+
             }
 
             result.Success = true;
-        
+
         }
 
         public void ReIndexMember(IMember content)
@@ -245,11 +218,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var ids = GetIds(sessionId, filename);
 
-            var result = new AzureSearchReindexStatus {
+            var result = new AzureSearchReindexStatus
+            {
                 SessionId = sessionId,
                 DocumentCount = ids.Length
             };
-            
+
             var idsToProcess = Page(ids, page);
 
             if (!idsToProcess.Any())
@@ -269,18 +243,19 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     if (content != null)
                         documents.Add(FromUmbracoContent(content, config.SearchFields));
             }
-            else if(filename == "media.json")
+            else if (filename == "media.json")
             {
                 var contents = UmbracoContext.Current.Application.Services.MediaService.GetByIds(idsToProcess);
 
                 foreach (var content in contents)
                     if (content != null)
                         documents.Add(FromUmbracoMedia(content, config.SearchFields));
-            } else
+            }
+            else
             {
                 var contents = new List<IMember>();
 
-                foreach(var id in idsToProcess)
+                foreach (var id in idsToProcess)
                     contents.Add(UmbracoContext.Current.Application.Services.MemberService.GetById(id));
 
                 foreach (var content in contents)
@@ -292,7 +267,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             result.DocumentsProcessed = page * BatchSize;
 
-            if(indexStatus.Success)
+            if (indexStatus.Success)
             {
                 return result;
             }
@@ -301,7 +276,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             result.Finished = true;
             result.Message = indexStatus.Message;
 
-            return result;                 
+            return result;
         }
 
 
@@ -311,7 +286,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var result = new AzureSearchIndexResult();
 
             var serviceClient = GetClient();
-            
+
             var actions = new List<IndexAction>();
 
             foreach (var content in contents)
@@ -319,7 +294,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             var batch = IndexBatch.New(actions);
             var indexClient = serviceClient.Indexes.GetClient(_config.IndexName);
-            
+
             try
             {
                 indexClient.Documents.Index(batch);
@@ -334,7 +309,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                 result.Success = false;
                 result.Message = error;
-                
+
                 return result;
             }
 
@@ -384,8 +359,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoContent(IContent content, SearchField[] searchFields)
         {
-            var result = FromUmbracoContent((ContentBase) content, searchFields);
-            
+            var result = FromUmbracoContent((ContentBase)content, searchFields);
+
             result.Add("IsContent", true);
             result.Add("IsMedia", false);
             result.Add("IsMember", false);
@@ -416,15 +391,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             return result;
         }
-        
+
         private Document FromUmbracoContent(IContentBase content, SearchField[] searchFields)
         {
 
-            
+
             var c = new Document
             {
                 {"Id", content.Id.ToString()},
-                {"Name", content.Name},             
+                {"Name", content.Name},
                 {"SortOrder", content.SortOrder},
                 {"Level", content.Level},
                 {"Path", content.Path.Split(',') },
@@ -450,8 +425,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             c.Add("ContentTypeId", content.ContentTypeId);
             c.Add("CreateDate", content.CreateDate);
             c.Add("CreatorId", content.CreatorId);
-            
-            foreach(var field in searchFields)
+
+            foreach (var field in searchFields)
             {
                 if (!content.HasProperty(field.Name) || content.Properties[field.Name].Value == null)
                 {
@@ -479,7 +454,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     }
                     else
                     {
-                        if(field.IsGridJson)
+                        if (field.IsGridJson)
                         {
                             // #filth #sorrymarc
                             JObject jObject = JObject.Parse(value.ToString());
@@ -496,7 +471,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                             catch (Exception ex)
                             {
                                 value = string.Empty;
-                            }                          
+                            }
                         }
 
                         c.Add(field.Name, value);
