@@ -11,10 +11,13 @@
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>Umbraco Azure Search Moriyama</tags>
-	 <!-- Dependencies are automatically installed when the package is installed -->
+    <!-- Dependencies are automatically installed when the package is installed -->
     <dependencies>
-        <dependency id="UmbracoCms" version="7.5.3" />        
-		<dependency id="Umbraco.Azure.Search.Core" version="[1.2.0]" />
+      <dependency id="Umbraco.Azure.Search.Core" version="1.2.0" />
     </dependencies>
   </metadata>
+  <files>
+    <file src="bin\Moriyama.AzureSearch.Umbraco.dll" target="lib" />
+    <file src="App_Plugins\MoriyamaAzureSearch\**\*.*" target="content\App_Plugins"/>
+  </files>
 </package>

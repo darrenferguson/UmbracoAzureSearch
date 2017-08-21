@@ -309,6 +309,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Moriyama.AzureSearch.Umbraco.Application.nuspec" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

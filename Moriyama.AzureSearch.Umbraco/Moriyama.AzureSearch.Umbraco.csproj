@@ -368,7 +368,7 @@
     <Content Include="Views\AzureSearch.cshtml" />
     <Content Include="App_Plugins\MoriyamaAzureSearch\Examine\ExamineSettings.config" />
     <Content Include="App_Plugins\MoriyamaAzureSearch\Examine\ExamineIndex.config" />
-    <Content Include="App_Plugins\MoriyamaAzureSearch\Config\install.xdt" />
+    <Content Include="Moriyama.AzureSearch.Umbraco.nuspec" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
