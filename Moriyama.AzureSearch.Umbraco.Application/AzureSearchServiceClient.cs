@@ -342,16 +342,21 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document FromUmbracoMember(IMember content, SearchField[] searchFields)
+        private Document FromUmbracoMember(IMember member, SearchField[] searchFields)
         {
-            var result = FromUmbracoContent((ContentBase)content, searchFields);
+            var result = FromUmbracoContent((ContentBase)member, searchFields);
 
             result.Add("IsMedia", false);
             result.Add("IsContent", false);
             result.Add("IsMember", true);
-            result.Add("ContentTypeAlias", content.ContentType.Alias);
 
-            result.Add("Icon", content.ContentType.Icon);
+            if (member != null)
+            {
+                result.Add("Email", member.Email);
+                result.Add("ContentTypeAlias", member.ContentType.Alias);
+            }
+
+            result.Add("Icon", member.ContentType.Icon);
 
             return result;
         }
