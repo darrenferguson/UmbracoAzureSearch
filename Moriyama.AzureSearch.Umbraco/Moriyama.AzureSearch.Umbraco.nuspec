@@ -18,6 +18,6 @@
   </metadata>
   <files>
     <file src="bin\Moriyama.AzureSearch.Umbraco.dll" target="lib" />
-    <file src="App_Plugins\MoriyamaAzureSearch\**\*.*" target="content\App_Plugins"/>
+    <file src="App_Plugins\MoriyamaAzureSearch\**\*.*" target="content\App_Plugins\MoriyamaAzureSearch"/>
   </files>
 </package>
