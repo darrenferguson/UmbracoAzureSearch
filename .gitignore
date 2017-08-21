@@ -182,3 +182,4 @@ Moriyama.AzureSearch.Umbraco/Media/
 .vs/config/applicationhost.config
 BuildPackage/NugetBuild/
 BuildPackage/Package/
+*.nupkg

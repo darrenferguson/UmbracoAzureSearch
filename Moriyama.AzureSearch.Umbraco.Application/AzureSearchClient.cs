@@ -54,7 +54,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public IAzureSearchClient DocumentTypes(IEnumerable<string> typeAliases)
         {
-
             var combinedFilter = string.Format("({0})",
                 string.Join(" or ",
                     typeAliases.Select(x =>
@@ -270,6 +269,17 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _facets.Add(facet);
             return this;
         }
+
+        public IAzureSearchClient Facets(string[] facets)
+        {
+            foreach (var facet in facets)
+            {
+                _facets.Add(facet);
+            }
+
+            return this;
+        }
+
         public IAzureSearchClient Any(string field)
         {
             _filters.Add(string.Format("{0}/any()", field));
@@ -367,6 +377,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             return this;
         }
+
         public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
         {
             var client = GetClient();

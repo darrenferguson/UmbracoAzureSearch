@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Azure.Search.Models;
+using System;
 using System.Collections.Generic;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
@@ -11,6 +12,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         IAzureSearchClient Term(string query);
         IAzureSearchClient DocumentType(string typeAlias);
+        IAzureSearchClient DocumentTypes(IEnumerable<string> typeAlias);
         IAzureSearchClient OrderBy(string fieldName);
 
         IAzureSearchClient Content();
@@ -28,6 +30,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchClient DateRange(string field, DateTime? start, DateTime? end);
 
         IAzureSearchClient Facet(string facet);
+        IAzureSearchClient Facets(string[] facets);
 
         IAzureSearchClient Contains(string field, string value);
         IAzureSearchClient Contains(string field, IEnumerable<string> values);
@@ -35,5 +38,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchClient Contains(IEnumerable<string> fields, IEnumerable<string> values);
 
         IAzureSearchClient Any(string field);
+
+        IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true);
     }
 }
