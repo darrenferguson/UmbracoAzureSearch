@@ -60,7 +60,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     case "datetime":
                         t = DataType.DateTimeOffset;
                         break;
-				}
+                }
 
                 var f = new Field()
                 {
@@ -467,7 +467,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                     if (field.Type == "datetime")
                         c.Add(field.Name, null);
-				}
+                }
                 else
                 {
                     var value = content.Properties[field.Name].Value;
