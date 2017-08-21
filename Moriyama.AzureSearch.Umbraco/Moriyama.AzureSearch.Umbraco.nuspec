@@ -13,7 +13,7 @@
     <tags>Umbraco Azure Search Moriyama</tags>
     <!-- Dependencies are automatically installed when the package is installed -->
     <dependencies>
-      <dependency id="Moriyama.AzureSearch.Umbraco.Core" version="1.2.0" />
+      <dependency id="Moriyama.AzureSearch.Umbraco.Core" version="1.2.1" />
     </dependencies>
   </metadata>
   <files>
