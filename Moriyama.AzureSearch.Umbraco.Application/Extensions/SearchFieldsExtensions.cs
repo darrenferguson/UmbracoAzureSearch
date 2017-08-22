@@ -28,7 +28,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
                 IsFacetable = field.IsFacetable,
                 IsFilterable = field.IsFilterable,
                 IsSortable = field.IsSortable,
-                IsSearchable = field.IsSearchable
+                IsSearchable = field.IsSearchable,
+                IsKey = field.IsKey
             };
 
             return f;
