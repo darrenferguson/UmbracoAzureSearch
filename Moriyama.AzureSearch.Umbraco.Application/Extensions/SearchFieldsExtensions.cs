@@ -19,6 +19,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
                 case "collection":
                     t = DataType.Collection(DataType.String);
                     break;
+                case "date":
+                    t = DataType.Collection(DataType.DateTimeOffset);
+                    break;
             }
 
             var f = new Field()
