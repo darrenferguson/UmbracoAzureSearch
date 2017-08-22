@@ -327,7 +327,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             if (member != null)
             {
-                result.Add("Email", member.Email);
+                result.Add("MemberEmail", member.Email);
                 result.Add("ContentTypeAlias", member.ContentType.Alias);
             }
 
@@ -500,6 +500,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
 
                  new Field("Url", DataType.String) { IsSearchable = true, IsRetrievable = true},
+                 new Field("MemberEmail", DataType.String) { IsSearchable = true },
 
                  new Field("IsContent", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
                  new Field("IsMedia", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
