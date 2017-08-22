@@ -20,7 +20,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
                     t = DataType.Collection(DataType.String);
                     break;
                 case "date":
-                    t = DataType.Collection(DataType.DateTimeOffset);
+                    t = DataType.DateTimeOffset;
                     break;
             }
 
