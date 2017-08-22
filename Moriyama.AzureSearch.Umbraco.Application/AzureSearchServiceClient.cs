@@ -202,7 +202,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
 
             result.Success = true;
-
         }
 
         public void ReIndexMember(IMember content)
@@ -279,42 +278,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-
-
         private AzureSearchIndexResult IndexContentBatch(IEnumerable<Document> contents)
         {
-            var result = new AzureSearchIndexResult();
-
             var serviceClient = GetClient();
-
-            var actions = new List<IndexAction>();
-
-            foreach (var content in contents)
-                actions.Add(IndexAction.Upload(content));
-
-            var batch = IndexBatch.New(actions);
-            var indexClient = serviceClient.Indexes.GetClient(_config.IndexName);
-
-            try
-            {
-                indexClient.Documents.Index(batch);
-            }
-            catch (IndexBatchException e)
-            {
-                // Sometimes when your Search service is under load, indexing will fail for some of the documents in
-                // the batch. Depending on your application, you can take compensating actions like delaying and
-                // retrying. For this simple demo, we just log the failed document keys and continue.
-                var error =
-                     "Failed to index some of the documents: {0}" + String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key));
-
-                result.Success = false;
-                result.Message = error;
-
-                return result;
-            }
-
-            result.Success = true;
-            return result;
+            return serviceClient.IndexContentBatch(_config.IndexName, contents);
         }
 
         private Document FromUmbracoMember(IMember member, SearchField[] searchFields)
@@ -394,8 +361,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoContent(IContentBase content, SearchField[] searchFields)
         {
-
-
             var c = new Document
             {
                 {"Id", content.Id.ToString()},

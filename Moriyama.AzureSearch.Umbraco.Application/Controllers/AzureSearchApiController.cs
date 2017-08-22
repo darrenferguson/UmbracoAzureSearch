@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web;
 using AutoMapper;
 using Microsoft.Azure.Search;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;

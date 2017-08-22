@@ -1,6 +1,6 @@
 ﻿namespace Moriyama.AzureSearch.Umbraco.Application.Models
 {
-    class AzureSearchIndexResult
+    public class AzureSearchIndexResult
     {
         public bool Success { get; set; }
         public string Message { get; set; }
