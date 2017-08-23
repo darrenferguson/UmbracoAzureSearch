@@ -304,7 +304,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             if (conversionErrors)
             {
-                result.Message += $"Failed to create azure search documents from some umbraco documents: {string.Join(", ", failedDocumentConversionIds)}\n";
+                result.Message += $"Failed to convert Umbraco content to Azure search documents: {string.Join(", ", failedDocumentConversionIds)}\n";
             }
 
             var indexStatus = IndexContentBatch(documents);
