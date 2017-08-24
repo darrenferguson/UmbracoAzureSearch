@@ -25,6 +25,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchClient Filter(string field, string value);
         IAzureSearchClient Filter(string field, string[] values);
         IAzureSearchClient Filter(string field, int value);
+        IAzureSearchClient Filter(string field, int[] values);
         IAzureSearchClient Filter(string field, bool value);
 
         IAzureSearchClient DateRange(string field, DateTime? start, DateTime? end);

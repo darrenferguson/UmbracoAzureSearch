@@ -310,7 +310,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             return this;
         }
-        public IAzureSearchClient Contains(IEnumerable<string> fields, string value)
+
+		public IAzureSearchClient Contains(IEnumerable<string> fields, string value)
         {
             if (fields.Count() > 1)
             {
@@ -360,13 +361,23 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public IAzureSearchClient Filter(string field, string[] values)
         {
+            return FilterManyValues(field, values.Select(x => $"'{x}'").ToArray());
+        }
+
+        public IAzureSearchClient Filter(string field, int[] values)
+        {
+            return FilterManyValues(field, values.Select(x => x.ToString()).ToArray());
+        }
+
+        private IAzureSearchClient FilterManyValues(string field, string[] values)
+        {
             if (values.Count() > 1)
             {
                 var combinedFilter = string.Format("({0})",
                     string.Join(" or ",
-                                    values.Select(x =>
-                                    string.Format("({0} eq '{1}')", field, x)).ToList())
-                            );
+                        values.Select(x =>
+                            string.Format("({0} eq {1})", field, x)).ToList())
+                );
 
                 _filters.Add(combinedFilter);
             }
@@ -378,7 +389,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
-        public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
+		public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
         {
             var client = GetClient();
             var config = GetConfiguration();
