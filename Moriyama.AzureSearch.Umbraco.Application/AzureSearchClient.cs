@@ -311,7 +311,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
-		public IAzureSearchClient Contains(IEnumerable<string> fields, string value)
+        public IAzureSearchClient Contains(IEnumerable<string> fields, string value)
         {
             if (fields.Count() > 1)
             {
@@ -389,7 +389,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
-		public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
+        public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
         {
             var client = GetClient();
             var config = GetConfiguration();
