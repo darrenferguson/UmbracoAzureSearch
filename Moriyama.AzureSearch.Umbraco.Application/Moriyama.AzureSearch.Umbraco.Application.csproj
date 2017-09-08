@@ -286,9 +286,11 @@
     <Compile Include="Helper\SearchContentToEntityBasicMapper.cs" />
     <Compile Include="Helper\SearchFacetHelper.cs" />
     <Compile Include="Interfaces\IAzureSearchClient.cs" />
+    <Compile Include="Interfaces\ISearchField.cs" />
     <Compile Include="Interfaces\ISearchContent.cs" />
     <Compile Include="Interfaces\ISearchFacet.cs" />
     <Compile Include="Interfaces\ISearchResult.cs" />
+    <Compile Include="Interfaces\IAzureSearchField.cs" />
     <Compile Include="Models\AzureSearchIndexResult.cs" />
     <Compile Include="Models\BackOfficeSearchResult.cs" />
     <Compile Include="Models\BaseContent.cs" />
