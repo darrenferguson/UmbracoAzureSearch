@@ -286,7 +286,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoMember(IMember member, SearchField[] searchFields)
         {
-            var result = FromUmbracoContent((ContentBase)member, searchFields);
+            var result = FromUmbracoContentBase((ContentBase)member, searchFields);
 
             result.Add("IsMedia", false);
             result.Add("IsContent", false);
@@ -305,7 +305,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoMedia(IMedia content, SearchField[] searchFields)
         {
-            var result = FromUmbracoContent((ContentBase)content, searchFields);
+            var result = FromUmbracoContentBase((ContentBase)content, searchFields);
 
             var helper = new UmbracoHelper(UmbracoContext.Current);
             var media = helper.TypedMedia(content.Id);
@@ -326,7 +326,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoContent(IContent content, SearchField[] searchFields)
         {
-            var result = FromUmbracoContent((ContentBase)content, searchFields);
+            var result = FromUmbracoContentBase((ContentBase)content, searchFields);
 
             result.Add("IsContent", true);
             result.Add("IsMedia", false);
@@ -359,7 +359,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document FromUmbracoContent(IContentBase content, SearchField[] searchFields)
+        private Document FromUmbracoContentBase(IContentBase content, SearchField[] searchFields)
         {
             var c = new Document
             {
