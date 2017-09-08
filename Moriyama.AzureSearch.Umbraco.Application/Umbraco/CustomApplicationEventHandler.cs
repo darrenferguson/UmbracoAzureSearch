@@ -19,6 +19,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
                    src => src.Type.ToString()
               ));
 
+            Mapper.CreateMap<Field, CustomField>().ForMember(dest => dest.Type,
+               opts => opts.MapFrom(
+                   src => src.Type.ToString()
+              ));
+
             Mapper.CreateMap<Index, SearchIndex>();
 
             var appRoot = HttpContext.Current.Server.MapPath("/");
