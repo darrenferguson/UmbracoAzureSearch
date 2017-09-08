@@ -26,6 +26,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public AzureSearchIndexClient(string path) : base(path)
         {
             Parsers = new Dictionary<string, ICustomFieldParser>();
+            SetCustomFieldParsers(GetConfiguration());
         }
 
         private string SessionFile(string sessionId)
@@ -288,7 +289,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoMember(IMember member, AzureSearchConfig azureSearchConfig)
         {
-            var result = FromUmbracoContentBase((ContentBase)member, azureSearchConfig);
+            var result = GetDocumentToIndex((ContentBase)member, azureSearchConfig);
 
             result.Add("IsMedia", false);
             result.Add("IsContent", false);
@@ -307,7 +308,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoMedia(IMedia content, AzureSearchConfig azureSearchConfig)
         {
-            var result = FromUmbracoContentBase((ContentBase)content, azureSearchConfig);
+            var result = GetDocumentToIndex((ContentBase)content, azureSearchConfig);
 
             var helper = new UmbracoHelper(UmbracoContext.Current);
             var media = helper.TypedMedia(content.Id);
@@ -328,7 +329,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoContent(IContent content, AzureSearchConfig azureSearchConfig)
         {
-            var result = FromUmbracoContentBase((ContentBase)content, azureSearchConfig);
+            var result = GetDocumentToIndex((ContentBase)content, azureSearchConfig);
 
             result.Add("IsContent", true);
             result.Add("IsMedia", false);
@@ -361,7 +362,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document FromUmbracoContentBase(IContentBase content, AzureSearchConfig azureSearchConfig)
+        private Document GetDocumentToIndex(IContentBase content, AzureSearchConfig azureSearchConfig)
         {
             var c = new Document
             {
@@ -389,11 +390,26 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 return null;
             }
 
+            c = FromUmbracoContentBase(c, content, azureSearchConfig.SearchFields);
+            c = FromCustomFields(c, content, azureSearchConfig.CustomFields);
+
+            AzureSearch.FireContentIndexed(
+                new AzureSearchEventArgs()
+                {
+                    Item = content,
+                    Entry = c
+                });
+
+            return c;
+        }
+
+        private Document FromUmbracoContentBase(Document c, IContentBase content, SearchField[] searchFields)
+        {
             c.Add("ContentTypeId", content.ContentTypeId);
             c.Add("CreateDate", content.CreateDate);
             c.Add("CreatorId", content.CreatorId);
 
-            foreach (var field in azureSearchConfig.SearchFields)
+            foreach (var field in searchFields)
             {
                 if (!content.HasProperty(field.Name) || content.Properties[field.Name].Value == null)
                 {
@@ -445,15 +461,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     }
                 }
             }
-
-            c = FromCustomFields(c, content, azureSearchConfig.CustomFields);
-
-            AzureSearch.FireContentIndexed(
-                new AzureSearchEventArgs()
-                {
-                    Item = content,
-                    Entry = c
-                });
 
             return c;
         }
