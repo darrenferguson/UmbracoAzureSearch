@@ -285,7 +285,9 @@
     <Compile Include="Extensions\SearchServiceClientExtensions.cs" />
     <Compile Include="Helper\SearchContentToEntityBasicMapper.cs" />
     <Compile Include="Helper\SearchFacetHelper.cs" />
+    <Compile Include="Interfaces\ICustomFieldParser.cs" />
     <Compile Include="Interfaces\IAzureSearchClient.cs" />
+    <Compile Include="Interfaces\ICustomField.cs" />
     <Compile Include="Interfaces\ISearchField.cs" />
     <Compile Include="Interfaces\ISearchContent.cs" />
     <Compile Include="Interfaces\ISearchFacet.cs" />
@@ -297,6 +299,7 @@
     <Compile Include="Models\SearchContent.cs" />
     <Compile Include="Models\BoolSearchFacet.cs" />
     <Compile Include="Models\SearchFacet.cs" />
+    <Compile Include="Models\CustomField.cs" />
     <Compile Include="Models\SearchResult.cs" />
     <Compile Include="Helper\SearchContentExtensions.cs" />
     <Compile Include="Umbraco\CustomApplicationEventHandler.cs" />

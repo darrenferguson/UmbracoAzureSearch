@@ -7,5 +7,6 @@
         public string IndexName { get; set; }
 
         public SearchField[] SearchFields { get; set; }
+        public CustomField[] CustomFields { get; set; }
     }
 }
