@@ -18,14 +18,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchIndexClient : BaseAzureSearch, IAzureSearchIndexClient
     {
-        private Dictionary<string, ICustomFieldParser> Parsers { get; set; }
+        private Dictionary<string, IComputedFieldParser> Parsers { get; set; }
 
         // Number of docs to be processed at a time.
         const int BatchSize = 999;
 
         public AzureSearchIndexClient(string path) : base(path)
         {
-            Parsers = new Dictionary<string, ICustomFieldParser>();
+            Parsers = new Dictionary<string, IComputedFieldParser>();
             SetCustomFieldParsers(GetConfiguration());
         }
 
@@ -103,8 +103,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     umbracoNode.nodeObjectType = '39EB0F98-B348-42A1-8662-E7EB18487560'");
             }
 
-
-
             var contentCount = contentIds.Count;
 
             var path = Path.Combine(_path, @"App_Data\MoriyamaAzureSearch\" + sessionId);
@@ -158,7 +156,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var documents = new List<Document>();
             var config = GetConfiguration();
 
-            documents.Add(FromUmbracoContent(content, config));
+            documents.Add(FromUmbracoContent(content, config.SearchFields));
             IndexContentBatch(documents);
         }
 
@@ -167,7 +165,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var documents = new List<Document>();
             var config = GetConfiguration();
 
-            documents.Add(FromUmbracoMedia(content, config));
+            documents.Add(FromUmbracoMedia(content, config.SearchFields));
             IndexContentBatch(documents);
         }
 
@@ -212,7 +210,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var documents = new List<Document>();
             var config = GetConfiguration();
 
-            documents.Add(FromUmbracoMember(content, config));
+            documents.Add(FromUmbracoMember(content, config.SearchFields));
             IndexContentBatch(documents);
         }
 
@@ -243,7 +241,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 var contents = UmbracoContext.Current.Application.Services.ContentService.GetByIds(idsToProcess);
                 foreach (var content in contents)
                     if (content != null)
-                        documents.Add(FromUmbracoContent(content, config));
+                        documents.Add(FromUmbracoContent(content, config.SearchFields));
             }
             else if (filename == "media.json")
             {
@@ -251,7 +249,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                 foreach (var content in contents)
                     if (content != null)
-                        documents.Add(FromUmbracoMedia(content, config));
+                        documents.Add(FromUmbracoMedia(content, config.SearchFields));
             }
             else
             {
@@ -262,7 +260,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                 foreach (var content in contents)
                     if (content != null)
-                        documents.Add(FromUmbracoMember(content, config));
+                        documents.Add(FromUmbracoMember(content, config.SearchFields));
             }
 
             var indexStatus = IndexContentBatch(documents);
@@ -287,9 +285,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return serviceClient.IndexContentBatch(_config.IndexName, contents);
         }
 
-        private Document FromUmbracoMember(IMember member, AzureSearchConfig azureSearchConfig)
+        private Document FromUmbracoMember(IMember member, SearchField[] searchFields)
         {
-            var result = GetDocumentToIndex((ContentBase)member, azureSearchConfig);
+            var result = GetDocumentToIndex((ContentBase)member, searchFields);
 
             result.Add("IsMedia", false);
             result.Add("IsContent", false);
@@ -306,9 +304,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document FromUmbracoMedia(IMedia content, AzureSearchConfig azureSearchConfig)
+        private Document FromUmbracoMedia(IMedia content, SearchField[] searchFields)
         {
-            var result = GetDocumentToIndex((ContentBase)content, azureSearchConfig);
+            var result = GetDocumentToIndex((ContentBase)content, searchFields);
 
             var helper = new UmbracoHelper(UmbracoContext.Current);
             var media = helper.TypedMedia(content.Id);
@@ -327,9 +325,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document FromUmbracoContent(IContent content, AzureSearchConfig azureSearchConfig)
+        private Document FromUmbracoContent(IContent content, SearchField[] searchFields)
         {
-            var result = GetDocumentToIndex((ContentBase)content, azureSearchConfig);
+            var result = GetDocumentToIndex((ContentBase)content, searchFields);
 
             result.Add("IsContent", true);
             result.Add("IsMedia", false);
@@ -362,7 +360,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document GetDocumentToIndex(IContentBase content, AzureSearchConfig azureSearchConfig)
+        private Document GetDocumentToIndex(IContentBase content, SearchField[] searchFields)
         {
             var c = new Document
             {
@@ -390,8 +388,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 return null;
             }
 
-            c = FromUmbracoContentBase(c, content, azureSearchConfig.SearchFields);
-            c = FromCustomFields(c, content, azureSearchConfig.CustomFields);
+            var umbracoFields = searchFields.Where(x => !x.IsComputedField()).ToArray();
+            var computedFields = searchFields.Where(x => x.IsComputedField()).ToArray();
+
+            c = FromUmbracoContentBase(c, content, umbracoFields);
+            c = FromComputedFields(c, content, computedFields);
 
             AzureSearch.FireContentIndexed(
                 new AzureSearchEventArgs()
@@ -465,7 +466,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return c;
         }
 
-        private Document FromCustomFields(Document document, IContentBase content, CustomField[] customFields)
+        private Document FromComputedFields(Document document, IContentBase content, SearchField[] customFields)
         {
             if (customFields != null)
             {
@@ -481,20 +482,20 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private void SetCustomFieldParsers(AzureSearchConfig azureSearchConfig)
         {
-            if (azureSearchConfig.CustomFields != null && azureSearchConfig.CustomFields.Any())
+            if (azureSearchConfig.SearchFields != null)
             {
-                var types = azureSearchConfig.CustomFields.Select(x => x.ParserType).Distinct().ToArray();
+                var types = azureSearchConfig.SearchFields.Where(x => x.IsComputedField()).Select(x => x.ParserType).Distinct().ToArray();
 
                 foreach (var t in types)
                 {
                     var parser = Activator.CreateInstance(Type.GetType(t));
 
-                    if (!(parser is ICustomFieldParser))
+                    if (!(parser is IComputedFieldParser))
                     {
-                        throw new Exception(string.Format("Type {0} does not implement {1}", t, typeof(ICustomFieldParser).Name));
+                        throw new Exception(string.Format("Type {0} does not implement {1}", t, typeof(IComputedFieldParser).Name));
                     }
 
-                    Parsers.Add(t, (ICustomFieldParser)parser);
+                    Parsers.Add(t, (IComputedFieldParser)parser);
                 }
             }
         }

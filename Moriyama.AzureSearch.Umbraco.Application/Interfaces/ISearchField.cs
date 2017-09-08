@@ -3,5 +3,6 @@
     public interface ISearchField : IAzureSearchField
     {
         bool IsGridJson { get; set; }
+        string ParserType { get; set; }
     }
 }

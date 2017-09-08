@@ -37,5 +37,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
 
             return f;
         }
+
+        public static bool IsComputedField(this SearchField field)
+        {
+            return !string.IsNullOrEmpty(field.ParserType);
+        }
     }
 }

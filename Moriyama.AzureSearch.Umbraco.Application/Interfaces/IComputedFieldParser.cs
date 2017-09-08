@@ -2,7 +2,7 @@
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 {
-    public interface ICustomFieldParser
+    public interface IComputedFieldParser
     {
         object GetValue(IContentBase content);
     }
