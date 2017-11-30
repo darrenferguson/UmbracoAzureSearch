@@ -111,7 +111,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             foreach (var result in response.Results)
             {
-                results.Content.Add(FromDocument(result.Document));
+                results.Content.Add(FromDocument(result.Document, result.Score));
             }
 
             if (response.Facets != null)
@@ -136,16 +136,18 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return results;
         }
 
-        private ISearchContent FromDocument(Document d)
+        private ISearchContent FromDocument(Document d, double score)
         {
             var searchContent = new SearchContent
             {
                 Properties = new Dictionary<string, object>()
             };
 
+            searchContent.Score = score;
+
             var t = searchContent.GetType();
             searchContent.Id = Convert.ToInt32(d["Id"]);
-
+            
             foreach (var key in d.Keys)
             {
                 var property = t.GetProperty(key);

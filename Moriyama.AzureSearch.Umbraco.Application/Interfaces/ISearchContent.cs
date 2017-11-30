@@ -7,6 +7,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
     {
         int Id { get; set; }
 
+        double Score { get; set; }
+
         string Name { get; set; }
         string Key { get; set; }
         bool Published { get; set; }

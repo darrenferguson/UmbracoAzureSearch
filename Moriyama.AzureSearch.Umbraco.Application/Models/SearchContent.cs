@@ -7,6 +7,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
     {
         public int Id { get; set; }
 
+        public double Score { get; set; }
+
         public string Key { get; set; }
 
         public string Url { get; set; }
