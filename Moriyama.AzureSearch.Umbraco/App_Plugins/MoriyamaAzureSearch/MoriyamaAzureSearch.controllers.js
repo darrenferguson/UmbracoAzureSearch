@@ -108,6 +108,12 @@
         });
     };
 
+    $scope.saveConfig = function() {
+        $http.post('/umbraco/backoffice/api/AzureSearchApi/SetConfiguration', $scope.config).then(function (response) {      
+            $scope.config = response.data;
+            $scope.configLoaded = true;
+        });
+    }
 }
 
 angular.module("umbraco").controller("Umbraco.Dashboard.MoriyamaAzureSearchController", moriyamaAzureSearchController);

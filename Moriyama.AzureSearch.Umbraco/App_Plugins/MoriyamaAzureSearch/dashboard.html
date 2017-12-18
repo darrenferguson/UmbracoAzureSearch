@@ -2,6 +2,9 @@
     .row{
   margin-bottom: 30px
 }
+    .ctr {
+        text-align:center !important;
+    }
 </style>
 <div ng-controller="Umbraco.Dashboard.MoriyamaAzureSearchController">
 
@@ -80,10 +83,10 @@
             <tr>
                 <th>Name</th>
                 <th>Type</th>
-                <th>IsKey</th>
-                <th>IsSortable</th>
-                <th>IsFacetable</th>
-                <th>IsFilterable</th>
+                <th class="ctr">IsKey</th>
+                <th class="ctr">IsSortable</th>
+                <th class="ctr">IsFacetable</th>
+                <th class="ctr">IsFilterable</th>
             </tr>
         </thead>
         <tbody>
@@ -94,35 +97,41 @@
                 <td>
                     {{field.Type}}
                 </td>
-                <td>
-                    {{field.IsKey}}
+                <td class="ctr">
+                    <input type="checkbox"
+                           ng-model="field.IsKey" disabled="disabled">
                 </td>
-                <td>
-                    {{field.IsSortable}}
+                <td class="ctr">
+                    <input type="checkbox"
+                           ng-model="field.IsSortable" disabled="disabled">
                 </td>
-                <td>
-                    {{field.IsFacetable}}
+                <td class="ctr">
+                    <input type="checkbox"
+                           ng-model="field.IsFacetable" disabled="disabled">
                 </td>
-                <td>
-                    {{field.IsFilterable}}
+                <td class="ctr">
+                    <input type="checkbox"
+                           ng-model="field.IsFilterable" disabled="disabled">
                 </td>
             </tr>
         </tbody>
     </table>
-
+    <form name="configForm">
     <h3>Custom Umbraco Fields</h3>
 
     <p>These are defined in /config/AzureSearch.config</p>
-
+        
+    <input type="button" class="btn btn-default" value="Update Configuration" ng-click="saveConfig()" ng-disabled="!configForm.$dirty"/>
+        
     <table class="table table-striped">
         <thead>
             <tr>
                 <th>Alias</th>
                 <th>Type</th>
-                <th>IsKey</th>
-                <th>IsSortable</th>
-                <th>IsFacetable</th>
-                <th>IsFilterable</th>
+                <th class="ctr">IsKey</th>
+                <th class="ctr">IsSortable</th>
+                <th class="ctr">IsFacetable</th>
+                <th class="ctr">IsFilterable</th>
             </tr>
         </thead>
         <tbody>
@@ -133,22 +142,26 @@
                 <td>
                     {{searchField.Type}}
                 </td>
-                <td>
-                    {{searchField.IsKey}}
+                <td class="ctr">
+                    <input type="checkbox"
+                           ng-model="searchField.IsKey">
                 </td>
-                <td>
-                    {{searchField.IsSortable}}
+                <td class="ctr">
+                    <input type="checkbox"
+                           ng-model="searchField.IsSortable">
                 </td>
-                <td>
-                    {{searchField.IsFacetable}}
+                <td class="ctr">
+                    <input type="checkbox"
+                           ng-model="searchField.IsFacetable">
                 </td>
-                <td>
-                    {{searchField.IsFilterable}}
+                <td class="ctr">
+                    <input type="checkbox"
+                           ng-model="searchField.IsFilterable">
                 </td>
             </tr>
         </tbody>
     </table>
-
+    </form>
 
 
     <hr />

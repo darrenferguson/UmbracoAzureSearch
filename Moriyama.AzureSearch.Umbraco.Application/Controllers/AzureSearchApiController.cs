@@ -22,6 +22,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
             return _azureSearchServiceClient.GetConfiguration();
         }
 
+        [HttpPost]
+        public AzureSearchConfig SetConfiguration(AzureSearchConfig config)
+        {
+            _azureSearchServiceClient.SaveConfiguration(config);
+
+            return _azureSearchServiceClient.GetConfiguration();
+        }
+
         [HttpGet]
         public bool ServiceName(string value)
         {
