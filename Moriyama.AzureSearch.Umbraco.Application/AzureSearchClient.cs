@@ -5,11 +5,15 @@ using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using System;
 using System.Linq;
+using log4net;
+using System.Reflection;
+using Newtonsoft.Json;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchClient : BaseAzureSearch, IAzureSearchClient
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public IList<string> _filters;
 
@@ -103,6 +107,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var client = GetClient();
             var config = GetConfiguration();
+            Log.Info(string.Format("Search info: {0}- Index name = {1}{2}- Base uri = {3}{4}- Uri query string = {5}{6}",
+                                    Environment.NewLine,
+                                    config.IndexName,
+                                    Environment.NewLine,
+                                    client.BaseUri,
+                                    Environment.NewLine,
+                                    sp.ToString(),
+                                    Environment.NewLine
+                                ));
 
             ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
             var response = indexClient.Documents.Search(_searchTerm, sp);
