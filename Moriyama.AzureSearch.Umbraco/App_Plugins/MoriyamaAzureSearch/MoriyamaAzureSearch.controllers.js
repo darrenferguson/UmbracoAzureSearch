@@ -1,8 +1,12 @@
-﻿function moriyamaAzureSearchController($scope, umbRequestHelper, $log, $http) {
+﻿function moriyamaAzureSearchController($scope, umbRequestHelper, $filter, $log, $http) {
 
     $scope.configLoaded = false;
 
-    
+    $scope.reindexModel = {
+        content: false,
+        media: false,
+        members: false
+    };
 
     $http.get('/umbraco/backoffice/api/AzureSearchApi/GetConfiguration').then(function (response) {      
         $scope.config = response.data;
@@ -56,56 +60,69 @@
         });
     };
 
-    $scope.reindexContent = function () {
+    $scope.reindex = function () {
         
         if (!confirm('Are you sure!'))
             return;
         $scope.finishedIndexing = false;
-        $scope.TypeProcessing = 'content';
         $scope.showReIndexContent = false;
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexContent').then(function (response) {
+
+        $http.post('/umbraco/backoffice/api/AzureSearchApi/ReIndex', $scope.reindexModel).then(function (response) {
             $scope.reIndexContentResult = response.data;
-            $scope.showReIndexContent = true;
+
             $scope.reindexContentPage(response.data.SessionId, 1);
         });
     };
 
     $scope.reindexContentPage = function (sessionId, page) {
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexContent?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
-            $scope.reIndexContentResult = response.data;
+        if ($scope.reindexModel.content) {
 
-            if (!response.data.Error && !response.data.Finished) {
-                $scope.reindexContentPage(sessionId, page + 1);
-            } else if (response.data.Finished) {
-                $scope.TypeProcessing = 'media';
-                $scope.reindexMediaPage(response.data.SessionId, 1);
-            }
-        });
+            $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexContent?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
+                $scope.reIndexContentResult = response.data;
+
+                var docsFinished = response.data.DocumentsQueued == 0;
+
+                if (!response.data.Error && !docsFinished) {
+                    $scope.reindexContentPage(sessionId, page + 1);
+                } else {
+                    $scope.reindexMediaPage(response.data.SessionId, 1);
+                }
+            });
+        }
     };
     
     $scope.reindexMediaPage = function (sessionId, page) {
+        if ($scope.reindexModel.media) {
 
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexMedia?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
-            $scope.reIndexContentResult = response.data;
-            if (!response.data.Error && !response.data.Finished) {
-                $scope.reindexMediaPage(sessionId, page + 1);
-            } else if (response.data.Finished) {
-                $scope.TypeProcessing = 'member';
-                $scope.reindexMemberPage(response.data.SessionId, 1);
-            }
-        });
+            $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexMedia?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
+                $scope.reIndexContentResult = response.data;
+
+                var mediaFinished = response.data.MediaQueued == 0;
+
+                if (!response.data.Error && !mediaFinished) {
+                    $scope.reindexMediaPage(sessionId, page + 1);
+                } else {
+                    $scope.reindexMemberPage(response.data.SessionId, 1);
+                }
+            });
+        }
     };
 
     $scope.reindexMemberPage = function (sessionId, page) {
+        if ($scope.reindexModel.member) {
 
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexMember?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
-            $scope.reIndexContentResult = response.data;
-            if (!response.data.Error && !response.data.Finished) {
-                $scope.reindexMemberPage(sessionId, page + 1);
-            } else if (response.data.Finished) {
-                $scope.finishedIndexing = true;
-            }
-        });
+            $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexMember?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
+                $scope.reIndexContentResult = response.data;
+
+                var membersFinished = response.data.MembersQueued == 0;
+
+                if (!response.data.Error && !membersFinished) {
+                    $scope.reindexMemberPage(sessionId, page + 1);
+                } else {
+                    $scope.finishedIndexing = true;
+                }
+            });
+        }
     };
 
     $scope.saveConfig = function() {

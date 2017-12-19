@@ -60,20 +60,33 @@
             Dropping and Creating: {{dropCreateResult}}
         </div>
 
-        <div ng-show="showReIndexContent" class="alert alert-success">
+        <div ng-show="reIndexContentResult" class="alert alert-success">
             <p>Reindexing has started.</p>
 
             <p>Session id: {{reIndexContentResult.SessionId}}</p>
 
-            <p>{{reIndexContentResult.DocumentsProcessed}} of {{reIndexContentResult.DocumentCount}} {{TypeProcessing}} processed.</p>
+            <p ng-show="reindexModel.content">{{reIndexContentResult.DocumentsQueued}} Content items queued.</p>
+            <p ng-show="reindexModel.media">{{reIndexContentResult.MediaQueued}} Media items queued.</p>
+            <p ng-show="reindexModel.members">{{reIndexContentResult.MembersQueued}} Members queued.</p>
             
-            <p ng-show="finishedIndexing">Finished re-indexing all content and media.</p>
+            <p ng-show="!finishedIndexing">{{reIndexContentResult.Message}}</p>
+            <p ng-show="finishedIndexing">Finished re-indexing.</p>
 
         </div>
 
         <input type="button" class="btn btn-default" value="Drop/Create Index" ng-click="dropCreateIndex()" />
 
-        <input type="button" class="btn btn-default" value="Reindex Content" ng-click="reindexContent()" />
+        <input type="button" class="btn btn-default" value="Reindex" ng-click="reindex()" />
+        
+        <label class="checkbox-inline">
+            <input type="checkbox" name="content" ng-model="reindexModel.content"> Content
+        </label>
+        <label class="checkbox-inline">
+            <input type="checkbox" name="media" ng-model="reindexModel.media"> Media
+        </label>
+        <label class="checkbox-inline">
+            <input type="checkbox" name="members" ng-model="reindexModel.members"> Members
+        </label>
     </div>
     
     <h3>Standard Umbraco Fields</h3>

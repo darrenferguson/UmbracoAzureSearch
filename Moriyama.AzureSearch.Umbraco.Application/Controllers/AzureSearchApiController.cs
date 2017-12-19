@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Web;
 using AutoMapper;
 using Microsoft.Azure.Search;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
@@ -51,7 +52,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
         public string GetTestConfig()
         {
 
-            var config =  _azureSearchServiceClient.GetConfiguration();
+            var config = _azureSearchServiceClient.GetConfiguration();
 
             int indexCount = 0;
 
@@ -61,9 +62,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
                 var indexes = serviceClient.Indexes.List();
                 indexCount = indexes.Indexes.Count;
 
-            } catch
+            } 
+            catch (Exception ex)
             {
-                return "Cannot connect";
+                return "Cannot connect: " + ex.Message;
             }
 
             return "Connected and got " + indexCount + " indexes";
@@ -84,30 +86,74 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
             return _azureSearchServiceClient.DropCreateIndex();
         }
 
-        public AzureSearchReindexStatus GetReIndexContent()
+        private AzureSearchReindexStatus GetStatus()
         {
-            var sessionId = Guid.NewGuid().ToString();
-            var result = _azureSearchServiceClient.ReIndexContent(sessionId);
-            return result;
+            var sessionKey = Security.CurrentUser.Key.ToString();
+
+            return (AzureSearchReindexStatus)UmbracoContext.Application.ApplicationCache.RuntimeCache.GetCacheItem($"AzureReindex_{sessionKey}", () => new AzureSearchReindexStatus
+            {
+                SessionId = sessionKey
+            });
+        }
+
+        [HttpPost]
+        public AzureSearchReindexStatus ReIndex(ReIndexModel reIndexModel)
+        {
+            var status = GetStatus();
+
+            
+
+            if (reIndexModel.content)
+            {
+                GetReIndexContent(status.SessionId, 0);
+            }
+            
+            if (reIndexModel.media)
+            {
+                GetReIndexMedia(status.SessionId, 0);
+            }
+
+            if (reIndexModel.members)
+            {
+                GetReIndexMember(status.SessionId, 0);
+            }
+
+            status.Message = "Preparing...";
+
+            return status;
         }
 
         public AzureSearchReindexStatus GetReIndexContent(string sessionId, int page)
         {
+            var status = GetStatus();
             var result = _azureSearchServiceClient.ReIndexContent(sessionId, page);
-            return result;
+            status.DocumentsQueued = result.DocumentsQueued;
+            status.Message = result.Message;
+            status.Error = result.Error;
+
+            return status;
         }
 
         public AzureSearchReindexStatus GetReIndexMedia(string sessionId, int page)
         {
+            var status = GetStatus();
             var result = _azureSearchServiceClient.ReIndexMedia(sessionId, page);
-            return result;
+            status.MediaQueued = result.MediaQueued;
+            status.Message = result.Message;
+            status.Error = result.Error;
+
+            return status;
         }
 
         public AzureSearchReindexStatus GetReIndexMember(string sessionId, int page)
         {
+            var status = GetStatus();
             var result = _azureSearchServiceClient.ReIndexMember(sessionId, page);
-            return result;
-        }
+            status.MembersQueued = result.MembersQueued;
+            status.Message = result.Message;
+            status.Error = result.Error;
 
+            return status;
+        }
     }
 }
