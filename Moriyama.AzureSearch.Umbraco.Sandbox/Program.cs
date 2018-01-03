@@ -1,7 +1,9 @@
-﻿using Moriyama.AzureSearch.Umbraco.Application;
+﻿using Microsoft.Azure.Search.Models;
+using Moriyama.AzureSearch.Umbraco.Application;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Moriyama.AzureSearch.Umbraco.Sandbox
 {
@@ -12,6 +14,11 @@ namespace Moriyama.AzureSearch.Umbraco.Sandbox
 
             var client = new AzureSearchClient(Directory.GetCurrentDirectory());
 
+			var config = client.GetConfiguration();
+
+			int count = config.ScoringProfiles.Count;
+			var scoringProfiles = config.ScoringProfiles.Select(x => x.GetEffectiveScoringProfile()).ToList();
+						
             var results = client.Term("umbraco").Results();
             Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));

@@ -51,7 +51,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var definition = new Index
             {
                 Name = _config.IndexName,
-                Fields = customFields
+                Fields = customFields,
+				ScoringProfiles = _config.ScoringProfiles.Select(x => x.GetEffectiveScoringProfile()).ToList()
             };
 
             try
