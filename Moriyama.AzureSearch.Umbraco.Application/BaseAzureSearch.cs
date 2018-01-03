@@ -22,9 +22,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         }
 
         public BaseAzureSearch(string path, ISearchServiceClient searchServiceClient)
+            : this(path)
         {
-            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(File.ReadAllText(Path.Combine(_path, @"config\AzureSearch.config")));
-            _path = path;
             _searchServiceClient = searchServiceClient;
         }
 
