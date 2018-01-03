@@ -7,7 +7,6 @@ using System;
 using System.Linq;
 using log4net;
 using System.Reflection;
-using Newtonsoft.Json;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
@@ -42,6 +41,16 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private bool _populateContentProperties = true;
 
         public AzureSearchClient(string path) : base(path)
+        {
+            Init();
+        }
+
+        public AzureSearchClient(string path, ISearchServiceClient searchServiceClient) : base (path, searchServiceClient)
+        {
+            Init();
+        }
+
+        private void Init()
         {
             _pageSize = 999;
             _page = 1;
