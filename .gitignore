@@ -183,3 +183,4 @@ Moriyama.AzureSearch.Umbraco/Media/
 BuildPackage/NugetBuild/
 BuildPackage/Package/
 *.nupkg
+.vs/Moriyama.AzureSearch.Umbraco/v15/Server/sqlite3/

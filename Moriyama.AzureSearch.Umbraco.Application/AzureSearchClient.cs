@@ -8,6 +8,7 @@ using System.Linq;
 using log4net;
 using System.Reflection;
 using Newtonsoft.Json;
+using System.Web;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
@@ -107,19 +108,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var client = GetClient();
             var config = GetConfiguration();
-            Log.Info(string.Format("Search info: {0}- Index name = {1}{2}- Base uri = {3}{4}- Uri query string = {5}{6}",
-                                    Environment.NewLine,
-                                    config.IndexName,
-                                    Environment.NewLine,
-                                    client.BaseUri,
-                                    Environment.NewLine,
-                                    sp.ToString(),
-                                    Environment.NewLine
-                                ));
-
             ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
+			var startTime = DateTime.UtcNow;
             var response = indexClient.Documents.Search(_searchTerm, sp);
 
+			var processStartTime = DateTime.UtcNow;
             var results = new Models.SearchResult();
 
             foreach (var result in response.Results)
@@ -146,6 +139,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 results.Count = (int)response.Count;
             }
 
+			if (config.LogSearchPerformance)
+			{
+				string lb = Environment.NewLine;
+				Log.Info($"AzureSearch Log (cached client){lb} - Response Duration: {(int)(processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int)(DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.BaseUri}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
+			}
             return results;
         }
 
