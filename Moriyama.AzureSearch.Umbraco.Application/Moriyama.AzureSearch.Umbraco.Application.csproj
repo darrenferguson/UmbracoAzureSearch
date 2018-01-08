@@ -312,7 +312,7 @@
     <Compile Include="Models\SearchIndex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Umbraco\PackageActions\TransformConfig.cs" />
-    <Compile Include="Umbraco\UmbracoHelperExetnsion.cs" />
+    <Compile Include="Extensions\UmbracoHelperExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
