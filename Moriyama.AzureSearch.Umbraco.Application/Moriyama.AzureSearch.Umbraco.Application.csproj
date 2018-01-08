@@ -274,6 +274,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AzureSearch.cs" />
+    <Compile Include="AzureSearchQuery.cs" />
     <Compile Include="AzureSearchClient.cs" />
     <Compile Include="AzureSearchContext.cs" />
     <Compile Include="AzureSearchServiceClient.cs" />
@@ -285,6 +286,7 @@
     <Compile Include="Extensions\SearchServiceClientExtensions.cs" />
     <Compile Include="Helper\SearchContentToEntityBasicMapper.cs" />
     <Compile Include="Helper\SearchFacetHelper.cs" />
+    <Compile Include="Interfaces\IAzureSearchQuery.cs" />
     <Compile Include="Interfaces\IComputedFieldParser.cs" />
     <Compile Include="Interfaces\IAzureSearchClient.cs" />
     <Compile Include="Interfaces\ISearchField.cs" />
