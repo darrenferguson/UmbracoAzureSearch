@@ -5,9 +5,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
 {
     public static class UmbracoHelperExtensions
     {
-        public static IAzureSearchQuery Query(this UmbracoHelper helper)
+        public static IAzureSearchQuery Query(this UmbracoHelper helper, string term = "")
         {
-            return new AzureSearchQuery();
+            return new AzureSearchQuery(term);
         }
 
         public static ISearchResult Results(this UmbracoHelper helper, IAzureSearchQuery query)
