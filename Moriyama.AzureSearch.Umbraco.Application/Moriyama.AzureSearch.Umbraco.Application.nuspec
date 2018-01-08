@@ -8,13 +8,18 @@
     <owners>Moriyama Ldt</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>UmbracoAzureSearch allows you to completely replace Examine from your Umbraco website and replace it with Azure Search.</description>
-    <releaseNotes></releaseNotes>
-    <copyright>Copyright 2017</copyright>
+    <releaseNotes>
+      Query and client objects have been decoupled, so same client instance can be used multiple times to run different queries.
+      Breaking changes:
+      - IAzureSearchClient has been refactoring and all query stuff have been migrated in IAzureSearchQuery
+      - UmbracoHelper extension method "SearchContent" does not exist any more; each call needs to be replaced with combination of new extensions methods "Query" and "Results".
+    </releaseNotes>
+    <copyright>Copyright 2018</copyright>
     <tags>Umbraco Azure Search Moriyama</tags>
     <!-- Dependencies are automatically installed when the package is installed -->
     <dependencies>
       <dependency id="UmbracoCms.Core" version="7.5.3" />
-      <dependency id="Microsoft.Azure.Search" version="2.0.0" />
+      <dependency id="Microsoft.Azure.Search" version="1.1.2" />
     </dependencies>
   </metadata>
   <files>
