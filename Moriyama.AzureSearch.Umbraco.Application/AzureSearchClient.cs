@@ -15,10 +15,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public AzureSearchClient(string path) : this(path, null)
-        {}
-
-        public AzureSearchClient(string path, ISearchServiceClient searchServiceClient) : base(path, searchServiceClient)
+        public AzureSearchClient(string path) : base(path)
         {}
 
         public ISearchResult Results(IAzureSearchQuery query)
