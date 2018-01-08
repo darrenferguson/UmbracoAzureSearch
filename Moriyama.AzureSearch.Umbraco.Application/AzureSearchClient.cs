@@ -7,7 +7,6 @@ using System;
 using System.Linq;
 using log4net;
 using System.Reflection;
-using Newtonsoft.Json;
 using System.Web;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
@@ -43,6 +42,16 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private bool _populateContentProperties = true;
 
         public AzureSearchClient(string path) : base(path)
+        {
+            Init();
+        }
+
+        public AzureSearchClient(string path, ISearchServiceClient searchServiceClient) : base(path, searchServiceClient)
+        {
+            Init();
+        }
+
+        private void Init()
         {
             _pageSize = 999;
             _page = 1;
@@ -109,10 +118,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var client = GetClient();
             var config = GetConfiguration();
             ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
-			var startTime = DateTime.UtcNow;
+            var startTime = DateTime.UtcNow;
             var response = indexClient.Documents.Search(_searchTerm, sp);
 
-			var processStartTime = DateTime.UtcNow;
+            var processStartTime = DateTime.UtcNow;
             var results = new Models.SearchResult();
 
             foreach (var result in response.Results)
@@ -139,11 +148,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 results.Count = (int)response.Count;
             }
 
-			if (config.LogSearchPerformance)
-			{
-				string lb = Environment.NewLine;
-				Log.Info($"AzureSearch Log (cached client){lb} - Response Duration: {(int)(processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int)(DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.BaseUri}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
-			}
+            if (config.LogSearchPerformance)
+            {
+                string lb = Environment.NewLine;
+                Log.Info($"AzureSearch Log (cached client){lb} - Response Duration: {(int)(processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int)(DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.BaseUri}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
+            }
             return results;
         }
 
@@ -158,7 +167,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             var t = searchContent.GetType();
             searchContent.Id = Convert.ToInt32(d["Id"]);
-            
+
             foreach (var key in d.Keys)
             {
                 var property = t.GetProperty(key);
