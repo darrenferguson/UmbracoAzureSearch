@@ -10,6 +10,7 @@
     <description>UmbracoAzureSearch allows you to completely replace Examine from your Umbraco website and replace it with Azure Search.</description>
     <releaseNotes>
       Query and client objects have been decoupled, so same client instance can be used multiple times to run different queries.
+      Added 2 app settings to make AzureSearchContext start up more flexible
       Breaking changes:
       - IAzureSearchClient has been refactoring and all query stuff have been migrated in IAzureSearchQuery
       - UmbracoHelper extension method "SearchContent" does not exist any more; each call needs to be replaced with combination of new extensions methods "Query" and "Results".
