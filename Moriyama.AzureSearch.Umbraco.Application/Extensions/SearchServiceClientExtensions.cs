@@ -9,7 +9,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
 {
     public static class SearchServiceClientExtensions
     {
-        public static AzureSearchIndexResult IndexContentBatch(this SearchServiceClient serviceClient, string indexName, IEnumerable<Document> contents)
+        public static AzureSearchIndexResult IndexContentBatch(this ISearchServiceClient serviceClient, string indexName, IEnumerable<Document> contents)
         {
             var result = new AzureSearchIndexResult();
             var actions = new List<IndexAction>();

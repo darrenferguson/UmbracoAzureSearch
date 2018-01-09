@@ -19,10 +19,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
                 return Enumerable.Empty<EntityTypeSearchResult>();
 
             var result = new List<EntityTypeSearchResult>();
-
-            var client = AzureSearchContext.Instance.GetSearchClient();
-
-            var searchResults = client.Term(query + "*").Results();
+            var client = AzureSearchContext.Instance.SearchClient;
+            var q = new AzureSearchQuery(query + "*");
+            var searchResults = client.Results(q);
 
             if (allowedSections.InvariantContains(Constants.Applications.Content))
             {

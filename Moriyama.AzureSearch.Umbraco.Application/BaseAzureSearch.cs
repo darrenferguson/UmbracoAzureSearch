@@ -9,20 +9,20 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
         protected AzureSearchConfig _config;
         protected readonly string _path;
-
-        // Number of docs to be processed at a time.
-        const int BatchSize = 999;
+        private ISearchServiceClient _searchServiceClient;
+        private const string ConfigRelativePath = @"config\AzureSearch.config";
 
         public BaseAzureSearch(string path)
         {
             _path = path;
-            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(File.ReadAllText(Path.Combine(path, @"config\AzureSearch.config")));
+            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(File.ReadAllText(GetConfigFullPath()));
+            _searchServiceClient = new SearchServiceClient(_config.SearchServiceName, new SearchCredentials(_config.SearchServiceAdminApiKey));
         }
 
         public void SaveConfiguration(AzureSearchConfig config)
         {
             _config = config;
-            File.WriteAllText(Path.Combine(_path, @"config\AzureSearch.config"), JsonConvert.SerializeObject(config, Formatting.Indented));
+            File.WriteAllText(GetConfigFullPath(), JsonConvert.SerializeObject(config, Formatting.Indented));
         }
 
         public AzureSearchConfig GetConfiguration()
@@ -30,10 +30,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return _config;
         }
 
-        public SearchServiceClient GetClient()
+        public ISearchServiceClient GetClient()
         {
-            var serviceClient = new SearchServiceClient(_config.SearchServiceName, new SearchCredentials(_config.SearchServiceAdminApiKey));
-            return serviceClient;
+            return _searchServiceClient;
+        }
+
+        private string GetConfigFullPath()
+        {
+            return Path.Combine(_path, ConfigRelativePath);
         }
     }
 }

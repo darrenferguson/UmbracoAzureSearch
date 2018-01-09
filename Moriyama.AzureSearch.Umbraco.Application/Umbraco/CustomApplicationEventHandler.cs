@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
-using System.Web;
 using Umbraco.Core;
 using Umbraco.Core.Events;
 using Umbraco.Core.Models;
@@ -20,10 +19,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
               ));
 
             Mapper.CreateMap<Index, SearchIndex>();
-
-            var appRoot = HttpContext.Current.Server.MapPath("/");
-            AzureSearchContext.Instance.SetupSearchClient<AzureSearchClient>(appRoot);
-            AzureSearchContext.Instance.SearchIndexClient = new AzureSearchIndexClient(appRoot);
 
             ContentService.Saved += ContentServiceSaved;
             ContentService.Published += ContentServicePublished;
