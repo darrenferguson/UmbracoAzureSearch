@@ -104,6 +104,16 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var client = GetClient();
             var config = GetConfiguration();
 
+            sp.HighlightFields = new List<string>();
+
+            foreach (var field in config.SearchFields.Where(f => f.IsSearchable))
+            {
+                sp.HighlightFields.Add(field.Name);
+            }
+
+            sp.HighlightPreTag = "<match>";
+            sp.HighlightPostTag = "</match>";
+
             ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
             var response = indexClient.Documents.Search(_searchTerm, sp);
 
@@ -111,7 +121,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             foreach (var result in response.Results)
             {
-                results.Content.Add(FromDocument(result.Document, result.Score));
+                var doc = FromDocument(result.Document, result.Score);
+
+                doc.Properties.Add("__match", result.Highlights);
+                results.Content.Add(doc);
             }
 
             if (response.Facets != null)
