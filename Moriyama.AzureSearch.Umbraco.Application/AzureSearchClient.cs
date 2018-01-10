@@ -65,7 +65,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
-        private SearchParameters GetSearchParameters()
+        public SearchParameters GetSearchParameters()
         {
             var sp = new SearchParameters();
 
@@ -101,7 +101,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return Results(sp);
         }
 
-        private ISearchResult Results(SearchParameters sp)
+        public ISearchResult Results(SearchParameters sp)
         {
             var client = GetClient();
             var config = GetConfiguration();
