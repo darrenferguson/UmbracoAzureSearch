@@ -26,6 +26,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchClient Filter(string field, string[] values);
         IAzureSearchClient Filter(string field, int value);
         IAzureSearchClient Filter(string field, bool value);
+        IAzureSearchClient Filter(string filter);
 
         IAzureSearchClient DateRange(string field, DateTime? start, DateTime? end);
 
@@ -38,6 +39,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchClient Contains(IEnumerable<string> fields, IEnumerable<string> values);
 
         IAzureSearchClient Any(string field);
+
+        IAzureSearchClient SearchIn(string field, IEnumerable<string> values);
 
         IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true);
     }
