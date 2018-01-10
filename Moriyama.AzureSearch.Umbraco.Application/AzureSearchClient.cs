@@ -279,6 +279,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
+        public IAzureSearchClient Filter(string filter)
+        {
+            _filters.Add(filter);
+            return this;
+        }
+
         public IAzureSearchClient Facet(string facet)
         {
             _facets.Add(facet);
@@ -292,6 +298,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 _facets.Add(facet);
             }
 
+            return this;
+        }
+
+        public IAzureSearchClient SearchIn(string field, IEnumerable<string> values)
+        {
+            _filters.Add($"search.in({field}, '{string.Join(",", values)}')");
             return this;
         }
 
