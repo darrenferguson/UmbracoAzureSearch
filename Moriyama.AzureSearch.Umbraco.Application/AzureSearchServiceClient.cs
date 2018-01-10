@@ -506,10 +506,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public Field[] GetStandardUmbracoFields()
         {
             // Key field has to be a string....
-            return new[]
-            {
-                 new Field("Id", DataType.String) { IsKey = true, IsFilterable = true, IsSortable = true },
+            var key = new Field("Id", DataType.String) { IsKey = true, IsFilterable = true, IsSortable = true };
 
+            var fields = new []
+            {
                  new Field("Name", DataType.String) { IsFilterable = true, IsSortable = true, IsSearchable = true, IsRetrievable = true},
                  new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
 
@@ -540,6 +540,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("WriterId", DataType.Int32) { IsSortable = true, IsFacetable = true },
                  new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true }
             };
+
+            var sorted = new List<Field>(fields.OrderBy(f => f.Name));
+            sorted.Insert(0, key);
+
+            return sorted.ToArray();
         }
     }
 }
