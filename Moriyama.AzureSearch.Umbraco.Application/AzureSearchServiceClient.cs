@@ -371,6 +371,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {"Name", content.Name},
                 {"SortOrder", content.SortOrder},
                 {"Level", content.Level},
+                {"SearchablePath", content.Path.TrimStart('-') },
                 {"Path", content.Path.Split(',') },
                 {"ParentId", content.ParentId},
                 {"UpdateDate", content.UpdateDate},
@@ -523,6 +524,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("Published", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
                  new Field("Trashed", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
 
+                 new Field("SearchablePath", DataType.String) { IsSearchable = true, IsFilterable = true},
                  new Field("Path", DataType.Collection(DataType.String)) { IsSearchable = true, IsFilterable = true },
                  new Field("Template", DataType.String) { IsSearchable = true, IsFacetable = true },
                  new Field("Icon", DataType.String) { IsSearchable = true, IsFacetable = true },
