@@ -29,6 +29,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private string _searchTerm = "*";
         private IList<string> _orderBy;
         private IList<string> _facets;
+        private QueryType _queryType = QueryType.Simple;
 
         private bool _content;
         private bool _media;
@@ -89,6 +90,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             sp.Skip = (_page - 1) * _pageSize;
             sp.OrderBy = _orderBy;
             sp.Facets = _facets;
+            sp.QueryType = _queryType;
 
             return sp;
         }
@@ -420,6 +422,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             };
 
             return indexClient.Documents.Suggest(value, "sg", sp).Results;
+        }
+
+        public void SetQueryType(QueryType type)
+        {
+            _queryType = type;
         }
     }
 }

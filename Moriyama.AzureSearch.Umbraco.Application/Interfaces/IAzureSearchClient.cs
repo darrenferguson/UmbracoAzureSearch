@@ -43,5 +43,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchClient SearchIn(string field, IEnumerable<string> values);
 
         IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true);
+        void SetQueryType(QueryType type);
     }
 }
