@@ -35,6 +35,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return Path.Combine(path, sessionId + ".json");
         }
 
+        public event EventHandler<Index> CreatingIndex;
+
         public string DropCreateIndex()
         {
             var serviceClient = GetClient();
@@ -56,6 +58,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             try
             {
+                CreatingIndex?.Invoke(this, definition);
                 serviceClient.Indexes.Create(definition);
             }
             catch (Exception ex)
