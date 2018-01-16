@@ -5,11 +5,16 @@ using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using System;
 using System.Linq;
+using log4net;
+using System.Reflection;
+using Newtonsoft.Json;
+using System.Web;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchClient : BaseAzureSearch, IAzureSearchClient
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public IList<string> _filters;
 
@@ -105,7 +110,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var client = GetClient();
             var config = GetConfiguration();
-
             sp.HighlightFields = new List<string>();
 
             foreach (var field in config.SearchFields.Where(f => f.IsSearchable))
@@ -117,8 +121,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             sp.HighlightPostTag = "</match>";
 
             ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
+			var startTime = DateTime.UtcNow;
             var response = indexClient.Documents.Search(_searchTerm, sp);
 
+			var processStartTime = DateTime.UtcNow;
             var results = new Models.SearchResult();
 
             foreach (var result in response.Results)
@@ -148,6 +154,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 results.Count = (int)response.Count;
             }
 
+			if (config.LogSearchPerformance)
+			{
+				string lb = Environment.NewLine;
+				Log.Info($"AzureSearch Log (cached client){lb} - Response Duration: {(int)(processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int)(DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.BaseUri}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
+			}
             return results;
         }
 

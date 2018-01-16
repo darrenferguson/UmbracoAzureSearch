@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Moriyama.AzureSearch.Umbraco.Core</id>
-    <version>1.2.3</version>
+    <version>1.2.5</version>
     <title>Umbraco Azure Search Core</title>
     <authors>Moriyama Ldt</authors>
     <owners>Moriyama Ldt</owners>
