@@ -17,5 +17,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
         public Analyzer[] Analyzers {get; set;} 
 
         public ScoringProfile[] ScoringProfiles {get; set;}
+        
+        public bool LogSearchPerformance { get; set; }
     }
 }
