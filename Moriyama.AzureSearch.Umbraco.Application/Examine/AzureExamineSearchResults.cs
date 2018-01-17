@@ -21,7 +21,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
         }
 
         private readonly ISearchResult _azureResults;
-        private int _position;
 
         public IEnumerator<SearchResult> GetEnumerator()
         {
@@ -40,7 +39,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 
             var result = new SearchResult
             {
-                DocId = _position,
                 Id = azureResult.Id,
                 Score = (float) azureResult.Score,
             };
@@ -116,7 +114,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 
         public IEnumerable<SearchResult> Skip(int skip)
         {
-            _position = skip + 1;
             using (var enumerator = GetEnumerator())
             {
                 while (enumerator.MoveNext())

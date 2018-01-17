@@ -282,7 +282,6 @@
     <Compile Include="Examine\AzureExamineSearchResults.cs" />
     <Compile Include="Examine\DummyUmbracoContentIndexer.cs" />
     <Compile Include="Examine\DummyUmbracoExamineSearcher.cs" />
-    <Compile Include="Examine\LuceneQuery.cs" />
     <Compile Include="Extensions\SearchFieldsExtensions.cs" />
     <Compile Include="Extensions\SearchServiceClientExtensions.cs" />
     <Compile Include="Helper\SearchContentToEntityBasicMapper.cs" />

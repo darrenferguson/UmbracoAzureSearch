@@ -4,6 +4,7 @@ using Examine;
 using Examine.SearchCriteria;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Examine.LuceneEngine;
 using Examine.LuceneEngine.Config;
 using Examine.LuceneEngine.SearchCriteria;
@@ -58,11 +59,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 
         private static string GetLuceneQuery(ISearchCriteria searchCriteria)
         {
-            if (searchCriteria is LuceneSearchCriteria criteria) return criteria.Query?.ToString();
+            // this line can be used when examine dependency is updated 
+            //if (searchCriteria is LuceneSearchCriteria criteria) return criteria.Query?.ToString();
 
-            var criteriaString = searchCriteria?.ToString().Replace("LuceneQuery: (", "LuceneQuery: \"(").Replace(") }", ")\" }");
-            var query = JsonConvert.DeserializeObject<Query>(criteriaString);
-            return query?.LuceneQuery;
+            var query = Regex.Match(searchCriteria.ToString(), "LuceneQuery: (.*\\)) }");
+            return query.Success && query.Groups.Count > 0 ? query.Groups[1].Value : string.Empty;;
         }
 
         private static string GetExcludedDocTypesFilter(IndexSet indexSet)
