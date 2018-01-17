@@ -295,6 +295,7 @@
     <Compile Include="Models\AzureSearchIndexResult.cs" />
     <Compile Include="Models\BackOfficeSearchResult.cs" />
     <Compile Include="Models\BaseContent.cs" />
+    <Compile Include="Models\ReIndexModel.cs" />
     <Compile Include="Models\SearchContent.cs" />
     <Compile Include="Models\BoolSearchFacet.cs" />
     <Compile Include="Models\SearchFacet.cs" />
