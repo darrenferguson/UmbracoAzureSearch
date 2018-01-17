@@ -34,6 +34,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private string _searchTerm = "*";
         private IList<string> _orderBy;
         private IList<string> _facets;
+        private QueryType _queryType = QueryType.Simple;
 
         private bool _content;
         private bool _media;
@@ -69,7 +70,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
-        private SearchParameters GetSearchParameters()
+        public SearchParameters GetSearchParameters()
         {
             var sp = new SearchParameters();
 
@@ -94,6 +95,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             sp.Skip = (_page - 1) * _pageSize;
             sp.OrderBy = _orderBy;
             sp.Facets = _facets;
+            sp.QueryType = _queryType;
 
             return sp;
         }
@@ -104,10 +106,20 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return Results(sp);
         }
 
-        private ISearchResult Results(SearchParameters sp)
+        public ISearchResult Results(SearchParameters sp)
         {
             var client = GetClient();
             var config = GetConfiguration();
+            sp.HighlightFields = new List<string>();
+
+            foreach (var field in config.SearchFields.Where(f => f.IsSearchable))
+            {
+                sp.HighlightFields.Add(field.Name);
+            }
+
+            sp.HighlightPreTag = "<match>";
+            sp.HighlightPostTag = "</match>";
+
             ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
 			var startTime = DateTime.UtcNow;
             var response = indexClient.Documents.Search(_searchTerm, sp);
@@ -117,7 +129,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             foreach (var result in response.Results)
             {
-                results.Content.Add(FromDocument(result.Document, result.Score));
+                var doc = FromDocument(result.Document, result.Score);
+
+                doc.Properties.Add("__match", result.Highlights);
+                results.Content.Add(doc);
             }
 
             if (response.Facets != null)
@@ -277,6 +292,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
+        public IAzureSearchClient Filter(string filter)
+        {
+            _filters.Add(filter);
+            return this;
+        }
+
         public IAzureSearchClient Facet(string facet)
         {
             _facets.Add(facet);
@@ -290,6 +311,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 _facets.Add(facet);
             }
 
+            return this;
+        }
+
+        public IAzureSearchClient SearchIn(string field, IEnumerable<string> values)
+        {
+            _filters.Add($"search.in({field}, '{string.Join(",", values)}')");
             return this;
         }
 
@@ -406,6 +433,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             };
 
             return indexClient.Documents.Suggest(value, "sg", sp).Results;
+        }
+
+        public void SetQueryType(QueryType type)
+        {
+            _queryType = type;
         }
     }
 }

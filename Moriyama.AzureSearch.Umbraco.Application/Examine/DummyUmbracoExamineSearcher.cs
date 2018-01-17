@@ -1,49 +1,79 @@
-﻿using Examine;
+﻿using System;
+using System.Collections.Generic;
+using Examine;
 using Examine.SearchCriteria;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Examine.LuceneEngine;
+using Examine.LuceneEngine.Config;
+using Examine.LuceneEngine.SearchCriteria;
+using Umbraco.Web.Models.ContentEditing;
 using UmbracoExamine;
+using Lucene.Net.Search;
+using Microsoft.Azure.Search.Models;
+using Newtonsoft.Json;
+using StackExchange.Profiling;
+using Umbraco.Core.Logging;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 {
-    public class DummyUmbracoExamineSearcher : UmbracoExamineSearcher
+    public partial class DummyUmbracoExamineSearcher : UmbracoExamineSearcher
     {
-        public override ISearchResults Search(ISearchCriteria searchParams)
+        public override ISearchResults Search(ISearchCriteria searchCriteria)
         {
+            try
+            {
+                if (searchCriteria != null)
+                {
+                    var client = AzureSearchContext.Instance?.GetSearchClient();
+                    if (client != null)
+                    {
+                        client.SetQueryType(QueryType.Full);
+                        client.Filter("Published", true);
+                        client.Filter("Trashed", false);
+
+                        var indexSet = IndexSets.Instance?.Sets?[IndexSetName];
+                        if (indexSet != null)
+                        {
+                            client.Filter(GetExcludedDocTypesFilter(indexSet));
+                        }
+                        
+                        var query = GetLuceneQuery(searchCriteria);
+                        var azQuery = client.Term(query);
+                        var azureResults = azQuery?.Results();
+
+                        ISearchResults azureExamineResults = new AzureExamineSearchResults(azureResults);
+                        return azureExamineResults;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Error(GetType(), ex.Message, ex);
+            }
+
             // Doing this will make Umbraco fallback to the database.
-            // We could in future implement this to make it come from Azure search.
             throw new FileNotFoundException("");
+        }
 
-            //// Video Nasty
-            //var s = searchParams.ToString();
-            //int id = 0;
+        private static string GetLuceneQuery(ISearchCriteria searchCriteria)
+        {
+            // this line can be used when examine dependency is updated 
+            //if (searchCriteria is LuceneSearchCriteria criteria) return criteria.Query?.ToString();
 
-            //try
-            //{
-            //    s = s.Substring(s.IndexOf("NodeId:") + 7);
-            //    s = s.Substring(0, s.IndexOf(" "));
+            var query = Regex.Match(searchCriteria.ToString(), "LuceneQuery: (.*\\)) }");
+            return query.Success && query.Groups.Count > 0 ? query.Groups[1].Value : string.Empty;;
+        }
 
-            //    int.TryParse(s, out id);
+        private static string GetExcludedDocTypesFilter(IndexSet indexSet)
+        {
+            var excludeDocs = indexSet?.ExcludeNodeTypes?.ToList();
+            if (excludeDocs?.Any() == false) return string.Empty;
 
-            //    if(id > 0)
-            //    {
-            //        var client = AzureSearchContext.Instance;
-            //        var media = client.SearchClient.Media().Filter("Id", id.ToString()).Results();
-
-            //        if(media.Count == 1)
-            //        {
-            //            var mediaItem = media.Content[0];
-
-            //        }
-            //    }
-
-            //}
-            //catch (Exception ex)
-            //{
-
-            //}
-
-            //throw new FileNotFoundException("");       
-                    
+            var docNames = excludeDocs?.Select(i => i?.Name) ?? Enumerable.Empty<string>();
+            return $"not search.in(ContentTypeAlias, '{string.Join(", ", docNames)}')";
         }
     }
 }
+

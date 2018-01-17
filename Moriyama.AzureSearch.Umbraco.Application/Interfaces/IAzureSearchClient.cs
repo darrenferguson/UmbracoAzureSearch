@@ -9,6 +9,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IList<string> Filters { get; set; }
 
         ISearchResult Results();
+        ISearchResult Results(SearchParameters sp);
+        SearchParameters GetSearchParameters();
 
         IAzureSearchClient Term(string query);
         IAzureSearchClient DocumentType(string typeAlias);
@@ -26,6 +28,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchClient Filter(string field, string[] values);
         IAzureSearchClient Filter(string field, int value);
         IAzureSearchClient Filter(string field, bool value);
+        IAzureSearchClient Filter(string filter);
 
         IAzureSearchClient DateRange(string field, DateTime? start, DateTime? end);
 
@@ -39,6 +42,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         IAzureSearchClient Any(string field);
 
+        IAzureSearchClient SearchIn(string field, IEnumerable<string> values);
+
         IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true);
+        void SetQueryType(QueryType type);
     }
 }
