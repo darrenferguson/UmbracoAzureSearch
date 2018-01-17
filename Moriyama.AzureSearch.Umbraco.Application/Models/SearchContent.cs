@@ -18,6 +18,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
         public bool IsMember { get; set; }
 
         public string[] Path { get; set; }
+        public string SearchablePath { get; set; }
 
         public IDictionary<string, object> Properties { get; set; }
     }

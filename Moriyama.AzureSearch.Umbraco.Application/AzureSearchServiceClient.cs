@@ -37,6 +37,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return Path.Combine(path, sessionId, filename);
         }
 
+        public event EventHandler<Index> CreatingIndex;
+
         public string DropCreateIndex()
         {
             var serviceClient = GetClient();
@@ -58,6 +60,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             try
             {
+                CreatingIndex?.Invoke(this, definition);
                 serviceClient.Indexes.Create(definition);
             }
             catch (Exception ex)
@@ -445,6 +448,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {"Name", content.Name},
                 {"SortOrder", content.SortOrder},
                 {"Level", content.Level},
+                {"SearchablePath", content.Path.TrimStart('-') },
                 {"Path", content.Path.Split(',') },
                 {"ParentId", content.ParentId},
                 {"UpdateDate", content.UpdateDate},
@@ -580,10 +584,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public Field[] GetStandardUmbracoFields()
         {
             // Key field has to be a string....
-            return new[]
-            {
-                 new Field("Id", DataType.String) { IsKey = true, IsFilterable = true, IsSortable = true },
+            var key = new Field("Id", DataType.String) { IsKey = true, IsFilterable = true, IsSortable = true };
 
+            var fields = new []
+            {
                  new Field("Name", DataType.String) { IsFilterable = true, IsSortable = true, IsSearchable = true, IsRetrievable = true},
                  new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
 
@@ -597,6 +601,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("Published", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
                  new Field("Trashed", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
 
+                 new Field("SearchablePath", DataType.String) { IsSearchable = true, IsFilterable = true},
                  new Field("Path", DataType.Collection(DataType.String)) { IsSearchable = true, IsFilterable = true },
                  new Field("Template", DataType.String) { IsSearchable = true, IsFacetable = true },
                  new Field("Icon", DataType.String) { IsSearchable = true, IsFacetable = true },
@@ -614,6 +619,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("WriterId", DataType.Int32) { IsSortable = true, IsFacetable = true },
                  new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true }
             };
+
+            var sorted = new List<Field>(fields.OrderBy(f => f.Name));
+            sorted.Insert(0, key);
+
+            return sorted.ToArray();
         }
     }
 }

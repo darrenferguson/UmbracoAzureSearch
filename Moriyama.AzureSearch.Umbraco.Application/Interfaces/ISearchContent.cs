@@ -22,6 +22,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         int Level { get; set; }
 
         string[] Path { get; set; }
+        string SearchablePath { get; set; }
 
         int ParentId { get; set; }
 
