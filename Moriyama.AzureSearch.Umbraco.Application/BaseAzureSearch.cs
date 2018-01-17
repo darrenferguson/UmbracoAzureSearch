@@ -9,6 +9,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
         protected AzureSearchConfig _config;
         protected readonly string _path;
+        private JsonSerializerSettings _serializerSettings;
 
         // Number of docs to be processed at a time.
         const int BatchSize = 999;
@@ -16,13 +17,21 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public BaseAzureSearch(string path)
         {
             _path = path;
-            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(File.ReadAllText(Path.Combine(path, @"config\AzureSearch.config")));
+
+            _serializerSettings = new JsonSerializerSettings
+            {
+                DefaultValueHandling = DefaultValueHandling.Ignore
+            };
+
+            var configData = File.ReadAllText(Path.Combine(path, @"config\AzureSearch.config"));
+
+            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(configData);
         }
 
         public void SaveConfiguration(AzureSearchConfig config)
         {
             _config = config;
-            File.WriteAllText(Path.Combine(_path, @"config\AzureSearch.config"), JsonConvert.SerializeObject(config, Formatting.Indented));
+            File.WriteAllText(Path.Combine(_path, @"config\AzureSearch.config"), JsonConvert.SerializeObject(config, Formatting.Indented, _serializerSettings));
         }
 
         public AzureSearchConfig GetConfiguration()

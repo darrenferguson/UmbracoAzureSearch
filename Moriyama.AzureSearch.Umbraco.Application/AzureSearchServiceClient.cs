@@ -55,7 +55,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var definition = new Index
             {
                 Name = _config.IndexName,
-                Fields = customFields
+                Fields = customFields,
+                ScoringProfiles = _config.ScoringProfiles,
+                Analyzers = _config.Analyzers
             };
 
             try
