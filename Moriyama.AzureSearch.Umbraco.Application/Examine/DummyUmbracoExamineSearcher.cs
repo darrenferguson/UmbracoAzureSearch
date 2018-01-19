@@ -65,16 +65,49 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
                     if (client != null)
                     {
                         client.SetQueryType(QueryType.Full);
-                        client.Filter("Published", true);
-                        client.Filter("Trashed", false);
+
+                        var query = GetLuceneQuery(searchCriteria).Replace("__NodeId", "Id");
+
+                        // fix trashed queries
+                        if (query.Contains("-__Path:-1,-21,*"))
+                        {
+                            query = query.Replace("-__Path:-1,-21,*", "");
+                            client.Filter("Trashed", false);
+                        }
+                        
+                        switch (searchCriteria.SearchIndexType)
+                        {
+                            case "media":
+                                client.Media();
+                                query = query.Replace("+__IndexType:media", "");
+                                break;
+
+                            case "content":
+                                client.Content();
+
+                                // handle support unpublishedcontent
+                                var onlyPublished = _indexerLazy.Value?.SupportUnpublishedContent == false;
+                                if (onlyPublished)
+                                {
+                                    client.Filter("Published", true);
+                                }
+                                break;
+
+                            case "member":
+                                client.Filter("IsMember", true);
+                                break;
+                        }
 
                         var indexSet = IndexSets.Instance?.Sets?[IndexSetName];
                         if (indexSet != null)
                         {
-                            client.Filter(GetExcludedDocTypesFilter(indexSet));
+                            var docTypes = GetExcludedDocTypesFilter(indexSet);
+                            if (!string.IsNullOrEmpty(docTypes))
+                            {
+                                client.Filter(docTypes);
+                            }
                         }
                         
-                        var query = GetLuceneQuery(searchCriteria);
                         var azQuery = client.Term(query);
                         var azureResults = azQuery?.Results();
 
@@ -97,7 +130,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
             // this line can be used when examine dependency is updated 
             //if (searchCriteria is LuceneSearchCriteria criteria) return criteria.Query?.ToString();
 
-            var query = Regex.Match(searchCriteria.ToString(), "LuceneQuery: (.*\\)) }");
+            var query = Regex.Match(searchCriteria.ToString(), "LuceneQuery: (.*) }");
             return query.Success && query.Groups.Count > 0 ? query.Groups[1].Value : string.Empty;;
         }
 
