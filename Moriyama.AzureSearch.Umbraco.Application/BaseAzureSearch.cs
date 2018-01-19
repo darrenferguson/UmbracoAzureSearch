@@ -9,7 +9,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
         protected AzureSearchConfig _config;
         protected readonly string _path;
-        private JsonSerializerSettings _serializerSettings;
 
         // Number of docs to be processed at a time.
         const int BatchSize = 999;
@@ -18,20 +17,20 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             _path = path;
 
-            _serializerSettings = new JsonSerializerSettings
-            {
-                DefaultValueHandling = DefaultValueHandling.Ignore
-            };
+            var deserializationSettings = GetClient().DeserializationSettings;
 
             var configData = File.ReadAllText(Path.Combine(path, @"config\AzureSearch.config"));
 
-            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(configData);
+            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(configData, deserializationSettings);
         }
 
         public void SaveConfiguration(AzureSearchConfig config)
         {
             _config = config;
-            File.WriteAllText(Path.Combine(_path, @"config\AzureSearch.config"), JsonConvert.SerializeObject(config, Formatting.Indented, _serializerSettings));
+            var serializerSettings = GetClient().SerializationSettings;
+            serializerSettings.DefaultValueHandling = DefaultValueHandling.Ignore;
+
+            File.WriteAllText(Path.Combine(_path, @"config\AzureSearch.config"), JsonConvert.SerializeObject(config, Formatting.Indented, serializerSettings));
         }
 
         public AzureSearchConfig GetConfiguration()
@@ -41,7 +40,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public SearchServiceClient GetClient()
         {
-            var serviceClient = new SearchServiceClient(_config.SearchServiceName, new SearchCredentials(_config.SearchServiceAdminApiKey));
+            var serviceName = _config != null ? _config.SearchServiceName : "name";
+            var apiKey = _config != null ? _config.SearchServiceAdminApiKey : "apikey";
+
+            var serviceClient = new SearchServiceClient(serviceName, new SearchCredentials(apiKey));
             return serviceClient;
         }
     }
