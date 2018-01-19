@@ -20,6 +20,17 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 {
     public partial class DummyUmbracoExamineSearcher : UmbracoExamineSearcher
     {
+        protected override string[] GetSearchFields()
+        {
+            var path = System.Web.Hosting.HostingEnvironment.MapPath("~/");
+            var serviceClient = new AzureSearchIndexClient(path);
+
+            var systemFields = serviceClient.GetStandardUmbracoFields().Where(f => f.IsSearchable).Select(f => f.Name);
+            var configFields = serviceClient.GetConfiguration().SearchFields.Where(f => f.IsSearchable).Select(f => f.Name);
+
+            return systemFields.Concat(configFields).ToArray();
+        }
+
         public override ISearchResults Search(ISearchCriteria searchCriteria)
         {
             try
