@@ -704,7 +704,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                          new Field("SortOrder", DataType.Int32) { IsSortable = true },
 
                          new Field("WriterId", DataType.Int32) { IsSortable = true, IsFacetable = true },
-                 new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true }
+                         new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true },
                          new Field("WriterName", DataType.String) { IsSortable = true, IsFacetable = true },
                          new Field("CreatorName", DataType.String) { IsSortable = true, IsFacetable = true }
                     };
