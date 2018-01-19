@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Azure.Search;
@@ -13,7 +14,10 @@ using Umbraco.Web;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using Moriyama.AzureSearch.Umbraco.Application.Extensions;
+using Umbraco.Core;
 using Umbraco.Web.Models;
+using UmbracoExamine;
+using UmbracoExamine.DataServices;
 using File = System.IO.File;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
@@ -30,6 +34,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             Parsers = new Dictionary<string, IComputedFieldParser>();
             SetCustomFieldParsers(GetConfiguration());
         }
+
+        private Lazy<Field[]> _umbracoFields;
 
         private string SessionFile(string sessionId, string filename)
         {
@@ -596,11 +602,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public Field[] GetStandardUmbracoFields()
         {
-            // Key field has to be a string....
-            var key = new Field("Id", DataType.String) { IsKey = true, IsFilterable = true, IsSortable = true };
-
-            var fields = new []
+            if (_umbracoFields == null)
             {
+                _umbracoFields = new Lazy<Field[]>(() =>
+                {
+                    var fields = new List<Field>
+                    {
+                         // Key field has to be a string....
+                         new Field("Id", DataType.String) { IsKey = true, IsFilterable = true, IsSortable = true },
                          new Field("Name", DataType.String) { IsFilterable = true, IsSortable = true, IsSearchable = true, IsRetrievable = true},
                          new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
 
@@ -631,12 +640,53 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                          new Field("WriterId", DataType.Int32) { IsSortable = true, IsFacetable = true },
                  new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true }
+                         new Field("WriterName", DataType.String) { IsSortable = true, IsFacetable = true },
+                         new Field("CreatorName", DataType.String) { IsSortable = true, IsFacetable = true }
                     };
             
-            var sorted = new List<Field>(fields.OrderBy(f => f.Name));
-            sorted.Insert(0, key);
+                    var examineContentService =  new UmbracoContentService(ApplicationContext.Current);
+
+                    var existingNames = fields.Select(f => f.Name);
+
+                    // get system properties which haven't already been defined above
+                    foreach (var name in examineContentService.GetAllSystemPropertyNames().Where(fn => !existingNames.InvariantContains(fn)))
+                    {
+                        fields.Add(new Field
+                        {
+                            Name = name,
+                            Type = DataType.String,
+                            IsFilterable = true, 
+                            IsSearchable = true,
+                            // Treats the entire content of a field as a single token
+                            Analyzer = AnalyzerName.Keyword
+                        });
+                    }
+            
+                    // get 'system' fields like umbracoWidth, umbracoBytes, umbracoNaviHide etc
+                    var umbracoFields = examineContentService.GetAllUserPropertyNames().Where(f => f.StartsWith("umbraco"));
+                    foreach (var name in umbracoFields)
+                    {
+                        fields.Add(new Field
+                        {
+                            Name = name,
+                            Type = DataType.String,
+                            IsFilterable = true, 
+                            IsSearchable = true,
+                            // Treats the entire content of a field as a single token
+                            Analyzer = AnalyzerName.Keyword
+                        });
+                    }
+
+                    // sort, but ensure key is always first
+                    var keyField = fields.FirstOrDefault(f => f.IsKey);
+                    var sorted = fields.Except(new [] { keyField }).OrderBy(f => f.Name).ToList();
+                    sorted.Insert(0, keyField);
 
                     return sorted.ToArray();
+                });
+            }
+
+            return _umbracoFields.Value;
         }
     }
 }
