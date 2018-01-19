@@ -6,6 +6,7 @@ using Examine;
 using Examine.LuceneEngine.SearchCriteria;
 using Examine.SearchCriteria;
 using Lucene.Net.Search;
+using Lucene.Net.Store;
 using Microsoft.Azure.Search.Models;
 using Moq;
 using Moriyama.AzureSearch.Umbraco.Application;
@@ -143,10 +144,12 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestExamineSearchClient
         [Test]
         public void TestCriteriaSearch()
         {
-            var client = AzureSearchContext.Instance.SearchClient;
+            
+            var searcher = new DummyUmbracoExamineSearcher(new RAMDirectory(), new StandardAnalyzer(Lucene.Net.Util.Version.LUCENE_29));
+            var criteria = searcher.CreateSearchCriteria();
 
-            var searcher = new DummyUmbracoExamineSearcher();
-            searcher.CreateSearchCriteria();
+            var query = criteria.Field("Name", "test").Or().Field("content", "hello").Compile();
+            var results = searcher.Search(query);
 
         }
     }

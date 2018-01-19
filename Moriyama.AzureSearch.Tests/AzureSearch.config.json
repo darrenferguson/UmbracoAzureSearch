@@ -1,6 +1,6 @@
 ﻿{
-  "SearchServiceName": "atg-media-preview",
-  "SearchServiceAdminApiKey": "77AD9A14E4569CB0DC079B0E49A2D8FF",
+  "SearchServiceName": "",
+  "SearchServiceAdminApiKey": "",
   "IndexName": "inttest",
   "IndexBatchSize": 50,
   "Fields": [

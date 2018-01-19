@@ -18,6 +18,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
             
         }
 
+        // Need this constructor for tests...
+        public DummyUmbracoExamineSearcher(Lucene.Net.Store.Directory luceneDirectory,
+            Lucene.Net.Analysis.Analyzer analyzer) : base(luceneDirectory, analyzer)
+        {
+
+        }
+
         public override ISearchResults Search(string searchTerm, bool useWildCards)
         {
             AzureSearchContext azureSearchContext = AzureSearchContext.Instance;
@@ -33,22 +40,23 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
         {
             var client = AzureSearchContext.Instance.SearchClient;
 
-            //client.SetQueryType(QueryType.Full);
-            //client.Filter("Published", true);
-            //client.Filter("Trashed", false);
-
-            var indexSet = IndexSets.Instance.Sets[IndexSetName];
-
-            if (indexSet != null)
-            {
-                //client.Filter(GetExcludedDocTypesFilter(indexSet));
-            }
-
             string query = GetLuceneQuery(searchCriteria);
 
             IAzureSearchQuery azureQuery =
                 new AzureSearchQuery(query)
                     .QueryType(QueryType.Full);
+
+            // TODO - this would be set at indexer level?
+            //client.Filter("Published", true);
+            //client.Filter("Trashed", false);
+
+            if (IndexSets.Instance != null && IndexSets.Instance.Sets != null &&
+                IndexSets.Instance.Sets[IndexSetName] != null)
+            {
+
+                // TODO: Work out with Tom.
+                //azureQuery.Filter(GetExcludedDocTypesFilter(IndexSets.Instance.Sets[IndexSetName]));
+            }
 
             var azureResults = client.Results(azureQuery);
 
@@ -60,8 +68,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
         {
             // this line can be used when examine dependency is updated 
             //if (searchCriteria is LuceneSearchCriteria criteria) return criteria.Query?.ToString();
-
-            var query = Regex.Match(searchCriteria.ToString(), "LuceneQuery: (.*\\)) }");
+            var query = Regex.Match(searchCriteria.ToString(), ".*?LuceneQuery: (.*)\\}", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
             return query.Success && query.Groups.Count > 0 ? query.Groups[1].Value : string.Empty;;
         }
 
