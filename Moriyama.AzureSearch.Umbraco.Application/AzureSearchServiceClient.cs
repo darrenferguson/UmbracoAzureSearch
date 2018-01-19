@@ -375,26 +375,36 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var result = GetDocumentToIndex((ContentBase)content, searchFields);
 
+            var url = string.Empty;
+
             if (!content.ContentType.Alias.Equals("Folder"))
             {
                 if (content.HasProperty("umbracoFile"))
                 {
-                    var value = (content.Properties?["umbracoFile"]?.Value ?? "").ToString();
-
-                    if (value.StartsWith("{") && value.EndsWith("}"))
+                    var prop = content.Properties?["umbracoFile"];
+                    if (prop != null)
                     {
-                        try
+                        switch (prop.PropertyType.PropertyEditorAlias)
                         {
-                            var obj = JsonConvert.DeserializeObject<ImageCropDataSet>(value);
-                            value = obj.Src;
-                        }
-                        catch (Exception e) when (e is JsonReaderException || e is JsonSerializationException)
-                        {
-                            value = string.Empty;
+                            case Constants.PropertyEditors.UploadFieldAlias:
+                                url = prop.Value?.ToString();
+                                break;
+
+                            case Constants.PropertyEditors.ImageCropperAlias:
+                                //get the url from the json format
+
+                                var json = prop.Value as JObject;
+                                if (json == null)
+                                {
+                                    url = prop.Value.ToString();
+                                }
+                                else
+                                {
+                                    url = json.ToObject<ImageCropDataSet>(new JsonSerializer {Culture = CultureInfo.InvariantCulture, FloatParseHandling = FloatParseHandling.Decimal}).Src;
+                                }
+                                break;
                         }
                     }
-
-                    result.Add("Url", value);
                 }
             }
 
@@ -404,6 +414,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             result.Add("ContentTypeAlias", content.ContentType.Alias);
             result.Add("Icon", content.ContentType.Icon);
 
+            result["Url"] = url;
             return result;
         }
 
@@ -590,42 +601,42 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             var fields = new []
             {
-                 new Field("Name", DataType.String) { IsFilterable = true, IsSortable = true, IsSearchable = true, IsRetrievable = true},
-                 new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
+                         new Field("Name", DataType.String) { IsFilterable = true, IsSortable = true, IsSearchable = true, IsRetrievable = true},
+                         new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
 
-                 new Field("Url", DataType.String) { IsSearchable = true, IsRetrievable = true},
-                 new Field("MemberEmail", DataType.String) { IsSearchable = true },
+                         new Field("Url", DataType.String) { IsSearchable = true, IsRetrievable = true},
+                         new Field("MemberEmail", DataType.String) { IsSearchable = true },
 
-                 new Field("IsContent", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
-                 new Field("IsMedia", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
-                 new Field("IsMember", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
+                         new Field("IsContent", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
+                         new Field("IsMedia", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
+                         new Field("IsMember", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
 
-                 new Field("Published", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
-                 new Field("Trashed", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
+                         new Field("Published", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
+                         new Field("Trashed", DataType.Boolean) { IsFilterable = true, IsFacetable = true },
 
-                 new Field("SearchablePath", DataType.String) { IsSearchable = true, IsFilterable = true},
-                 new Field("Path", DataType.Collection(DataType.String)) { IsSearchable = true, IsFilterable = true },
-                 new Field("Template", DataType.String) { IsSearchable = true, IsFacetable = true },
-                 new Field("Icon", DataType.String) { IsSearchable = true, IsFacetable = true },
+                         new Field("SearchablePath", DataType.String) { IsSearchable = true, IsFilterable = true},
+                         new Field("Path", DataType.Collection(DataType.String)) { IsSearchable = true, IsFilterable = true },
+                         new Field("Template", DataType.String) { IsSearchable = true, IsFacetable = true },
+                         new Field("Icon", DataType.String) { IsSearchable = true, IsFacetable = true },
 
-                 new Field("ContentTypeAlias", DataType.String) { IsSearchable = true, IsFacetable = true, IsFilterable = true },
+                         new Field("ContentTypeAlias", DataType.String) { IsSearchable = true, IsFacetable = true, IsFilterable = true },
 
-                 new Field("UpdateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
-                 new Field("CreateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
+                         new Field("UpdateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
+                         new Field("CreateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
 
-                 new Field("ContentTypeId", DataType.Int32) { IsFilterable = true },
-                 new Field("ParentId", DataType.Int32) { IsFilterable = true },
-                 new Field("Level", DataType.Int32) { IsSortable = true, IsFacetable = true },
-                 new Field("SortOrder", DataType.Int32) { IsSortable = true },
+                         new Field("ContentTypeId", DataType.Int32) { IsFilterable = true },
+                         new Field("ParentId", DataType.Int32) { IsFilterable = true },
+                         new Field("Level", DataType.Int32) { IsSortable = true, IsFacetable = true },
+                         new Field("SortOrder", DataType.Int32) { IsSortable = true },
 
-                 new Field("WriterId", DataType.Int32) { IsSortable = true, IsFacetable = true },
+                         new Field("WriterId", DataType.Int32) { IsSortable = true, IsFacetable = true },
                  new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true }
-            };
-
+                    };
+            
             var sorted = new List<Field>(fields.OrderBy(f => f.Name));
             sorted.Insert(0, key);
 
-            return sorted.ToArray();
+                    return sorted.ToArray();
         }
     }
 }
