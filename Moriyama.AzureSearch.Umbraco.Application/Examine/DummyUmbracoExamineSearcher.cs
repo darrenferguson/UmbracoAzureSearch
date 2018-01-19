@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Examine;
 using Examine.SearchCriteria;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Examine.Config;
 using Examine.LuceneEngine;
 using Examine.LuceneEngine.Config;
+using Examine.LuceneEngine.Providers;
 using Examine.LuceneEngine.SearchCriteria;
+using Examine.Providers;
 using Umbraco.Web.Models.ContentEditing;
 using UmbracoExamine;
 using Lucene.Net.Search;
@@ -18,8 +22,28 @@ using Umbraco.Core.Logging;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 {
-    public partial class DummyUmbracoExamineSearcher : UmbracoExamineSearcher
+    public class AzureSearchExamineProxySearcher : UmbracoExamineSearcher
     {
+        private Lazy<BaseUmbracoIndexer> _indexerLazy;
+
+        public override void Initialize(string name, NameValueCollection config)
+        {
+            base.Initialize(name, config);
+
+            _indexerLazy = new Lazy<BaseUmbracoIndexer>(() =>
+            {
+                foreach (BaseUmbracoIndexer indexer in ExamineManager.Instance.IndexProviderCollection)
+                {
+                    if (indexer.IndexSetName == IndexSetName)
+                    {
+                        return indexer;
+                    }
+                }
+
+                return null;
+            });
+        }
+
         protected override string[] GetSearchFields()
         {
             var path = System.Web.Hosting.HostingEnvironment.MapPath("~/");
