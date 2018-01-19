@@ -29,13 +29,16 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         DateTime UpdateDate { get; set; }
         bool Trashed { get; set; }
         int WriterId { get; set; }
+        string WriterName {get; set;}
         string Template { get; set; }
 
         int ContentTypeId { get; set; }
         string ContentTypeAlias { get; set; }
         DateTime CreateDate { get; set; }
         int CreatorId { get; set; }
+        string CreatorName { get; set; }
 
         IDictionary<string, object> Properties { get; set; }
+        string UrlName { get; set; }
     }
 }

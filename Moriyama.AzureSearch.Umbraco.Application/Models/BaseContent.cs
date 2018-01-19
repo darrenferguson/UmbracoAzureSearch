@@ -6,6 +6,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
     {
 
         public string Name { get; set; }
+        public string UrlName { get; set; }
         
         public bool Published { get; set; }
 
@@ -17,6 +18,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
         public DateTime UpdateDate { get; set; }
         public bool Trashed { get; set; }
         public int WriterId { get; set; }
+        public string WriterName {get; set;}
         public string Template { get; set; }
 
         public int ContentTypeId { get; set; }
@@ -24,5 +26,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
         public DateTime CreateDate { get; set; }
         public int CreatorId { get; set; }
 
+        public string CreatorName {get; set;}
     }
 }
