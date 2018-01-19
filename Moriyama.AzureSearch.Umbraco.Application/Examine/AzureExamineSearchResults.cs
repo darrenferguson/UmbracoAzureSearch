@@ -49,6 +49,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
             if (azureResult.IsMedia)
             {
                 indexType = "media";
+                result.Fields.Add("umbracoFile", azureResult.Url);
             }
 
             if (azureResult.IsMember)
@@ -62,8 +63,23 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
             result.Fields.Add("__NodeTypeAlias", azureResult.ContentTypeAlias?.ToLower());
             result.Fields.Add("__Key", azureResult.Key);
             result.Fields.Add("id", azureResult.Id.ToString());
+            result.Fields.Add("key", azureResult.Key);
+            result.Fields.Add("parentID", azureResult.Path.Skip(azureResult.Path.Length - 1).FirstOrDefault());
+            result.Fields.Add("level", azureResult.Level.ToString());
+            result.Fields.Add("creatorId", azureResult.CreatorId.ToString());
+            result.Fields.Add("creatorName", azureResult.CreatorName);
+            result.Fields.Add("writerId", azureResult.WriterId.ToString());
+            result.Fields.Add("writerName", azureResult.CreatorName);
+            result.Fields.Add("template", "0");
+            result.Fields.Add("urlName", "");
+            result.Fields.Add("sortOrder", azureResult.SortOrder.ToString());
+            result.Fields.Add("createDate", azureResult.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"));
+            result.Fields.Add("updateDate", azureResult.UpdateDate.ToString("yyyy-MM-dd HH:mm:ss"));
+            result.Fields.Add("path", $"-{azureResult.SearchablePath}");
+            result.Fields.Add("nodeType", azureResult.ContentTypeId.ToString());
+            result.Fields.Add("nodeTypeAlias", azureResult.ContentTypeAlias?.ToLower());
+
             result.Fields.Add("nodeName", azureResult.Name);
-            result.Fields.Add("createDate", azureResult.CreateDate.ToString("yyyyMMddHHmmsss"));
 
             if (azureResult.Properties == null) return result;
 
