@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
@@ -33,8 +34,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             Parsers = new Dictionary<string, IComputedFieldParser>();
             SetCustomFieldParsers(GetConfiguration());
+
+            _propertyCache = new Dictionary<string, PropertyInfo>();
         }
 
+        private Dictionary<string, PropertyInfo> _propertyCache;
         private Lazy<Field[]> _umbracoFields;
 
         private string SessionFile(string sessionId, string filename)
@@ -362,17 +366,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var result = GetDocumentToIndex((ContentBase)member, searchFields);
 
-            result.Add("IsMedia", false);
-            result.Add("IsContent", false);
-            result.Add("IsMember", true);
-
             if (member != null)
             {
-                result.Add("MemberEmail", member.Email);
-                result.Add("ContentTypeAlias", member.ContentType.Alias);
+                result["MemberEmail"] = member.Email;
+                result["ContentTypeAlias"] = member.ContentType.Alias;
             }
 
-            result.Add("Icon", member.ContentType.Icon);
+            result["Icon"] = member.ContentType.Icon;
 
             return result;
         }
@@ -414,13 +414,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 }
             }
 
-            result.Add("IsMedia", true);
-            result.Add("IsContent", false);
-            result.Add("IsMember", false);
-            result.Add("ContentTypeAlias", content.ContentType.Alias);
-            result.Add("Icon", content.ContentType.Icon);
 
             result["Url"] = url;
+            result["ContentTypeAlias"] = content.ContentType.Alias;
+            result["Icon"] = content.ContentType.Icon;
+
             return result;
         }
 
@@ -428,13 +426,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var result = GetDocumentToIndex((ContentBase)content, searchFields);
 
-            result.Add("IsContent", true);
-            result.Add("IsMedia", false);
-            result.Add("IsMember", false);
-
-            result.Add("Published", content.Published);
-            result.Add("WriterId", content.WriterId);
-            result.Add("ContentTypeAlias", content.ContentType.Alias);
+            result["Published"] = content.Published;
+            result["WriterId"] = content.WriterId;
+            result["WriterName"] = content.GetWriterProfile(UmbracoContext.Current.Application.Services.UserService).Name;
+            result["ContentTypeAlias"] = content.ContentType.Alias;
 
             if (content.Published)
             {
@@ -443,7 +438,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                 if (publishedContent != null)
                 {
-                    result.Add("Url", publishedContent.Url);
+                    result["Url"] =  publishedContent.Url;
                 }
             }
 
@@ -452,28 +447,101 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             //result.Add("IsProtected", content.ContentType.Alias);
 
             if (content.Template != null)
-                result.Add("Template", content.Template.Alias);
+                result["Template"] = content.Template.Alias;
 
-            result.Add("Icon", content.ContentType.Icon);
+            result["Icon"] = content.ContentType.Icon;
 
             return result;
         }
 
+
+
         private Document GetDocumentToIndex(IContentBase content, SearchField[] searchFields)
         {
-            var c = new Document
+            var c = new Document();
+
+            var type = content.GetType();
+
+            foreach (var field in GetStandardUmbracoFields())
             {
-                {"Id", content.Id.ToString()},
-                {"Name", content.Name},
-                {"SortOrder", content.SortOrder},
-                {"Level", content.Level},
-                {"SearchablePath", content.Path.TrimStart('-') },
-                {"Path", content.Path.Split(',') },
-                {"ParentId", content.ParentId},
-                {"UpdateDate", content.UpdateDate},
-                {"Trashed", content.Trashed},
-                {"Key", content.Key.ToString() }
-            };
+                object propertyValue = null; 
+
+                // handle special case properties
+                switch (field.Name)
+                {
+                    case "SearchablePath":
+                        propertyValue = content.Path.TrimStart('-');
+                        break;
+
+                    case "Path":
+                        propertyValue = content.Path.Split(',');
+                        break;
+
+                    case "CreatorName":
+                        propertyValue = content.GetCreatorProfile(UmbracoContext.Current.Application.Services.UserService).Name;
+                        break;
+
+                    default:
+                        // try get model property
+                        PropertyInfo modelProperty;
+                        if (_propertyCache.ContainsKey(field.Name))
+                        {
+                            modelProperty = _propertyCache[field.Name];
+                        }
+                        else
+                        {
+                            modelProperty = type.GetProperty(field.Name);
+                            _propertyCache[field.Name] = modelProperty;
+                        }
+
+                        if (modelProperty != null)
+                        {
+                            propertyValue = modelProperty.GetValue(content);
+                        }
+                        else
+                        {
+                            // try get umbraco property
+                            if (content.HasProperty(field.Name))
+                            {
+                                propertyValue = content.GetValue(field.Name);
+                            }
+                        }
+                        break;
+                }
+
+                // handle datatypes
+                switch (field.Type.ToString())
+                {
+                    case "Edm.String":
+                        propertyValue = propertyValue?.ToString();
+                        break;
+
+                    case "Edm.Boolean":
+                        bool.TryParse((propertyValue ?? "False").ToString(), out var val);
+                        propertyValue = val;
+                        break;
+                }
+
+                if (propertyValue?.ToString().IsNullOrWhiteSpace() == false)
+                {
+                    c[field.Name] = propertyValue;
+                }
+            }
+
+            switch (type.Name)
+            {
+                case "Media":
+                    c["IsMedia"] = true;
+                    break;
+
+                case "Content":
+                    c["IsContent"] = true;
+                    break;
+
+                case "Member":
+                    c["IsMember"] = true;
+                    break;
+            }
 
             bool cancelIndex = AzureSearch.FireContentIndexing(
                 new AzureSearchEventArgs()
@@ -494,6 +562,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             c = FromUmbracoContentBase(c, content, umbracoFields);
             c = FromComputedFields(c, content, computedFields);
 
+            // todo: content isn't actually indexed at this point, consider moving the event to the callback from azure after sending to index
             AzureSearch.FireContentIndexed(
                 new AzureSearchEventArgs()
                 {
@@ -506,10 +575,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoContentBase(Document c, IContentBase content, SearchField[] searchFields)
         {
-            c.Add("ContentTypeId", content.ContentTypeId);
-            c.Add("CreateDate", content.CreateDate);
-            c.Add("CreatorId", content.CreatorId);
-
             foreach (var field in searchFields)
             {
                 if (!content.HasProperty(field.Name) || content.Properties[field.Name].Value == null)
