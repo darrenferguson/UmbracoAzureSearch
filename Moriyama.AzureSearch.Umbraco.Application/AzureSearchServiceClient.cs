@@ -699,7 +699,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                          new Field("CreateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
 
                          new Field("ContentTypeId", DataType.Int32) { IsFilterable = true },
-                         new Field("ParentId", DataType.Int32) { IsFilterable = true },
+                         new Field("ParentId", DataType.Int32) { IsFilterable = true, IsSearchable = true},
                          new Field("Level", DataType.Int32) { IsSortable = true, IsFacetable = true },
                          new Field("SortOrder", DataType.Int32) { IsSortable = true },
 
