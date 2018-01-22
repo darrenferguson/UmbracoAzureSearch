@@ -6,6 +6,8 @@ using System.Linq;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Newtonsoft.Json;
 using Umbraco.Core;
+using Umbraco.Core.Models;
+using Umbraco.Core.Models.PublishedContent;
 using SearchResult = Examine.SearchResult;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Examine
@@ -46,15 +48,20 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
             if (result.Fields == null) return result;
 
             var indexType = "content";
+            var publishedContentType = PublishedItemType.Content;
+
             if (azureResult.IsMedia)
             {
                 indexType = "media";
                 result.Fields.Add("umbracoFile", azureResult.Url);
+
+                publishedContentType = PublishedItemType.Media;
             }
 
             if (azureResult.IsMember)
             {
                 indexType = "member";
+                publishedContentType = PublishedItemType.Member;
             }
 
             result.Fields.Add("__IndexType", indexType);
@@ -62,32 +69,39 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
             result.Fields.Add("__Path", $"-{azureResult.SearchablePath}");
             result.Fields.Add("__NodeTypeAlias", azureResult.ContentTypeAlias?.ToLower());
             result.Fields.Add("__Key", azureResult.Key);
+            result.Fields.Add("__Match", (azureResult.Properties?["__match"] ?? "").ToString());
             result.Fields.Add("id", azureResult.Id.ToString());
             result.Fields.Add("key", azureResult.Key);
             result.Fields.Add("parentID", azureResult.Path.Skip(azureResult.Path.Length - 1).FirstOrDefault());
             result.Fields.Add("level", azureResult.Level.ToString());
-            result.Fields.Add("creatorId", azureResult.CreatorId.ToString());
+            result.Fields.Add("creatorID", azureResult.CreatorId.ToString());
             result.Fields.Add("creatorName", azureResult.CreatorName);
-            result.Fields.Add("writerId", azureResult.WriterId.ToString());
+            result.Fields.Add("writerID", azureResult.WriterId.ToString());
             result.Fields.Add("writerName", azureResult.CreatorName);
-            result.Fields.Add("template", "0");
+            result.Fields.Add("template", azureResult.Template.IsNullOrWhiteSpace() ? "0" : azureResult.Template);
             result.Fields.Add("urlName", "");
             result.Fields.Add("sortOrder", azureResult.SortOrder.ToString());
             result.Fields.Add("createDate", azureResult.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"));
             result.Fields.Add("updateDate", azureResult.UpdateDate.ToString("yyyy-MM-dd HH:mm:ss"));
             result.Fields.Add("path", $"-{azureResult.SearchablePath}");
             result.Fields.Add("nodeType", azureResult.ContentTypeId.ToString());
-            result.Fields.Add("nodeTypeAlias", azureResult.ContentTypeAlias?.ToLower());
 
             result.Fields.Add("nodeName", azureResult.Name);
 
             if (azureResult.Properties == null) return result;
 
+            // only add valid properties for this content type
+            var contentType = PublishedContentType.Get(publishedContentType, azureResult.ContentTypeAlias);
+            var validProperties = contentType.PropertyTypes.Select(p => p.PropertyTypeAlias).ToList();
+            
             foreach (var prop in azureResult.Properties)
             {
                 if (prop.Key == null || prop.Value == null) continue;
 
-                result.Fields[prop.Key] = GetPropertyString(prop.Value);
+                if (validProperties.Contains(prop.Key))
+                {
+                    result.Fields[prop.Key] = GetPropertyString(prop.Value);
+                }
             }
 
             var icon = "";
