@@ -25,8 +25,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
         {
         }
 
-        public override void RebuildIndex()
+        protected override void PerformIndexRebuild()
         {
+
         }
 
     }
