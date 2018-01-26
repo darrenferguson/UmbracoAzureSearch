@@ -72,7 +72,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
             result.Fields.Add("__Match", (azureResult.Properties?["__match"] ?? "").ToString());
             result.Fields.Add("id", azureResult.Id.ToString());
             result.Fields.Add("key", azureResult.Key);
-            result.Fields.Add("parentID", azureResult.Path.Skip(azureResult.Path.Length - 1).FirstOrDefault());
+            result.Fields.Add("parentID", azureResult.ParentId.ToString());
             result.Fields.Add("level", azureResult.Level.ToString());
             result.Fields.Add("creatorID", azureResult.CreatorId.ToString());
             result.Fields.Add("creatorName", azureResult.CreatorName);

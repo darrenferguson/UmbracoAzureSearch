@@ -458,120 +458,124 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document GetDocumentToIndex(IContentBase content, SearchField[] searchFields)
         {
-            var c = new Document();
+                var c = new Document();
 
-            var type = content.GetType();
+                var type = content.GetType();
 
-            foreach (var field in GetStandardUmbracoFields())
-            {
-                object propertyValue = null; 
-
-                // handle special case properties
-                switch (field.Name)
+                foreach (var field in GetStandardUmbracoFields())
                 {
-                    case "SearchablePath":
-                        propertyValue = content.Path.TrimStart('-');
-                        break;
+                        object propertyValue = null;
 
-                    case "Path":
-                        propertyValue = content.Path.Split(',');
-                        break;
+                        // handle special case properties
+                        switch (field.Name)
+                        {
+                            case "SearchablePath":
+                                propertyValue = content.Path.TrimStart('-');
+                                break;
 
-                    case "CreatorName":
-                        propertyValue = content.GetCreatorProfile(UmbracoContext.Current.Application.Services.UserService).Name;
-                        break;
+                            case "Path":
+                                propertyValue = content.Path.Split(',');
+                                break;
 
-                    default:
-                        // try get model property
-                        PropertyInfo modelProperty;
+                            case "CreatorName":
+                                propertyValue = content.GetCreatorProfile(UmbracoContext.Current.Application.Services.UserService).Name;
+                                break;
+
+                            case "ParentID":
+                                propertyValue = content.ParentId;
+                                break;
+
+                            default:
+                                // try get model property
+                                PropertyInfo modelProperty;
                         if (_propertyCache.ContainsKey(field.Name))
-                        {
+                                {
                             modelProperty = _propertyCache[field.Name];
-                        }
-                        else
-                        {
-                            modelProperty = type.GetProperty(field.Name);
+                                }
+                                else
+                                {
+                                    modelProperty = type.GetProperty(field.Name);
                             _propertyCache[field.Name] = modelProperty;
+                                }
+
+                                if (modelProperty != null)
+                                {
+                                    propertyValue = modelProperty.GetValue(content);
+                                }
+                                else
+                                {
+                                    // try get umbraco property
+                                    if (content.HasProperty(field.Name))
+                                    {
+                                        propertyValue = content.GetValue(field.Name);
+                                    }
+                                }
+                                break;
                         }
 
-                        if (modelProperty != null)
+                        // handle datatypes
+                        switch (field.Type.ToString())
                         {
-                            propertyValue = modelProperty.GetValue(content);
+                            case "Edm.String":
+                                propertyValue = propertyValue?.ToString();
+                                break;
+
+                            case "Edm.Boolean":
+                                bool.TryParse((propertyValue ?? "False").ToString(), out var val);
+                                propertyValue = val;
+                                break;
                         }
-                        else
+
+                        if (propertyValue?.ToString().IsNullOrWhiteSpace() == false)
                         {
-                            // try get umbraco property
-                            if (content.HasProperty(field.Name))
-                            {
-                                propertyValue = content.GetValue(field.Name);
-                            }
+                            c[field.Name] = propertyValue;
                         }
+                    }
+
+                switch (type.Name)
+                {
+                    case "Media":
+                        c["IsMedia"] = true;
+                        break;
+
+                    case "Content":
+                        c["IsContent"] = true;
+                        break;
+
+                    case "Member":
+                        c["IsMember"] = true;
                         break;
                 }
 
-                // handle datatypes
-                switch (field.Type.ToString())
-                {
-                    case "Edm.String":
-                        propertyValue = propertyValue?.ToString();
-                        break;
+                bool cancelIndex = AzureSearch.FireContentIndexing(
+                    new AzureSearchEventArgs()
+                    {
+                        Item = content,
+                        Entry = c
+                    });
 
-                    case "Edm.Boolean":
-                        bool.TryParse((propertyValue ?? "False").ToString(), out var val);
-                        propertyValue = val;
-                        break;
+                if (cancelIndex)
+                {
+                    // cancel was set in an event, so we don't index this item. 
+                    return null;
                 }
 
-                if (propertyValue?.ToString().IsNullOrWhiteSpace() == false)
-                {
-                    c[field.Name] = propertyValue;
-                }
+                var umbracoFields = searchFields.Where(x => !x.IsComputedField()).ToArray();
+                var computedFields = searchFields.Where(x => x.IsComputedField()).ToArray();
+
+                c = FromUmbracoContentBase(c, content, umbracoFields);
+                c = FromComputedFields(c, content, computedFields);
+
+                // todo: content isn't actually indexed at this point, consider moving the event to the callback from azure after sending to index
+                AzureSearch.FireContentIndexed(
+                    new AzureSearchEventArgs()
+                    {
+                        Item = content,
+                        Entry = c
+                    });
+
+                return c;
             }
-
-            switch (type.Name)
-            {
-                case "Media":
-                    c["IsMedia"] = true;
-                    break;
-
-                case "Content":
-                    c["IsContent"] = true;
-                    break;
-
-                case "Member":
-                    c["IsMember"] = true;
-                    break;
-            }
-
-            bool cancelIndex = AzureSearch.FireContentIndexing(
-                new AzureSearchEventArgs()
-                {
-                    Item = content,
-                    Entry = c
-                });
-
-            if (cancelIndex)
-            {
-                // cancel was set in an event, so we don't index this item. 
-                return null;
-            }
-
-            var umbracoFields = searchFields.Where(x => !x.IsComputedField()).ToArray();
-            var computedFields = searchFields.Where(x => x.IsComputedField()).ToArray();
-
-            c = FromUmbracoContentBase(c, content, umbracoFields);
-            c = FromComputedFields(c, content, computedFields);
-
-            // todo: content isn't actually indexed at this point, consider moving the event to the callback from azure after sending to index
-            AzureSearch.FireContentIndexed(
-                new AzureSearchEventArgs()
-                {
-                    Item = content,
-                    Entry = c
-                });
-
-            return c;
-        }
 
         private Document FromUmbracoContentBase(Document c, IContentBase content, SearchField[] searchFields)
         {
@@ -670,7 +674,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             if (_umbracoFields == null)
             {
                 _umbracoFields = new Lazy<Field[]>(() =>
-                {
+            {
                     var fields = new List<Field>
                     {
                          // Key field has to be a string....
@@ -699,7 +703,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                          new Field("CreateDate", DataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
 
                          new Field("ContentTypeId", DataType.Int32) { IsFilterable = true },
-                         new Field("ParentId", DataType.Int32) { IsFilterable = true, IsSearchable = true},
+                         new Field("ParentID", DataType.String) { IsFilterable = true, IsSearchable = true},
                          new Field("Level", DataType.Int32) { IsSortable = true, IsFacetable = true },
                          new Field("SortOrder", DataType.Int32) { IsSortable = true },
 
