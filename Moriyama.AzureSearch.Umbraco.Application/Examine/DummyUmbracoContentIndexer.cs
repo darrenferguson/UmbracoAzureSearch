@@ -20,7 +20,7 @@ using Directory = Lucene.Net.Store.Directory;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 {
-    public class DummyUmbracoContentIndexer : UmbracoContentIndexer
+    public class AzureSearchExamineProxyIndexer : UmbracoContentIndexer
     {
 
         
