@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Examine;
 using System.Linq;
+using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Newtonsoft.Json;
 using Umbraco.Core;
@@ -64,12 +65,21 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
                 publishedContentType = PublishedItemType.Member;
             }
 
+            var matchHighlights = string.Empty;
+            if (azureResult.Properties?.ContainsKey("__match") == true)
+            {
+                if (azureResult.Properties["__match"] is HitHighlights matchObj)
+                {
+                    matchHighlights = JsonConvert.SerializeObject(matchObj, BaseAzureSearch.GetSerializationSettings());
+                }
+            }
+
             result.Fields.Add("__IndexType", indexType);
             result.Fields.Add("__NodeId", azureResult.Id.ToString());
             result.Fields.Add("__Path", $"-{azureResult.SearchablePath}");
             result.Fields.Add("__NodeTypeAlias", azureResult.ContentTypeAlias?.ToLower());
             result.Fields.Add("__Key", azureResult.Key);
-            result.Fields.Add("__Match", (azureResult.Properties?["__match"] ?? "").ToString());
+            result.Fields.Add("__Match", matchHighlights);
             result.Fields.Add("id", azureResult.Id.ToString());
             result.Fields.Add("key", azureResult.Key);
             result.Fields.Add("parentID", azureResult.ParentId.ToString());
