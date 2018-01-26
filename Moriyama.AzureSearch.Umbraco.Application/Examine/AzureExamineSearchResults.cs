@@ -79,7 +79,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
             result.Fields.Add("writerID", azureResult.WriterId.ToString());
             result.Fields.Add("writerName", azureResult.CreatorName);
             result.Fields.Add("template", azureResult.Template.IsNullOrWhiteSpace() ? "0" : azureResult.Template);
-            result.Fields.Add("urlName", "");
+            result.Fields.Add("urlName", azureResult.UrlName ?? "");
             result.Fields.Add("sortOrder", azureResult.SortOrder.ToString());
             result.Fields.Add("createDate", azureResult.CreateDate.ToString("yyyyMMddHHmmsss"));
             result.Fields.Add("updateDate", azureResult.UpdateDate.ToString("yyyyMMddHHmmsss"));
