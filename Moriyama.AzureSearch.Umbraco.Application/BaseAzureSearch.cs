@@ -27,7 +27,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public void SaveConfiguration(AzureSearchConfig config)
         {
             _config = config;
-            var serializerSettings = GetClient().SerializationSettings;
+            var serializerSettings = GetSerializationSettings(config);
             serializerSettings.DefaultValueHandling = DefaultValueHandling.Ignore;
 
             File.WriteAllText(Path.Combine(_path, @"config\AzureSearch.config"), JsonConvert.SerializeObject(config, Formatting.Indented, serializerSettings));
@@ -38,13 +38,18 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return _config;
         }
 
-        public SearchServiceClient GetClient()
+        public static SearchServiceClient GetClient(AzureSearchConfig config = null)
         {
-            var serviceName = _config != null ? _config.SearchServiceName : "name";
-            var apiKey = _config != null ? _config.SearchServiceAdminApiKey : "apikey";
+            var serviceName = config != null ? config.SearchServiceName : "name";
+            var apiKey = config != null ? config.SearchServiceAdminApiKey : "apikey";
 
             var serviceClient = new SearchServiceClient(serviceName, new SearchCredentials(apiKey));
             return serviceClient;
+        }
+
+        public static JsonSerializerSettings GetSerializationSettings(AzureSearchConfig config = null)
+        {
+            return GetClient(config).SerializationSettings;
         }
     }
 }
