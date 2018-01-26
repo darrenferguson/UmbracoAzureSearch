@@ -1,5 +1,22 @@
-﻿using System.Xml.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
+using System.Linq;
+using System.Security;
+using System.Web;
+using System.Xml.Linq;
+using Examine;
+using Examine.LuceneEngine;
+using Examine.LuceneEngine.Config;
+using Lucene.Net.Analysis;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using Lucene.Net.Store;
+using Umbraco.Core;
 using UmbracoExamine;
+using UmbracoExamine.LocalStorage;
+using Directory = Lucene.Net.Store.Directory;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 {
