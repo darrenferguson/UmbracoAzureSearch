@@ -81,8 +81,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
             result.Fields.Add("template", azureResult.Template.IsNullOrWhiteSpace() ? "0" : azureResult.Template);
             result.Fields.Add("urlName", "");
             result.Fields.Add("sortOrder", azureResult.SortOrder.ToString());
-            result.Fields.Add("createDate", azureResult.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"));
-            result.Fields.Add("updateDate", azureResult.UpdateDate.ToString("yyyy-MM-dd HH:mm:ss"));
+            result.Fields.Add("createDate", azureResult.CreateDate.ToString("yyyyMMddHHmmsss"));
+            result.Fields.Add("updateDate", azureResult.UpdateDate.ToString("yyyyMMddHHmmsss"));
             result.Fields.Add("path", $"-{azureResult.SearchablePath}");
             result.Fields.Add("nodeType", azureResult.ContentTypeId.ToString());
 
