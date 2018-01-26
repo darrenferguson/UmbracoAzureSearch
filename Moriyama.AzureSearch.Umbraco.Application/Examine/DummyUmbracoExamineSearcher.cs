@@ -74,6 +74,18 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
                             query = query.Replace("-__Path:-1,-21,*", "");
                             client.Filter("Trashed", false);
                         }
+
+                        // fix nodeName
+                        if (query.Contains("nodeName"))
+                        {
+                            query = query.Replace("nodeName", "Name");
+                        }
+
+                        // fix Parent
+                        if (query.Contains("parentID"))
+                        {
+                            query = query.Replace("parentID", "ParentID");
+                        }
                         
                         switch (searchCriteria.SearchIndexType)
                         {
