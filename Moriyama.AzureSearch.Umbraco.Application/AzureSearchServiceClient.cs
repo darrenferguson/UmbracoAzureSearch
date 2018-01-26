@@ -35,10 +35,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             Parsers = new Dictionary<string, IComputedFieldParser>();
             SetCustomFieldParsers(GetConfiguration());
 
-            _propertyCache = new Dictionary<string, PropertyInfo>();
+            _propertyCache = new Dictionary<string, Dictionary<string, PropertyInfo>>();
         }
 
-        private Dictionary<string, PropertyInfo> _propertyCache;
+        private Dictionary<string, Dictionary<string, PropertyInfo>> _propertyCache;
         private Lazy<Field[]> _umbracoFields;
 
         private string SessionFile(string sessionId, string filename)
@@ -458,12 +458,17 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document GetDocumentToIndex(IContentBase content, SearchField[] searchFields)
         {
+            try
+            {
+
                 var c = new Document();
 
                 var type = content.GetType();
 
                 foreach (var field in GetStandardUmbracoFields())
                 {
+                    try
+                    {
                         object propertyValue = null;
 
                         // handle special case properties
@@ -488,14 +493,21 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                             default:
                                 // try get model property
                                 PropertyInfo modelProperty;
-                        if (_propertyCache.ContainsKey(field.Name))
+                                if (!_propertyCache.ContainsKey(type.Name))
                                 {
-                            modelProperty = _propertyCache[field.Name];
+                                    _propertyCache[type.Name] = new Dictionary<string, PropertyInfo>();
+                                }
+
+                                var cache = _propertyCache[type.Name];
+                                
+                                if (cache.ContainsKey(field.Name))
+                                {
+                                    modelProperty = cache[field.Name];
                                 }
                                 else
                                 {
                                     modelProperty = type.GetProperty(field.Name);
-                            _propertyCache[field.Name] = modelProperty;
+                                    cache[field.Name] = modelProperty;
                                 }
 
                                 if (modelProperty != null)
@@ -531,6 +543,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                             c[field.Name] = propertyValue;
                         }
                     }
+                    catch (Exception ex)
+                    {
+
+                        throw;
+                    }
+                }
 
                 switch (type.Name)
                 {
@@ -576,6 +594,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                 return c;
             }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
 
         private Document FromUmbracoContentBase(Document c, IContentBase content, SearchField[] searchFields)
         {
@@ -671,9 +695,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public Field[] GetStandardUmbracoFields()
         {
-            if (_umbracoFields == null)
-            {
-                _umbracoFields = new Lazy<Field[]>(() =>
+            var cachedFields = ApplicationContext.Current.ApplicationCache.RuntimeCache.GetCacheItem("AzureSearch_UmbracoFields", () => 
             {
                     var fields = new List<Field>
                     {
@@ -752,10 +774,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     sorted.Insert(0, keyField);
 
                     return sorted.ToArray();
-                });
-            }
+            }, TimeSpan.FromMinutes(5)) as Field[];
 
-            return _umbracoFields.Value;
+            return cachedFields;
         }
     }
 }
