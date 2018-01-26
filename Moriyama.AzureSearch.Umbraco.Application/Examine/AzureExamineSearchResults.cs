@@ -92,13 +92,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 
             // only add valid properties for this content type
             var contentType = PublishedContentType.Get(publishedContentType, azureResult.ContentTypeAlias);
-            var validProperties = contentType.PropertyTypes.Select(p => p.PropertyTypeAlias).ToList();
+            var validProperties = contentType?.PropertyTypes?.Select(p => p.PropertyTypeAlias).ToList();
             
             foreach (var prop in azureResult.Properties)
             {
                 if (prop.Key == null || prop.Value == null) continue;
 
-                if (validProperties.Contains(prop.Key))
+                if (validProperties?.Contains(prop.Key) == true)
                 {
                     result.Fields[prop.Key] = GetPropertyString(prop.Value);
                 }
