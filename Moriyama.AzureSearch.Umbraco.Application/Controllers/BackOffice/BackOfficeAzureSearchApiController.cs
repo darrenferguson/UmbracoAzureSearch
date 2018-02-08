@@ -5,6 +5,7 @@ using Moriyama.AzureSearch.Umbraco.Application.Helper;
 using Umbraco.Core;
 using Umbraco.Web.Editors;
 using Umbraco.Web.Models.ContentEditing;
+using System.Web;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 {
