@@ -10,42 +10,42 @@ namespace Moriyama.AzureSearch.Umbraco.Sandbox
         static void Main(string[] args)
         {
 
-            var client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            var client = new AzureSearchClient(Directory.GetCurrentDirectory(), @"config\AzureSearch.config");
 
             var results = client.Term("umbraco").Results();
             Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
 
-            client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            client = new AzureSearchClient(Directory.GetCurrentDirectory(), @"config\AzureSearch.config");
             results = client.DocumentType("TextPage").Results();
             Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
 
 
-            client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            client = new AzureSearchClient(Directory.GetCurrentDirectory(), @"config\AzureSearch.config");
             results = client.Media().Results();
             Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
 
-            client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            client = new AzureSearchClient(Directory.GetCurrentDirectory(), @"config\AzureSearch.config");
             results = client.Media().PageSize(1).Results();
             Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
 
 
-            client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            client = new AzureSearchClient(Directory.GetCurrentDirectory(), @"config\AzureSearch.config");
             results = client.Content().Filter("ContentTypeId", 1056).Results();
 
             Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
 
-            client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            client = new AzureSearchClient(Directory.GetCurrentDirectory(), @"config\AzureSearch.config");
             results = client.Content().Contains("Path", "1070").Results();
 
             Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(results, Formatting.Indented));
 
-            client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            client = new AzureSearchClient(Directory.GetCurrentDirectory(), @"config\AzureSearch.config");
             results = client.Content().Contains("tags", "two").Results();
 
             Console.WriteLine();

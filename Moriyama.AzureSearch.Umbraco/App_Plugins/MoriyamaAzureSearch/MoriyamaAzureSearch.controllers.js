@@ -2,21 +2,30 @@
 
     $scope.configLoaded = false;
 
-    
-
-    $http.get('/umbraco/backoffice/api/AzureSearchApi/GetConfiguration').then(function (response) {      
-        $scope.config = response.data;
-        $scope.configLoaded = true;
+    $http.get('/umbraco/backoffice/api/AzureSearchApi/GetIndexers').then(function (response) {
+        $scope.indexers = response.data;
+        $scope.loadIndexer(response.data[0]);
     });
 
-    $http.get('/umbraco/backoffice/api/AzureSearchApi/GetStandardUmbracoFields').then(function (response) {
-        $scope.umbracoFields = response.data;
-    });
+    $scope.loadIndexer = function(name) {
+
+        $scope.indexerName = name;
+
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetConfiguration?name=' + name).then(function (response) {
+            $scope.config = response.data;
+            $scope.configLoaded = true;
+        });
+
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetStandardUmbracoFields?name='+ name).then(function (response) {
+            $scope.umbracoFields = response.data;
+        });
 
 
-    $http.get('/umbraco/backoffice/api/AzureSearchApi/GetSearchIndexes').then(function (response) {
-        $scope.searchIndexes = response.data;
-    });
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetSearchIndexes?name='+ name).then(function (response) {
+            $scope.searchIndexes = response.data;
+        });
+
+    }
     
     $scope.updateServiceName = function() {
 
@@ -25,7 +34,7 @@
             $scope.updating = false;
         });
 
-        
+
     };
 
     $scope.updateServiceApiKey = function () {
@@ -63,7 +72,7 @@
         $scope.finishedIndexing = false;
         $scope.TypeProcessing = 'content';
         $scope.showReIndexContent = false;
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexContent').then(function (response) {
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexSetup').then(function (response) {
             $scope.reIndexContentResult = response.data;
             $scope.showReIndexContent = true;
             $scope.reindexContentPage(response.data.SessionId, 1);

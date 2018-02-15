@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
@@ -9,7 +10,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private object[] _args;
         private Type _azureSearchClientType;
 
-        private AzureSearchContext() { }
+        private AzureSearchContext() {
+            SearchIndexClients = new Dictionary<string, IBaseAzureSearch>();
+        }
 
         public static AzureSearchContext Instance
         {
@@ -23,7 +26,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
         }
 
-        public IAzureSearchIndexClient SearchIndexClient { get; set; }
+        public Dictionary<string, IBaseAzureSearch> SearchIndexClients { get; set; }
+
+        public AzureSearchUmbracoIndexClient UmbracoIndexClient
+        {
+            get
+            {
+                return SearchIndexClients[AzureSearchConstants.UmbracoIndexName] as AzureSearchUmbracoIndexClient;
+            }
+        }
 
         public void SetupSearchClient<T>(params object[] args) where T : IAzureSearchClient
         {

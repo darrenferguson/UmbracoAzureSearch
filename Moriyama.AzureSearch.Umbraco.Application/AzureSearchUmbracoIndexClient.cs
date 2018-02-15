@@ -16,14 +16,14 @@ using Moriyama.AzureSearch.Umbraco.Application.Extensions;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
-    public class AzureSearchIndexClient : BaseAzureSearch, IAzureSearchIndexClient
+    public class AzureSearchUmbracoIndexClient : BaseAzureSearch, IAzureSearchIndexClient
     {
         private Dictionary<string, IComputedFieldParser> Parsers { get; set; }
 
         // Number of docs to be processed at a time.
         const int BatchSize = 999;
 
-        public AzureSearchIndexClient(string path) : base(path)
+        public AzureSearchUmbracoIndexClient(string path, string configPath) : base(path, configPath)
         {
             Parsers = new Dictionary<string, IComputedFieldParser>();
             SetCustomFieldParsers(GetConfiguration());
@@ -35,7 +35,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return Path.Combine(path, sessionId + ".json");
         }
 
-        public string DropCreateIndex()
+        public override string DropCreateIndex()
         {
             var serviceClient = GetClient();
             var indexes = serviceClient.Indexes.List().Indexes;
@@ -66,20 +66,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return "Index created";
         }
 
-        public Index[] GetSearchIndexes()
-        {
-            var serviceClient = GetClient();
-            var indexes = serviceClient.Indexes.List().Indexes;
-            return indexes.ToArray();
-        }
-
         private void EnsurePath(string path)
         {
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
         }
 
-        public AzureSearchReindexStatus ReIndexContent(string sessionId)
+        public override AzureSearchReindexStatus ReIndexSetup(string sessionId)
         {
             List<int> contentIds;
             List<int> mediaIds;

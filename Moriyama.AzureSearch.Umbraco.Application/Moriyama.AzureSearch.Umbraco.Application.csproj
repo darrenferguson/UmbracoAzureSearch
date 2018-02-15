@@ -273,10 +273,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AzureSearchContants.cs" />
     <Compile Include="AzureSearch.cs" />
     <Compile Include="AzureSearchClient.cs" />
     <Compile Include="AzureSearchContext.cs" />
-    <Compile Include="AzureSearchServiceClient.cs" />
+    <Compile Include="AzureSearchSimpleDataSetExampleService.cs" />
+    <Compile Include="Interfaces\IBaseAzureSearch.cs" />
+    <Compile Include="Interfaces\IAzureSearchExternalIndexClient.cs" />
+    <Compile Include="Interfaces\IAzureSearchSimpleDataService.cs" />
+    <Compile Include="Models\AzureSearchSimpleDataSet.cs" />
+    <Compile Include="AzureSearchSimpleDatasetIndexClient.cs" />
+    <Compile Include="AzureSearchUmbracoIndexClient.cs" />
     <Compile Include="BaseAzureSearch.cs" />
     <Compile Include="Controllers\BackOffice\BackOfficeAzureSearchApiController.cs" />
     <Compile Include="Examine\DummyUmbracoContentIndexer.cs" />
@@ -287,17 +294,21 @@
     <Compile Include="Helper\SearchFacetHelper.cs" />
     <Compile Include="Interfaces\IComputedFieldParser.cs" />
     <Compile Include="Interfaces\IAzureSearchClient.cs" />
+    <Compile Include="Interfaces\ISearchValue.cs" />
     <Compile Include="Interfaces\ISearchField.cs" />
     <Compile Include="Interfaces\ISearchContent.cs" />
     <Compile Include="Interfaces\ISearchFacet.cs" />
     <Compile Include="Interfaces\ISearchResult.cs" />
     <Compile Include="Interfaces\IAzureSearchField.cs" />
+    <Compile Include="Models\AzureSearchExternalConfig.cs" />
     <Compile Include="Models\AzureSearchIndexResult.cs" />
     <Compile Include="Models\BackOfficeSearchResult.cs" />
     <Compile Include="Models\BaseContent.cs" />
+    <Compile Include="Interfaces\IAzureSearchSimpleDataSet.cs" />
     <Compile Include="Models\SearchContent.cs" />
     <Compile Include="Models\BoolSearchFacet.cs" />
     <Compile Include="Models\SearchFacet.cs" />
+    <Compile Include="Models\SearchValue.cs" />
     <Compile Include="Models\SearchResult.cs" />
     <Compile Include="Helper\SearchContentExtensions.cs" />
     <Compile Include="Umbraco\CustomApplicationEventHandler.cs" />
