@@ -98,6 +98,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return sp;
         }
 
+
         public ISearchResult Results()
         {
             var sp = GetSearchParameters();
@@ -407,5 +408,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             return indexClient.Documents.Suggest(value, "sg", sp).Results;
         }
+
     }
 }

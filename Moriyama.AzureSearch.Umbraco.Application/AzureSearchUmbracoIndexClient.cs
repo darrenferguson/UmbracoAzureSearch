@@ -31,7 +31,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private string SessionFile(string sessionId)
         {
-            var path = Path.Combine(_path, @"App_Data\MoriyamaAzureSearch");
+            var path = Path.Combine(_path, AzureSearchConstants.TempStorageDirectory);
             return Path.Combine(path, sessionId + ".json");
         }
 
@@ -117,7 +117,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private int[] GetIds(string sessionId, string filename)
         {
-            var path = Path.Combine(_path, @"App_Data\MoriyamaAzureSearch\" + sessionId);
+            var path = Path.Combine(_path, AzureSearchConstants.TempStorageDirectory + sessionId);
             var file = Path.Combine(path, filename);
 
             var ids = JsonConvert.DeserializeObject<int[]>(System.IO.File.ReadAllText(file));

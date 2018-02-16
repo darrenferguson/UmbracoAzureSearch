@@ -6,6 +6,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
     public interface IAzureSearchSimpleDataSet
     {
         int Id { get; set; }
+        string Key { get; set; }
         Dictionary<string, ISearchValue> RowData { get; set; }
     }
 }

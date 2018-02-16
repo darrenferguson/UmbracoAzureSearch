@@ -7,6 +7,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
         public const string MainConfigFile = @"config\AzureSearch.config";
         public const string AdditionalConfigFilePattern = @"config\AzureSearch.*.config";
+        public const string TempStorageDirectory = @"App_Data\MoriyamaAzureSearch\";
 
         public const string UmbracoIndexName = "umbraco";
     }

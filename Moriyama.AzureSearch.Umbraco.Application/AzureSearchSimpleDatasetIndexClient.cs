@@ -47,7 +47,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private string SessionFile(string sessionId)
         {
-            var path = Path.Combine(_path, @"App_Data\MoriyamaAzureSearch");
+            var path = Path.Combine(_path, AzureSearchConstants.TempStorageDirectory);
             return Path.Combine(path, sessionId + ".json");
         }
 
@@ -61,6 +61,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     serviceClient.Indexes.Delete(_config.IndexName);
 
             var customFields = new List<Field>();
+            customFields.AddRange(GetStandardFields());
             customFields.AddRange(_config.SearchFields.Select(x => x.ToAzureField()));
 
             var definition = new Index
@@ -93,7 +94,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             var count = ids.Count;
 
-            var path = Path.Combine(_path, @"App_Data\MoriyamaAzureSearch\" + sessionId);
+            var path = Path.Combine(_path, AzureSearchConstants.TempStorageDirectory + sessionId);
             EnsurePath(path);
 
             System.IO.File.WriteAllText(Path.Combine(path, string.Format("{0}.json", _config.IndexName)), JsonConvert.SerializeObject(ids));
@@ -106,15 +107,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 Finished = false
             };
 
-        }
-
-        private int[] GetIds(string sessionId, string filename)
-        {
-            var path = Path.Combine(_path, @"App_Data\MoriyamaAzureSearch\" + sessionId);
-            var file = Path.Combine(path, filename);
-
-            var ids = JsonConvert.DeserializeObject<int[]>(System.IO.File.ReadAllText(file));
-            return ids;
         }
 
         private int[] Page(int[] collection, int page)
@@ -160,7 +152,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public AzureSearchReindexStatus ReIndex(string sessionId, int page)
         {
-            var ids = GetIds(sessionId, _config.IndexName);
+            var ids = GetIds(sessionId, string.Format("{0}.json", _config.IndexName));
 
             var result = new AzureSearchReindexStatus
             {
@@ -201,11 +193,21 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
+        private int[] GetIds(string sessionId, string filename)
+        {
+            var path = Path.Combine(_path, AzureSearchConstants.TempStorageDirectory + sessionId);
+            var file = Path.Combine(path, filename);
+
+            var ids = JsonConvert.DeserializeObject<int[]>(System.IO.File.ReadAllText(file));
+            return ids;
+        }
+
         private Document FromData(IAzureSearchSimpleDataSet data, SearchField[] searchFields)
         {
             var c = new Document
             {
                 {"Id", data.Id.ToString()},
+                {"Key", data.Key.ToString()},
             };
 
             c = FromExternalData(c, data, searchFields);
@@ -261,6 +263,16 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var serviceClient = GetClient();
             return serviceClient.IndexContentBatch(_config.IndexName, contents);
+        }
+
+        public Field[] GetStandardFields()
+        {
+            // Key field has to be a string....
+            return new[]
+            {
+                 new Field("Id", DataType.String) { IsKey = true, IsFilterable = true, IsSortable = true },
+                 new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
+            };
         }
 
 

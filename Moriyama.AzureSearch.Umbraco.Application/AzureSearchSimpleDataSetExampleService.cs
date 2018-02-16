@@ -38,6 +38,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 return new AzureSearchSimpleDataSet()
                 {
                     Id = x.Id,
+                    Key = x.Key.ToString(),
                     RowData = new Dictionary<string, ISearchValue>()
                     {
                         { "name", new SearchValue() { String = x.Name } }

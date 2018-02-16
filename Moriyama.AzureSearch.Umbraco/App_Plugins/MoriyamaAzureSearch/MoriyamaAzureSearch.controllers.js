@@ -9,7 +9,10 @@
 
     $scope.loadIndexer = function(name) {
 
-        $scope.indexerName = name;
+        $scope.showConfigTest = false;
+        $scope.showIndexDropCreate = false;
+        $scope.showReIndexContent = false;
+        $scope.currentIndexer = name;
 
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetConfiguration?name=' + name).then(function (response) {
             $scope.config = response.data;
@@ -30,7 +33,7 @@
     $scope.updateServiceName = function() {
 
         $scope.updating = true;
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/ServiceName?value=' + escape($scope.config.SearchServiceName)).then(function (response) {
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/ServiceName?name='+ $scope.currentIndexer +'&value=' + escape($scope.config.SearchServiceName)).then(function (response) {
             $scope.updating = false;
         });
 
@@ -40,7 +43,7 @@
     $scope.updateServiceApiKey = function () {
 
         $scope.updating = true;
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/ServiceApiKey?value=' + escape($scope.config.SearchServiceAdminApiKey)).then(function (response) {
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/ServiceApiKey?name=' + $scope.currentIndexer + '&value=' + escape($scope.config.SearchServiceAdminApiKey)).then(function (response) {
             $scope.updating = false;
         });
 
@@ -48,7 +51,7 @@
     };
 
     $scope.testConfig = function () {
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetTestConfig').then(function (response) {
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetTestConfig?name=' + $scope.currentIndexer).then(function (response) {
             $scope.configTest = response.data;
             $scope.showConfigTest = true;
         });
@@ -60,7 +63,7 @@
             return;
 
         $scope.showIndexDropCreate = true;
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetDropCreateIndex').then(function (response) {
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetDropCreateIndex?name=' + $scope.currentIndexer).then(function (response) {
             $scope.dropCreateResult = response.data;      
         });
     };
@@ -72,10 +75,13 @@
         $scope.finishedIndexing = false;
         $scope.TypeProcessing = 'content';
         $scope.showReIndexContent = false;
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexSetup').then(function (response) {
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexSetup?name=' + $scope.currentIndexer).then(function (response) {
             $scope.reIndexContentResult = response.data;
             $scope.showReIndexContent = true;
-            $scope.reindexContentPage(response.data.SessionId, 1);
+            if($scope.currentIndexer == 'umbraco') 
+                $scope.reindexContentPage(response.data.SessionId, 1);
+            else
+                $scope.reindexExternalPage(response.data.SessionId, 1);
         });
     };
 
@@ -108,6 +114,18 @@
     $scope.reindexMemberPage = function (sessionId, page) {
 
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexMember?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
+            $scope.reIndexContentResult = response.data;
+            if (!response.data.Error && !response.data.Finished) {
+                $scope.reindexMemberPage(sessionId, page + 1);
+            } else if (response.data.Finished) {
+                $scope.finishedIndexing = true;
+            }
+        });
+    };
+
+    $scope.reindexExternalPage = function (sessionId, page) {
+
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexExternal?name=' + $scope.currentIndexer + '&sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
             $scope.reIndexContentResult = response.data;
             if (!response.data.Error && !response.data.Finished) {
                 $scope.reindexMemberPage(sessionId, page + 1);

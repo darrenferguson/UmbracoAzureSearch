@@ -11,6 +11,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
 
         public int Id { get; set; }
+        public string Key { get; set; }
 
         public Dictionary<string, ISearchValue> RowData { get; set; }
 
