@@ -15,6 +15,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         SearchServiceClient GetClient();
         AzureSearchConfig GetConfiguration();
-        SearchIndexClient GetSearcher();
+        ISearchIndexClient GetSearcher();
     }
 }

@@ -1,19 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
+using Moriyama.AzureSearch.Umbraco.Application;
 using Umbraco.Core.Persistence;
 using Umbraco.Web;
+using Umbraco.Core.Models;
 
-//Moriyama.AzureSearch.Umbraco.Application.AzureSearchSimpleDataSetExampleService
-
-namespace Moriyama.AzureSearch.Umbraco.Application
+namespace Moriyama.AzureSearch.Umbraco.ExampleSimpleData
 {
     public class AzureSearchSimpleDataSetExampleService : IAzureSearchSimpleDataService
     {
+
+        public IAzureSearchSimpleDataSet Get(IContent content)
+        {
+            return GettBatchData(new int[] { content.Id }).FirstOrDefault();
+        }
+
         public List<int> GetAllIds()
         {
             List<int> contentIds;

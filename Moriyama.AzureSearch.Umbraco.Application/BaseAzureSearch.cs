@@ -73,7 +73,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return serviceClient;
         }
 
-        public SearchIndexClient GetSearcher()
+        public ISearchIndexClient GetSearcher()
         {
             var config = GetConfiguration();
             var client = GetClient();

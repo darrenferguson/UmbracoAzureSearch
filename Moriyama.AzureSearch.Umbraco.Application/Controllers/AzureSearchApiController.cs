@@ -70,9 +70,18 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
             return "Connected and got " + indexCount + " indexes";
         }
 
-        public SearchField[] GetStandardUmbracoFields()
+        public SearchField[] GetStandardFields(string name = AzureSearchConstants.UmbracoIndexName)
         {
-            return Mapper.Map<SearchField[]>(_umbracoSearchServiceClient.GetStandardUmbracoFields());
+            if(name == AzureSearchConstants.UmbracoIndexName)
+                return Mapper.Map<SearchField[]>(_umbracoSearchServiceClient.GetStandardUmbracoFields());
+            else
+            {
+                var simpleData = _azureSearchServiceClients[name] as IAzureSearchSimpleDataSetIndexClient;
+                if (simpleData != null)
+                    return Mapper.Map<SearchField[]>(simpleData.GetStandardFields());
+                else
+                    return new SearchField[] { };
+            }
         }
 
         public SearchIndex[] GetSearchIndexes(string name = AzureSearchConstants.UmbracoIndexName)

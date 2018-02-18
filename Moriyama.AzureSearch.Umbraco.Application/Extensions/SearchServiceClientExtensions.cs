@@ -43,5 +43,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
             result.Success = true;
             return result;
         }
+
     }
 }

@@ -19,10 +19,9 @@
             $scope.configLoaded = true;
         });
 
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetStandardUmbracoFields?name='+ name).then(function (response) {
+        $http.get('/umbraco/backoffice/api/AzureSearchApi/GetStandardFields?name=' + name).then(function (response) {
             $scope.umbracoFields = response.data;
         });
-
 
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetSearchIndexes?name='+ name).then(function (response) {
             $scope.searchIndexes = response.data;
@@ -80,7 +79,7 @@
             if($scope.currentIndexer == 'umbraco') 
                 $scope.reindexContentPage(response.data.SessionId, 1);
             else
-                $scope.reindexExternalPage(response.data.SessionId, 1);
+                $scope.reindexSimpleDataPage(response.data.SessionId, 1);
         });
     };
 
@@ -123,7 +122,7 @@
         });
     };
 
-    $scope.reindexExternalPage = function (sessionId, page) {
+    $scope.reindexSimpleDataPage = function (sessionId, page) {
         $scope.TypeProcessing = $scope.indexer;
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexExternal?name=' + $scope.currentIndexer + '&sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
             $scope.reIndexContentResult = response.data;

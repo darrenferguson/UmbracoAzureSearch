@@ -393,7 +393,6 @@
     <Content Include="Config\BaseRestExtensions.config" />
     <Content Include="Config\applications.config" />
     <Content Include="Config\404handlers.config" />
-    <Content Include="Config\AzureSearch.products.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -420,6 +419,10 @@
     <ProjectReference Include="..\Moriyama.AzureSearch.Umbraco.Application\Moriyama.AzureSearch.Umbraco.Application.csproj">
       <Project>{16c2b0b3-a208-4498-96ba-dee25a49a581}</Project>
       <Name>Moriyama.AzureSearch.Umbraco.Application</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Moriyama.AzureSearch.Umbraco.ExampleSimpleData\Moriyama.AzureSearch.Umbraco.ExampleSimpleData.csproj">
+      <Project>{8ce6790d-15b3-4b47-94b6-562b58ef55e7}</Project>
+      <Name>Moriyama.AzureSearch.Umbraco.ExampleSimpleData</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

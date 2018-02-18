@@ -229,36 +229,39 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             foreach (var field in searchFields)
             {
-                var value = data.RowData[field.Name];
-
-                if (field.Type == "collection")
+                if(data.RowData.ContainsKey(field.Name))
                 {
-                    if(value != value.Collection)
-                        c.Add(field.Name, value.Collection);
-                    else
-                        c.Add(field.Name, new List<string>());
-                }
+                    var value = data.RowData[field.Name];
 
-                if (field.Type == "string")
-                {
-                    if (value.String != null)
-                        c.Add(field.Name, value.String);
-                    else
-                        c.Add(field.Name, string.Empty);
-                }
+                    if (field.Type == "collection")
+                    {
+                        if (value != value.Collection)
+                            c.Add(field.Name, value.Collection);
+                        else
+                            c.Add(field.Name, new List<string>());
+                    }
 
-                if (field.Type == "int")
-                    c.Add(field.Name, value.Int);
+                    if (field.Type == "string")
+                    {
+                        if (value.String != null)
+                            c.Add(field.Name, value.String);
+                        else
+                            c.Add(field.Name, string.Empty);
+                    }
 
-                if (field.Type == "bool")
-                    c.Add(field.Name, value.Bool);
+                    if (field.Type == "int")
+                        c.Add(field.Name, value.Int);
 
-                if (field.Type == "date")
-                {
-                    if (value.DateTime != null)
-                        c.Add(field.Name, value.DateTime);
-                    else
-                        c.Add(field.Name, default(DateTime));
+                    if (field.Type == "bool")
+                        c.Add(field.Name, value.Bool);
+
+                    if (field.Type == "date")
+                    {
+                        if (value.DateTime != null)
+                            c.Add(field.Name, value.DateTime);
+                        else
+                            c.Add(field.Name, default(DateTime));
+                    }
                 }
             }
 
@@ -280,7 +283,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
             };
         }
-
 
     }
 }

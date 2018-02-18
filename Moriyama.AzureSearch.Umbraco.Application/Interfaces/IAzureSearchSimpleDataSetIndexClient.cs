@@ -9,5 +9,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         void ReIndexItem(IAzureSearchSimpleDataSet data);
 
+        Field[] GetStandardFields();
+
     }
 }
