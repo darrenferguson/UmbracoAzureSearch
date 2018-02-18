@@ -6,11 +6,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 {
     public interface IBaseAzureSearch
     {
+        void SaveConfiguration(AzureSearchConfig config);
+
         Index[] GetSearchIndexes();
         string DropCreateIndex();
         AzureSearchReindexStatus ReIndexSetup(string sessionId);
+        void Delete(string id);
+
         SearchServiceClient GetClient();
         AzureSearchConfig GetConfiguration();
-        void SaveConfiguration(AzureSearchConfig config);
+        SearchIndexClient GetSearcher();
     }
 }

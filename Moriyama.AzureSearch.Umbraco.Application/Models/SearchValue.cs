@@ -12,4 +12,5 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
         public List<string> Collection { get; set; }
         public DateTime DateTime { get; set; }
     }
+
 }

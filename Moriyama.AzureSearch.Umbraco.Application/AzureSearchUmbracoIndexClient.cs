@@ -16,7 +16,7 @@ using Moriyama.AzureSearch.Umbraco.Application.Extensions;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
-    public class AzureSearchUmbracoIndexClient : BaseAzureSearch, IAzureSearchIndexClient
+    public class AzureSearchUmbracoIndexClient : BaseAzureSearch, IAzureSearchUmbracoIndexClient
     {
         private Dictionary<string, IComputedFieldParser> Parsers { get; set; }
 
@@ -162,7 +162,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             IndexContentBatch(documents);
         }
 
-        public void Delete(int id)
+        public void Delete(string id)
         {
             var result = new AzureSearchIndexResult();
 
@@ -170,7 +170,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             var actions = new List<IndexAction>();
             var d = new Document();
-            d.Add("Id", id.ToString());
+            d.Add("Id", id);
 
             actions.Add(IndexAction.Delete(d));
 

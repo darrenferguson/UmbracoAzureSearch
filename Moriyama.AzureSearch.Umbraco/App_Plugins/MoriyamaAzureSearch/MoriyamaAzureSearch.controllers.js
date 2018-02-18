@@ -73,7 +73,6 @@
         if (!confirm('Are you sure!'))
             return;
         $scope.finishedIndexing = false;
-        $scope.TypeProcessing = 'content';
         $scope.showReIndexContent = false;
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexSetup?name=' + $scope.currentIndexer).then(function (response) {
             $scope.reIndexContentResult = response.data;
@@ -86,6 +85,7 @@
     };
 
     $scope.reindexContentPage = function (sessionId, page) {
+        $scope.TypeProcessing = 'content';
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexContent?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
             $scope.reIndexContentResult = response.data;
 
@@ -124,11 +124,11 @@
     };
 
     $scope.reindexExternalPage = function (sessionId, page) {
-
+        $scope.TypeProcessing = $scope.indexer;
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexExternal?name=' + $scope.currentIndexer + '&sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
             $scope.reIndexContentResult = response.data;
             if (!response.data.Error && !response.data.Finished) {
-                $scope.reindexMemberPage(sessionId, page + 1);
+                $scope.reindexExternalPage(sessionId, page + 1);
             } else if (response.data.Finished) {
                 $scope.finishedIndexing = true;
             }

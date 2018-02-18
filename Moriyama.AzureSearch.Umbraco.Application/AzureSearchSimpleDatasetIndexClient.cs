@@ -18,7 +18,7 @@ using Moriyama.AzureSearch.Umbraco.Application.Extensions;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
-    public class AzureSearchSimpleDatasetIndexClient : BaseAzureSearch, IAzureSearchExternalIndexClient
+    public class AzureSearchSimpleDatasetIndexClient : BaseAzureSearch, IAzureSearchSimpleDataSetIndexClient
     {
         private Dictionary<string, IComputedFieldParser> Parsers { get; set; }
 
@@ -114,7 +114,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return collection.Skip((page - 1) * BatchSize).Take(BatchSize).ToArray();
         }
 
-        public void Delete(int id)
+        public void Delete(string id)
         {
             var result = new AzureSearchIndexResult();
 
@@ -122,7 +122,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             var actions = new List<IndexAction>();
             var d = new Document();
-            d.Add("Id", id.ToString());
+            d.Add("Id", id);
 
             actions.Add(IndexAction.Delete(d));
 
@@ -175,7 +175,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var allData = DataService.GettBatchData(idsToProcess);
             foreach (var data in allData)
                 if (data != null)
-                    documents.Add(FromData(data, config.SearchFields));
+                    documents.Add(FromlDataset(data, config.SearchFields));
 
             var indexStatus = IndexContentBatch(documents);
 
@@ -193,6 +193,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
+        public void ReIndexItem(IAzureSearchSimpleDataSet data)
+        {
+            var documents = new List<Document>();
+            var config = GetConfiguration();
+
+            documents.Add(FromlDataset(data, config.SearchFields));
+            IndexContentBatch(documents);
+        }
+
         private int[] GetIds(string sessionId, string filename)
         {
             var path = Path.Combine(_path, AzureSearchConstants.TempStorageDirectory + sessionId);
@@ -202,7 +211,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return ids;
         }
 
-        private Document FromData(IAzureSearchSimpleDataSet data, SearchField[] searchFields)
+        private Document FromlDataset(IAzureSearchSimpleDataSet data, SearchField[] searchFields)
         {
             var c = new Document
             {
@@ -210,49 +219,46 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {"Key", data.Key.ToString()},
             };
 
-            c = FromExternalData(c, data, searchFields);
+            c = AddFields(c, data, searchFields);
 
             return c;
         }
 
-        private Document FromExternalData(Document c, IAzureSearchSimpleDataSet data, SearchField[] searchFields)
+        private Document AddFields(Document c, IAzureSearchSimpleDataSet data, SearchField[] searchFields)
         {
 
             foreach (var field in searchFields)
             {
-                if (!data.RowData.ContainsKey(field.Name) || data.RowData[field.Name] == null)
+                var value = data.RowData[field.Name];
+
+                if (field.Type == "collection")
                 {
-                    if (field.Type == "collection")
-                        c.Add(field.Name, new List<string>());
-
-                    if (field.Type == "string")
-                        c.Add(field.Name, string.Empty);
-
-                    if (field.Type == "int")
-                        c.Add(field.Name, 0);
-
-                    if (field.Type == "bool")
-                        c.Add(field.Name, false);
-
-                }
-                else
-                {
-                    var value = data.RowData[field.Name];
-
-                    if (field.Type == "collection")
+                    if(value != value.Collection)
                         c.Add(field.Name, value.Collection);
+                    else
+                        c.Add(field.Name, new List<string>());
+                }
 
-                    if (field.Type == "string")
+                if (field.Type == "string")
+                {
+                    if (value.String != null)
                         c.Add(field.Name, value.String);
+                    else
+                        c.Add(field.Name, string.Empty);
+                }
 
-                    if (field.Type == "int")
-                        c.Add(field.Name, value.Int);
+                if (field.Type == "int")
+                    c.Add(field.Name, value.Int);
 
-                    if (field.Type == "bool")
-                        c.Add(field.Name, value.Bool);
+                if (field.Type == "bool")
+                    c.Add(field.Name, value.Bool);
 
-                    if (field.Type == "date")
+                if (field.Type == "date")
+                {
+                    if (value.DateTime != null)
                         c.Add(field.Name, value.DateTime);
+                    else
+                        c.Add(field.Name, default(DateTime));
                 }
             }
 

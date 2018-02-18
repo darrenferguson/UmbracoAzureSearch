@@ -3,10 +3,11 @@ using Moriyama.AzureSearch.Umbraco.Application.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 {
-    public interface IAzureSearchExternalIndexClient : IBaseAzureSearch
+    public interface IAzureSearchSimpleDataSetIndexClient : IBaseAzureSearch
     {
         AzureSearchReindexStatus ReIndex(string sessionId, int page);
 
-        void Delete(int id);
+        void ReIndexItem(IAzureSearchSimpleDataSet data);
+
     }
 }

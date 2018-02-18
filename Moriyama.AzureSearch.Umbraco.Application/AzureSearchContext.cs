@@ -11,7 +11,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private Type _azureSearchClientType;
 
         private AzureSearchContext() {
-            SearchIndexClients = new Dictionary<string, IBaseAzureSearch>();
+            SearchIndexClientCollection = new Dictionary<string, IBaseAzureSearch>();
         }
 
         public static AzureSearchContext Instance
@@ -26,13 +26,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
         }
 
-        public Dictionary<string, IBaseAzureSearch> SearchIndexClients { get; set; }
+        public Dictionary<string, IBaseAzureSearch> SearchIndexClientCollection { get; set; }
 
         public AzureSearchUmbracoIndexClient UmbracoIndexClient
         {
             get
             {
-                return SearchIndexClients[AzureSearchConstants.UmbracoIndexName] as AzureSearchUmbracoIndexClient;
+                return SearchIndexClientCollection[AzureSearchConstants.UmbracoIndexName] as AzureSearchUmbracoIndexClient;
             }
         }
 

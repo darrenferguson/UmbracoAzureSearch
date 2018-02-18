@@ -38,6 +38,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             throw new NotImplementedException();
         }
 
+        public virtual string Delete(string id)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual AzureSearchReindexStatus ReIndexSetup(string sessionId)
         {
             throw new NotImplementedException();
@@ -66,6 +71,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var serviceClient = new SearchServiceClient(_config.SearchServiceName, new SearchCredentials(_config.SearchServiceAdminApiKey));
             return serviceClient;
+        }
+
+        public SearchIndexClient GetSearcher()
+        {
+            var config = GetConfiguration();
+            var client = GetClient();
+            return client.Indexes.GetClient(config.IndexName);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             var appRoot = HttpContext.Current.Server.MapPath("/");
 
             AzureSearchContext.Instance.SetupSearchClient<AzureSearchClient>(appRoot);
-            AzureSearchContext.Instance.SearchIndexClients.Add(AzureSearchConstants.UmbracoIndexName, new AzureSearchUmbracoIndexClient(appRoot, AzureSearchConstants.MainConfigFile));
+            AzureSearchContext.Instance.SearchIndexClientCollection.Add(AzureSearchConstants.UmbracoIndexName, new AzureSearchUmbracoIndexClient(appRoot, AzureSearchConstants.MainConfigFile));
 
             var additionSearchConfigfPaths = Directory.GetFiles(appRoot, AzureSearchConstants.AdditionalConfigFilePattern);
             additionSearchConfigfPaths.ForEach(configpath =>
@@ -34,7 +34,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
                 var fileName = Path.GetFileName(configpath);
                 var fileNameSplit = fileName.Split('.');
                 fileName = fileNameSplit.Length >= 2 ? fileNameSplit[1] : fileName;
-                AzureSearchContext.Instance.SearchIndexClients.Add(fileName, new AzureSearchSimpleDatasetIndexClient(appRoot, configpath));
+                AzureSearchContext.Instance.SearchIndexClientCollection.Add(fileName, new AzureSearchSimpleDatasetIndexClient(appRoot, configpath));
             });
 
             ContentService.Saved += ContentServiceSaved;
@@ -57,7 +57,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 
             foreach (var id in e.Ids)
             {
-                azureSearchServiceClient.Delete(id);
+                azureSearchServiceClient.Delete(id.ToString());
             }
         }
 
@@ -67,7 +67,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 
             foreach (var entity in e.DeletedEntities)
             {
-                azureSearchServiceClient.Delete(entity.Id);
+                azureSearchServiceClient.Delete(entity.Id.ToString());
             }
         }
 
@@ -77,7 +77,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 
             foreach (var entity in e.DeletedEntities)
             {
-                azureSearchServiceClient.Delete(entity.Id);
+                azureSearchServiceClient.Delete(entity.Id.ToString());
             }
         }
 
@@ -97,7 +97,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 
             foreach (var entity in e.DeletedEntities)
             {
-                azureSearchServiceClient.Delete(entity.Id);
+                azureSearchServiceClient.Delete(entity.Id.ToString());
             }
         }
 

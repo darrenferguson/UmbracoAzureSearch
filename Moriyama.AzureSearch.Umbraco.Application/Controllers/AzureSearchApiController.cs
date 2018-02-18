@@ -17,7 +17,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
 
         public AzureSearchApiController()
         {
-            _azureSearchServiceClients = AzureSearchContext.Instance.SearchIndexClients;
+            _azureSearchServiceClients = AzureSearchContext.Instance.SearchIndexClientCollection;
             _umbracoSearchServiceClient = AzureSearchContext.Instance.UmbracoIndexClient;
         }
 
