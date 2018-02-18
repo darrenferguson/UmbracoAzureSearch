@@ -7,18 +7,20 @@ using Microsoft.Azure.Search.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.ExampleSimpleData
 {
-    public class ProductSearch
+    public class UmbracoExampleSearch
     { 
 
-        public IList<SearchResult> Apply(List<string> searchTerms)
+        public IList<SearchResult> Apply(List<string> searchTerms, string contentTypeAlias)
         {
             // Perform the search
-            var indexer = AzureSearchContext.Instance.SearchIndexClientCollection["simpledata"];
+            var indexer = AzureSearchContext.Instance.UmbracoIndexClient;
             var searcher = indexer.GetSearcher();
 
             var query = new StringBuilder();
 
-            var searchFields = new List<string>() { "Name" };
+            var contentPathFilter = string.Format("IsContent eq true and ContentTypeAlias eq '{0}'", contentTypeAlias);
+
+            var searchFields = new List<string>() { "Name", "siteTitle" };
 
             // Rank content based on positon of search terms in fields
             for (var i = 0; i < searchFields.Count; i++)
@@ -33,6 +35,7 @@ namespace Moriyama.AzureSearch.Umbraco.ExampleSimpleData
                 new SearchParameters()
                 {
                     Top = 200,
+                    Filter = contentPathFilter,
                     SearchFields = searchFields,
                 };
 

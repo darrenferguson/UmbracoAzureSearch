@@ -155,3 +155,29 @@ After this is defined and your index is reconstructed, we can start autocomplete
         IList<SuggestResult> result = this._searchService.Suggest(searchTerm, 10);
         return result.Select(x => x.Text).Distinct().ToList();
     }
+
+## Indexing external data 
+
+You can use Azure Search with external data in a similar way to http://sleslie.me/2016/indexing-external-data-using-examineumbraco/. 
+
+### Config
+
+Add separate config files for each index, that use the following pattern AzureSearch.{{simpledata}}.config, where simpledata is replaced with the name of the index.
+
+In the config file itself add the extra property, DataService and point this to the Class and Assembly name of your data service. There's an example in the Umbraco project of this repo. 
+
+### Dataserice
+
+As with examine your data service will implement an interface, IAzureSearchSimpleDataService, using the GettBatchData method to fill instances of AzureSearchSimpleDataSet.
+
+Because Azure Search works better with batches the interface also defines the method GetAllIds(), this is used to return a list of primary key id's for batching in the proevios method call. 
+
+### Indexing
+
+Once the data service is added into the project and the config, log into Umbraco. In the Moroyama Azure Search config in there should be additional tabs for each added index. From here you can manage each separately.
+
+### Examples of save, delete and search
+
+There is an example of using the index within your application in the Moriyama.AzureSearch.Umbraco.ExampleSimpleData. It should all look very similar to working with Examine. 
+
+For the search code, again the implementation is very similar to Examine. Apart from the filter and the search fields, these are added via the SearchParameters rather than an in text query. The actual query body works in a very similar way and should make moving over from Examine very easy. 
