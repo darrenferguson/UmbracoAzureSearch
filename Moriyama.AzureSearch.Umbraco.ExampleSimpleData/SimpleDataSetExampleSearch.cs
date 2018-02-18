@@ -7,7 +7,7 @@ using Microsoft.Azure.Search.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.ExampleSimpleData
 {
-    public class ProductSearch
+    public class SimpleDataSetExampleSearch
     { 
 
         public IList<SearchResult> Apply(List<string> searchTerms)

@@ -3,7 +3,7 @@ using Moriyama.AzureSearch.Umbraco.Application;
 
 namespace Moriyama.AzureSearch.Umbraco.ExampleSimpleData
 {
-    public class DeleteProductExamineIndex
+    public class SimpleDataSetExampleDeleteItem
     {
 
         public void Execute(IContent subject)

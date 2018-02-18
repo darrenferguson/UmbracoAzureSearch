@@ -6,7 +6,7 @@ using Umbraco.Core.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.ExampleSimpleData
 {
-    public class SaveIndex
+    public class SimpleDataSetExampleSaveItem
     {
 
         public void Execute(IContent subject)
