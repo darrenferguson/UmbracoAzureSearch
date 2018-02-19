@@ -42,7 +42,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private int _pageSize;
         private bool _populateContentProperties = true;
 
-        public AzureSearchClient(string path) : base(path)
+        public AzureSearchClient(string path, string configPath) : base(path, configPath)
         {
             _pageSize = 999;
             _page = 1;
@@ -97,6 +97,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             return sp;
         }
+
 
         public ISearchResult Results()
         {
@@ -407,5 +408,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             return indexClient.Documents.Suggest(value, "sg", sp).Results;
         }
+
     }
 }
