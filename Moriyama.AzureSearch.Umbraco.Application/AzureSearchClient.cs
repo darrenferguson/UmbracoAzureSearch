@@ -69,7 +69,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
-        private SearchParameters GetSearchParameters()
+        private SearchParameters GetSearchParameters(string scoringProfile = null)
         {
             var sp = new SearchParameters();
 
@@ -90,6 +90,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             sp.IncludeTotalResultCount = true;
 
+			if (!String.IsNullOrEmpty(scoringProfile))
+			{
+				sp.ScoringProfile = scoringProfile;
+			}
+
             sp.Top = _pageSize;
             sp.Skip = (_page - 1) * _pageSize;
             sp.OrderBy = _orderBy;
@@ -102,6 +107,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var sp = GetSearchParameters();
             return Results(sp);
+        }
+
+		public ISearchResult Results(string scoringProfile)
+        {
+            var sp = GetSearchParameters(scoringProfile);
+			return Results(sp);
         }
 
         private ISearchResult Results(SearchParameters sp)

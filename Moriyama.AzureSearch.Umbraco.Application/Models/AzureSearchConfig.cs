@@ -1,4 +1,7 @@
-﻿namespace Moriyama.AzureSearch.Umbraco.Application.Models
+﻿using Microsoft.Azure.Search.Models;
+using System.Collections.Generic;
+
+namespace Moriyama.AzureSearch.Umbraco.Application.Models
 {
     public class AzureSearchConfig
     {
@@ -11,5 +14,8 @@
         public SearchField[] SearchFields { get; set; }
 
 		public bool LogSearchPerformance { get; set; }
+
+		public List<AzureSearchScoringProfile> ScoringProfiles { get; set; }
+
     }
 }
