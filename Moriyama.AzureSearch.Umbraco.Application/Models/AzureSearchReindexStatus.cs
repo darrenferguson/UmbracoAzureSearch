@@ -5,12 +5,17 @@
 
         public string SessionId { get; set; }
 
-        public int DocumentCount { get; set; }
-        public int DocumentsProcessed { get; set; }
+        public int DocumentsQueued { get; set; }
+        public int MediaQueued { get; set; }
+        public int MembersQueued { get; set; }
 
         public bool Error { get; set; }
         public bool Finished { get; set; }
 
         public string Message { get; set; }
+
+        public int DocumentCount { get; set; }
+
+        public int DocumentsProcessed { get; set; }
     }
 }

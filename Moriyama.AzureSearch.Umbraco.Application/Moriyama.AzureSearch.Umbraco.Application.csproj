@@ -295,10 +295,11 @@
     <Compile Include="Models\AzureSearchIndexResult.cs" />
     <Compile Include="Models\AzureSearchScoringFunction.cs" />
     <Compile Include="Models\AzureSearchScoringFunctionType.cs" />
+    <Compile Include="Models\AzureSearchScoringProfile.cs" />
     <Compile Include="Models\AzureSearchScoringTextWeights.cs" />
     <Compile Include="Models\BackOfficeSearchResult.cs" />
     <Compile Include="Models\BaseContent.cs" />
-    <Compile Include="Models\AzureSearchScoringProfile.cs" />
+    <Compile Include="Models\ReIndexModel.cs" />
     <Compile Include="Models\SearchContent.cs" />
     <Compile Include="Models\BoolSearchFacet.cs" />
     <Compile Include="Models\SearchFacet.cs" />
