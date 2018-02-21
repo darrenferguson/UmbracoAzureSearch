@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
@@ -217,11 +218,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public AzureSearchReindexStatus ReIndex(string filename, string sessionId, int page)
         {
             var ids = GetIds(sessionId, filename);
+            var conversionErrors = false;
+            var failedDocumentConversionIds = new List<int>();
 
             var result = new AzureSearchReindexStatus
             {
                 SessionId = sessionId,
-                DocumentCount = ids.Length
+                DocumentCount = ids.Length,
+                Message = string.Empty
             };
 
             var idsToProcess = Page(ids, page);
@@ -240,16 +244,40 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             {
                 var contents = UmbracoContext.Current.Application.Services.ContentService.GetByIds(idsToProcess);
                 foreach (var content in contents)
+                {
                     if (content != null)
-                        documents.Add(FromUmbracoContent(content, config.SearchFields));
+                    {
+                        try
+                        {
+                            documents.Add(FromUmbracoContent(content, config.SearchFields));
+                        }
+                        catch (Exception ex)
+                        {
+                            conversionErrors = true;
+                            failedDocumentConversionIds.Add(content.Id);
+                        }
+                    }
+                }
             }
             else if (filename == "media.json")
             {
                 var contents = UmbracoContext.Current.Application.Services.MediaService.GetByIds(idsToProcess);
 
                 foreach (var content in contents)
+                {
                     if (content != null)
-                        documents.Add(FromUmbracoMedia(content, config.SearchFields));
+                    {
+                        try
+                        {
+                            documents.Add(FromUmbracoMedia(content, config.SearchFields));
+                        }
+                        catch (Exception ex)
+                        {
+                            conversionErrors = true;
+                            failedDocumentConversionIds.Add(content.Id);
+                        }
+                    }
+                }
             }
             else
             {
@@ -259,12 +287,29 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     contents.Add(UmbracoContext.Current.Application.Services.MemberService.GetById(id));
 
                 foreach (var content in contents)
+                {
                     if (content != null)
-                        documents.Add(FromUmbracoMember(content, config.SearchFields));
+                    {
+                        try
+                        {
+                            documents.Add(FromUmbracoMember(content, config.SearchFields));
+                        }
+                        catch (Exception ex)
+                        {
+                            conversionErrors = true;
+                            failedDocumentConversionIds.Add(content.Id);
+                        }
+                    }
+                }
+            }
+
+            if (conversionErrors)
+            {
+                result.Message += $"Failed to convert Umbraco content to Azure search documents: {string.Join(", ", failedDocumentConversionIds)}\n";
             }
 
             var indexStatus = IndexContentBatch(documents);
-
+            
             result.DocumentsProcessed = page * BatchSize;
 
             if (indexStatus.Success)
@@ -274,7 +319,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             result.Error = true;
             result.Finished = true;
-            result.Message = indexStatus.Message;
+            result.Message += indexStatus.Message;
 
             return result;
         }
