@@ -14,6 +14,7 @@ using Umbraco.Web;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using Moriyama.AzureSearch.Umbraco.Application.Extensions;
+using Umbraco.Web.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
@@ -354,12 +355,27 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var result = GetDocumentToIndex((ContentBase)content, searchFields);
 
-            var helper = new UmbracoHelper(UmbracoContext.Current);
-            var media = helper.TypedMedia(content.Id);
-
-            if (media != null)
+            if (!content.ContentType.Alias.Equals("Folder"))
             {
-                result.Add("Url", media.Url);
+                if (content.HasProperty("umbracoFile"))
+                {
+                    var value = (content.Properties?["umbracoFile"]?.Value ?? "").ToString();
+
+                    if (value.StartsWith("{") && value.EndsWith("}"))
+                    {
+                        try
+                        {
+                            var obj = JsonConvert.DeserializeObject<ImageCropDataSet>(value);
+                            value = obj.Src;
+                        }
+                        catch (Exception e) when (e is JsonReaderException || e is JsonSerializationException)
+                        {
+                            value = string.Empty;
+                        }
+                    }
+
+                    result.Add("Url", value);
+                }
             }
 
             result.Add("IsMedia", true);
