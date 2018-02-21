@@ -5,6 +5,7 @@ using Moriyama.AzureSearch.Umbraco.Application.Helper;
 using Umbraco.Core;
 using Umbraco.Web.Editors;
 using Umbraco.Web.Models.ContentEditing;
+using System.Web;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 {
@@ -21,7 +22,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
             var result = new List<EntityTypeSearchResult>();
 
             var client = AzureSearchContext.Instance.GetSearchClient();
-
+            // if the search term contains a space this will be transformed to %20 and no search results returned
+            // so lets decode the query term to turn it back into a proper space
+            // will this mess up any other Url encoded terms? or fix them too?
+            query = HttpUtility.UrlDecode(query);
             var searchResults = client.Term(query + "*").Results();
 
             if (allowedSections.InvariantContains(Constants.Applications.Content))
