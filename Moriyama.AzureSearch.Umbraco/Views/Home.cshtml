@@ -3,10 +3,4 @@
     Layout = "Master.cshtml";
 }
 
-@foreach(var item in Umbraco.TypedMedia(new [] { 1080, 1081}))
-{
-
-    @item.Url
-}
-
 @CurrentPage.GetGridHtml("content", "fanoe")
