@@ -56,7 +56,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 		{
 			get
 			{
-				return TimeSpan.FromDays(Int32.Parse(this.BoostingDuration));
+
+                int.TryParse(this.BoostingDuration, out int parsedDuration);
+				return TimeSpan.FromDays(parsedDuration);
 			}
 		}
 	}
