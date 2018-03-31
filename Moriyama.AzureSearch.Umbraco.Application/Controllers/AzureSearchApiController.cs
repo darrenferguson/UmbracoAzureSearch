@@ -71,9 +71,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
             return Mapper.Map<SearchIndex[]>(_azureSearchServiceClient.GetSearchIndexes());
         }
 
-        public string GetDropCreateIndex()
+        public bool GetDropCreateIndex()
         {
-            return _azureSearchServiceClient.DropCreateIndex();
+            return this._azureSearchServiceClient.DropCreateIndex();
         }
 
         public AzureSearchReindexStatus GetReIndexContent()

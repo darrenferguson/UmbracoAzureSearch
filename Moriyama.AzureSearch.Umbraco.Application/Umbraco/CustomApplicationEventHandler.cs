@@ -98,7 +98,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             var azureSearchServiceClient = AzureSearchContext.Instance.SearchIndexClient;
             foreach (var item in e.MoveInfoCollection)
             {
-                azureSearchServiceClient.ReIndexContent(item.Entity);
+                azureSearchServiceClient.ReIndexMedia(item.Entity);
             }
         }
 
@@ -116,7 +116,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             var azureSearchServiceClient = AzureSearchContext.Instance.SearchIndexClient;
             foreach (var entity in e.SavedEntities)
             {
-                azureSearchServiceClient.ReIndexContent(entity);
+                azureSearchServiceClient.ReIndexMedia(entity);
             }   
         }
 

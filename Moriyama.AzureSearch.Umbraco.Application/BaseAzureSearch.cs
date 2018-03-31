@@ -1,43 +1,58 @@
-﻿using Microsoft.Azure.Search;
+﻿using log4net;
+using Microsoft.Azure.Search;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using Newtonsoft.Json;
+using System;
 using System.IO;
+using System.Reflection;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public abstract class BaseAzureSearch
     {
-        protected AzureSearchConfig _config;
-        protected readonly string _path;
-        private ISearchServiceClient _searchServiceClient;
-        private const string ConfigRelativePath = @"config\AzureSearch.config";
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public BaseAzureSearch(string path)
+        protected AzureSearchConfig _configuration;
+        protected readonly string _configurationFile;
+
+        private readonly ISearchServiceClient _searchServiceClient;
+        
+        public BaseAzureSearch(string configurationFile)
         {
-            _path = path;
-            _config = JsonConvert.DeserializeObject<AzureSearchConfig>(File.ReadAllText(GetConfigFullPath()));
-            _searchServiceClient = new SearchServiceClient(_config.SearchServiceName, new SearchCredentials(_config.SearchServiceAdminApiKey));
+            this._configurationFile = configurationFile;
+
+            try
+            {
+                this._configuration = JsonConvert.DeserializeObject<AzureSearchConfig>(File.ReadAllText(_configurationFile));
+
+            } catch(FileNotFoundException fileNotFoundException)
+            {
+                Log.Fatal($"Config file not found {this._configurationFile}", fileNotFoundException);
+                throw fileNotFoundException;
+
+            } catch(FormatException formatException)
+            {
+                Log.Fatal($"Config file malformed {this._configurationFile}", formatException);
+                throw formatException;
+            }
+
+            this._searchServiceClient = new SearchServiceClient(_configuration.SearchServiceName, new SearchCredentials(_configuration.SearchServiceAdminApiKey));
         }
 
-        public void SaveConfiguration(AzureSearchConfig config)
+        public void SaveConfiguration(AzureSearchConfig configuration)
         {
-            _config = config;
-            File.WriteAllText(GetConfigFullPath(), JsonConvert.SerializeObject(config, Formatting.Indented));
+            this._configuration = configuration;
+            File.WriteAllText(_configurationFile, JsonConvert.SerializeObject(configuration, Formatting.Indented));
         }
 
         public AzureSearchConfig GetConfiguration()
         {
-            return _config;
+            return this._configuration;
         }
 
         public ISearchServiceClient GetClient()
         {
-            return _searchServiceClient;
-        }
-
-        private string GetConfigFullPath()
-        {
-            return Path.Combine(_path, ConfigRelativePath);
+            return this._searchServiceClient;
         }
     }
 }

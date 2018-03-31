@@ -12,7 +12,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         Field[] GetStandardUmbracoFields();
         Index[] GetSearchIndexes();
 
-        string DropCreateIndex();
+        bool DropCreateIndex();
         
         AzureSearchReindexStatus ReIndexContent(string sessionId);
         AzureSearchReindexStatus ReIndexContent(string sessionId, int page);
@@ -21,10 +21,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
 
         void ReIndexContent(IContent content);
-        void ReIndexContent(IMedia content);
+        void ReIndexMedia(IMedia content);
         void ReIndexMember(IMember content);
 
-        void Delete(int id);
+        AzureSearchIndexResult Delete(int id);
 
     }
 }

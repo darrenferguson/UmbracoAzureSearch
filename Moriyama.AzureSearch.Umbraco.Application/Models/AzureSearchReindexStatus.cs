@@ -5,7 +5,12 @@
 
         public string SessionId { get; set; }
 
-        public int DocumentCount { get; set; }
+        public int ContentCount { get; set; }
+
+        public int MediaCount { get; set; }
+
+        public int MemberCount { get; set; }
+
         public int DocumentsProcessed { get; set; }
 
         public bool Error { get; set; }

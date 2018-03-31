@@ -15,7 +15,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public AzureSearchClient(string path) : base(path)
+        public AzureSearchClient(string configurationFile) : base(configurationFile)
         {}
 
         public ISearchResult Results(IAzureSearchQuery query)
@@ -77,7 +77,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return indexClient.Documents.Suggest(value, "sg", sp).Results;
         }
 
-        private ISearchContent FromDocument(Document d, double score, bool populateContentProperties)
+        private ISearchContent FromDocument(Document document, double score, bool populateContentProperties)
         {
             var searchContent = new SearchContent
             {
@@ -86,32 +86,33 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             searchContent.Score = score;
 
-            var t = searchContent.GetType();
-            searchContent.Id = Convert.ToInt32(d["Id"]);
+            var searchContentType = searchContent.GetType();
+            
+            searchContent.Id = Convert.ToInt32(document["Id"]);
 
-            foreach (var key in d.Keys)
+            foreach (var key in document.Keys)
             {
-                var property = t.GetProperty(key);
+                var property = searchContentType.GetProperty(key);
                 if (property == null && populateContentProperties)
                 {
-                    searchContent.Properties.Add(key, d[key]);
+                    searchContent.Properties.Add(key, document[key]);
                 }
                 else if (property != null && (property.CanWrite && property.Name != "Id"))
                 {
 
-                    object val = d[key];
+                    object value = document[key];
 
-                    if (val == null)
+                    if (value == null)
                         continue;
 
-                    if (val is long)
-                        val = Convert.ToInt32(val);
+                    if (value is long)
+                        value = Convert.ToInt32(value);
 
-                    if (val is DateTimeOffset)
-                        val = ((DateTimeOffset)val).DateTime;
+                    if (value is DateTimeOffset)
+                        value = ((DateTimeOffset)value).DateTime;
 
-                    if (property.PropertyType == val.GetType())
-                        property.SetValue(searchContent, val);
+                    if (property.PropertyType == value.GetType())
+                        property.SetValue(searchContent, value);
                 }
             }
 

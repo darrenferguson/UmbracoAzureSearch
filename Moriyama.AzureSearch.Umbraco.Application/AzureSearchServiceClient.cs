@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
@@ -12,64 +13,72 @@ using Umbraco.Core.Persistence;
 using Umbraco.Web;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using log4net;
 using Moriyama.AzureSearch.Umbraco.Application.Extensions;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchIndexClient : BaseAzureSearch, IAzureSearchIndexClient
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private Dictionary<string, IComputedFieldParser> Parsers { get; set; }
 
         // Number of docs to be processed at a time.
-        const int BatchSize = 999;
+        private readonly int _batchSize;
+        private readonly string _tempDirectory;
+        private readonly IUmbracoDependencyHelper _umbracoDependencyHelper;
 
-        public AzureSearchIndexClient(string path) : base(path)
+        public AzureSearchIndexClient(string configurationFile, int batchSize, string tempDirectory, IUmbracoDependencyHelper umbracoDependencyHelper) : base(configurationFile)
         {
+            this._umbracoDependencyHelper = umbracoDependencyHelper;
+            this._batchSize = batchSize;
+            this._tempDirectory = tempDirectory;
+
             Parsers = new Dictionary<string, IComputedFieldParser>();
             SetCustomFieldParsers(GetConfiguration());
         }
 
-        private string SessionFile(string sessionId)
-        {
-            var path = Path.Combine(_path, @"App_Data\MoriyamaAzureSearch");
-            return Path.Combine(path, sessionId + ".json");
-        }
-
-        public string DropCreateIndex()
+        public bool DropCreateIndex()
         {
             var serviceClient = GetClient();
             var indexes = serviceClient.Indexes.List().Indexes;
 
             foreach (var index in indexes)
-                if (index.Name == _config.IndexName)
-                    serviceClient.Indexes.Delete(_config.IndexName);
-
-            var customFields = new List<Field>();
-            customFields.AddRange(GetStandardUmbracoFields());
-            customFields.AddRange(_config.SearchFields.Select(x => x.ToAzureField()));
-
-            var definition = new Index
             {
-                Name = _config.IndexName,
+                if (index.Name == this._configuration.IndexName)
+                {
+                    serviceClient.Indexes.Delete(this._configuration.IndexName);
+                }
+            }
+
+            List<Field> customFields = new List<Field>();
+            customFields.AddRange(GetStandardUmbracoFields());
+            customFields.AddRange(this._configuration.SearchFields.Select(x => x.ToAzureField()));
+
+            Index indexDefinition = new Index
+            {
+                Name = this._configuration.IndexName,
                 Fields = customFields
             };
 
             try
             {
-                serviceClient.Indexes.Create(definition);
+                serviceClient.Indexes.Create(indexDefinition);
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                Log.Error($"Can't create index {this._configuration.IndexName}", ex);
+                return false;
             }
 
-            return "Index created";
+            return true;
         }
 
         public Index[] GetSearchIndexes()
         {
-            var serviceClient = GetClient();
-            var indexes = serviceClient.Indexes.List().Indexes;
+            ISearchServiceClient serviceClient = GetClient();
+            IList<Index> indexes = serviceClient.Indexes.List().Indexes;
             return indexes.ToArray();
         }
 
@@ -81,31 +90,26 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public AzureSearchReindexStatus ReIndexContent(string sessionId)
         {
-            List<int> contentIds;
-            List<int> mediaIds;
-            List<int> memberIds;
+            // TODO - store query an guids somewhere else... guids in meaninful constants.
+            // Query in one place.
 
-            using (var db = new UmbracoDatabase("umbracoDbDSN"))
-            {
-                contentIds = db.Fetch<int>(@"select distinct cmsContent.NodeId
+            IList<int> contentIds = this._umbracoDependencyHelper.DatabaseFetch<int>(@"select distinct cmsContent.NodeId
                     from cmsContent, umbracoNode where
                     cmsContent.nodeId = umbracoNode.id and
                     umbracoNode.nodeObjectType = 'C66BA18E-EAF3-4CFF-8A22-41B16D66A972'");
 
-                mediaIds = db.Fetch<int>(@"select distinct cmsContent.NodeId
+            IList<int> mediaIds = this._umbracoDependencyHelper.DatabaseFetch<int>(@"select distinct cmsContent.NodeId
                     from cmsContent, umbracoNode where
                     cmsContent.nodeId = umbracoNode.id and
                     umbracoNode.nodeObjectType = 'B796F64C-1F99-4FFB-B886-4BF4BC011A9C'");
 
-                memberIds = db.Fetch<int>(@"select distinct cmsContent.NodeId
+            IList<int> memberIds = this._umbracoDependencyHelper.DatabaseFetch<int>(@"select distinct cmsContent.NodeId
                     from cmsContent, umbracoNode where
                     cmsContent.nodeId = umbracoNode.id and
                     umbracoNode.nodeObjectType = '39EB0F98-B348-42A1-8662-E7EB18487560'");
-            }
-
-            var contentCount = contentIds.Count;
-
-            var path = Path.Combine(_path, @"App_Data\MoriyamaAzureSearch\" + sessionId);
+            
+            
+            string path = Path.Combine(this._tempDirectory, sessionId);
             EnsurePath(path);
 
             System.IO.File.WriteAllText(Path.Combine(path, "content.json"), JsonConvert.SerializeObject(contentIds));
@@ -115,25 +119,23 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return new AzureSearchReindexStatus
             {
                 SessionId = sessionId,
-                DocumentCount = contentCount,
+                ContentCount = contentIds.Count,
+                MediaCount = mediaIds.Count,
+                MemberCount = mediaIds.Count,
                 Error = false,
                 Finished = false
             };
-
         }
 
         private int[] GetIds(string sessionId, string filename)
         {
-            var path = Path.Combine(_path, @"App_Data\MoriyamaAzureSearch\" + sessionId);
-            var file = Path.Combine(path, filename);
-
-            var ids = JsonConvert.DeserializeObject<int[]>(System.IO.File.ReadAllText(file));
-            return ids;
+            string file = Path.Combine(this._tempDirectory, sessionId, filename);
+            return JsonConvert.DeserializeObject<int[]>(System.IO.File.ReadAllText(file));
         }
 
         private int[] Page(int[] collection, int page)
         {
-            return collection.Skip((page - 1) * BatchSize).Take(BatchSize).ToArray();
+            return collection.Skip((page - 1) * this._batchSize).Take(this._batchSize).ToArray();
         }
 
         public AzureSearchReindexStatus ReIndexContent(string sessionId, int page)
@@ -153,14 +155,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public void ReIndexContent(IContent content)
         {
-            var documents = new List<Document>();
-            var config = GetConfiguration();
+            IList<Document> documents = new List<Document>();
+            AzureSearchConfig config = GetConfiguration();
 
             documents.Add(FromUmbracoContent(content, config.SearchFields));
             IndexContentBatch(documents);
         }
 
-        public void ReIndexContent(IMedia content)
+        public void ReIndexMedia(IMedia content)
         {
             var documents = new List<Document>();
             var config = GetConfiguration();
@@ -169,46 +171,50 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             IndexContentBatch(documents);
         }
 
-        public void Delete(int id)
+        public AzureSearchIndexResult Delete(int id)
         {
-            var result = new AzureSearchIndexResult();
+            AzureSearchIndexResult result = new AzureSearchIndexResult();
 
-            var serviceClient = GetClient();
+            ISearchServiceClient serviceClient = GetClient();
 
-            var actions = new List<IndexAction>();
-            var d = new Document();
-            d.Add("Id", id.ToString());
+            IList <IndexAction> actions = new List<IndexAction>();
+            var document = new Document();
 
-            actions.Add(IndexAction.Delete(d));
+            document.Add("Id", id.ToString());
 
-            var batch = IndexBatch.New(actions);
-            var indexClient = serviceClient.Indexes.GetClient(_config.IndexName);
+            actions.Add(IndexAction.Delete(document));
+
+            IndexBatch batch = IndexBatch.New(actions);
+
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(_configuration.IndexName);
 
             try
             {
                 indexClient.Documents.Index(batch);
             }
-            catch (IndexBatchException e)
+            catch (IndexBatchException indexBatchException)
             {
                 // Sometimes when your Search service is under load, indexing will fail for some of the documents in
                 // the batch. Depending on your application, you can take compensating actions like delaying and
                 // retrying. For this simple demo, we just log the failed document keys and continue.
-                var error =
-                     "Failed to index some of the documents: {0}" + String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key));
+                string  error =
+                     "Failed to index some of the documents: {0}" + string.Join(", ", indexBatchException.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key));
 
                 result.Success = false;
                 result.Message = error;
 
-
+                Log.Warn(indexBatchException);
+                return result;
             }
 
             result.Success = true;
+            return result;
         }
 
         public void ReIndexMember(IMember content)
         {
-            var documents = new List<Document>();
-            var config = GetConfiguration();
+            IList<Document> documents = new List<Document>();
+            AzureSearchConfig config = GetConfiguration();
 
             documents.Add(FromUmbracoMember(content, config.SearchFields));
             IndexContentBatch(documents);
@@ -216,15 +222,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public AzureSearchReindexStatus ReIndex(string filename, string sessionId, int page)
         {
-            var ids = GetIds(sessionId, filename);
+            int[] ids = GetIds(sessionId, filename);
 
-            var result = new AzureSearchReindexStatus
+            AzureSearchReindexStatus result = new AzureSearchReindexStatus
             {
                 SessionId = sessionId,
-                DocumentCount = ids.Length
+                ContentCount = ids.Length
             };
 
-            var idsToProcess = Page(ids, page);
+            int[] idsToProcess = Page(ids, page);
 
             if (!idsToProcess.Any())
             {
@@ -233,39 +239,54 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 return result;
             }
 
-            var documents = new List<Document>();
-            var config = GetConfiguration();
+            IList<Document> documents = new List<Document>();
+            AzureSearchConfig config = GetConfiguration();
 
             if (filename == "content.json")
             {
-                var contents = UmbracoContext.Current.Application.Services.ContentService.GetByIds(idsToProcess);
-                foreach (var content in contents)
+                IEnumerable<IContent> contents = this._umbracoDependencyHelper.GetContentService().GetByIds(idsToProcess);
+
+                foreach (IContent content in contents)
+                {
                     if (content != null)
+                    {
                         documents.Add(FromUmbracoContent(content, config.SearchFields));
+                    }
+                }
             }
             else if (filename == "media.json")
             {
-                var contents = UmbracoContext.Current.Application.Services.MediaService.GetByIds(idsToProcess);
+                IEnumerable<IMedia> medias = this._umbracoDependencyHelper.GetMediaService().GetByIds(idsToProcess);
 
-                foreach (var content in contents)
-                    if (content != null)
-                        documents.Add(FromUmbracoMedia(content, config.SearchFields));
+                foreach (IMedia media in medias)
+                {
+                    if (media != null)
+                    {
+                        documents.Add(FromUmbracoMedia(media, config.SearchFields));
+                    }
+                }
             }
             else
             {
-                var contents = new List<IMember>();
+                IList<IMember> members = new List<IMember>();
 
-                foreach (var id in idsToProcess)
-                    contents.Add(UmbracoContext.Current.Application.Services.MemberService.GetById(id));
+                foreach (int id in idsToProcess)
+                {
+                    members.Add(this._umbracoDependencyHelper.GetMemberService().GetById(id));
+                }
 
-                foreach (var content in contents)
+                foreach (IMember content in members)
+                {
                     if (content != null)
+                    {
                         documents.Add(FromUmbracoMember(content, config.SearchFields));
+                    }
+                }
             }
 
-            var indexStatus = IndexContentBatch(documents);
+            AzureSearchIndexResult indexStatus = IndexContentBatch(documents);
 
-            result.DocumentsProcessed = page * BatchSize;
+            result.DocumentsProcessed = page * this._batchSize;
 
             if (indexStatus.Success)
             {
@@ -281,13 +302,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private AzureSearchIndexResult IndexContentBatch(IEnumerable<Document> contents)
         {
-            var serviceClient = GetClient();
-            return serviceClient.IndexContentBatch(_config.IndexName, contents);
+            ISearchServiceClient serviceClient = GetClient();
+            return serviceClient.IndexContentBatch(_configuration.IndexName, contents);
         }
 
         private Document FromUmbracoMember(IMember member, SearchField[] searchFields)
         {
-            var result = GetDocumentToIndex((ContentBase)member, searchFields);
+            Document result = GetDocumentToIndex(member, searchFields);
 
             result.Add("IsMedia", false);
             result.Add("IsContent", false);
@@ -306,10 +327,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoMedia(IMedia content, SearchField[] searchFields)
         {
-            var result = GetDocumentToIndex((ContentBase)content, searchFields);
+            Document result = GetDocumentToIndex(content, searchFields);
 
-            var helper = new UmbracoHelper(UmbracoContext.Current);
-            var media = helper.TypedMedia(content.Id);
+            
+            IPublishedContent media = this._umbracoDependencyHelper.TypedMedia(content.Id);
 
             if (media != null)
             {
@@ -327,7 +348,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document FromUmbracoContent(IContent content, SearchField[] searchFields)
         {
-            var result = GetDocumentToIndex((ContentBase)content, searchFields);
+            Document result = GetDocumentToIndex(content, searchFields);
 
             result.Add("IsContent", true);
             result.Add("IsMedia", false);
@@ -339,8 +360,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             if (content.Published)
             {
-                var helper = new UmbracoHelper(UmbracoContext.Current);
-                var publishedContent = helper.TypedContent(content.Id);
+                
+                IPublishedContent publishedContent = this._umbracoDependencyHelper.TypedContent(content.Id);
 
                 if (publishedContent != null)
                 {
@@ -362,7 +383,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private Document GetDocumentToIndex(IContentBase content, SearchField[] searchFields)
         {
-            var c = new Document
+            var document = new Document
             {
                 {"Id", content.Id.ToString()},
                 {"Name", content.Name},
@@ -379,7 +400,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 new AzureSearchEventArgs()
                 {
                     Item = content,
-                    Entry = c
+                    Entry = document
                 });
 
             if (cancelIndex)
@@ -391,58 +412,70 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var umbracoFields = searchFields.Where(x => !x.IsComputedField()).ToArray();
             var computedFields = searchFields.Where(x => x.IsComputedField()).ToArray();
 
-            c = FromUmbracoContentBase(c, content, umbracoFields);
-            c = FromComputedFields(c, content, computedFields);
+            document = FromUmbracoContentBase(document, content, umbracoFields);
+            document = FromComputedFields(document, content, computedFields);
 
             AzureSearch.FireContentIndexed(
                 new AzureSearchEventArgs()
                 {
                     Item = content,
-                    Entry = c
+                    Entry = document
                 });
 
-            return c;
+            return document;
         }
 
-        private Document FromUmbracoContentBase(Document c, IContentBase content, SearchField[] searchFields)
+        private Document FromUmbracoContentBase(Document document, IContentBase content, SearchField[] searchFields)
         {
-            c.Add("ContentTypeId", content.ContentTypeId);
-            c.Add("CreateDate", content.CreateDate);
-            c.Add("CreatorId", content.CreatorId);
+            document.Add("ContentTypeId", content.ContentTypeId);
+            document.Add("CreateDate", content.CreateDate);
+            document.Add("CreatorId", content.CreatorId);
 
-            foreach (var field in searchFields)
+            foreach (SearchField field in searchFields)
             {
-                if (!content.HasProperty(field.Name) || content.Properties[field.Name].Value == null)
+                object value = content.GetValue(field.Name);
+
+                if (value == null)
                 {
+
                     if (field.Type == "collection")
-                        c.Add(field.Name, new List<string>());
+                        document.Add(field.Name, new List<string>());
 
                     if (field.Type == "string")
-                        c.Add(field.Name, string.Empty);
+                        document.Add(field.Name, string.Empty);
 
                     if (field.Type == "int")
-                        c.Add(field.Name, 0);
+                        document.Add(field.Name, 0);
 
                     if (field.Type == "bool")
-                        c.Add(field.Name, false);
-
+                        document.Add(field.Name, false);
                 }
                 else
                 {
-                    var value = content.Properties[field.Name].Value;
-
+                    
                     if (field.Type == "collection")
                     {
                         if (!string.IsNullOrEmpty(value.ToString()))
-                            c.Add(field.Name, value.ToString().Split(','));
+                            document.Add(field.Name, value.ToString().Split(','));
                     }
                     else
                     {
                         if (field.IsGridJson)
                         {
                             // #filth #sorrymarc
-                            JObject jObject = JObject.Parse(value.ToString());
-                            var tokens = jObject.SelectTokens("..value");
+                            JObject jObject;
+                            try
+                            {
+                                jObject = JObject.Parse(value.ToString());
+                            }
+                            catch (JsonReaderException jsonReaderException)
+                            {
+                                Log.Warn($"Invalid json for {field.Name}", jsonReaderException);
+                                document.Add(field.Name, value);
+                                continue;
+                            }
+
+                            IEnumerable<JToken> tokens = jObject.SelectTokens("..value");
 
                             try
                             {
@@ -454,16 +487,17 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                             }
                             catch (Exception ex)
                             {
+                                Log.Warn("Can't parse Grid JSON", ex);
                                 value = string.Empty;
                             }
                         }
 
-                        c.Add(field.Name, value);
+                        document.Add(field.Name, value);
                     }
                 }
             }
 
-            return c;
+            return document;
         }
 
         private Document FromComputedFields(Document document, IContentBase content, SearchField[] customFields)
@@ -472,7 +506,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             {
                 foreach (var customField in customFields)
                 {
-                    var parser = Parsers.Single(x => x.Key == customField.ParserType).Value;
+                    IComputedFieldParser parser = Parsers.Single(x => x.Key == customField.ParserType).Value;
                     document.Add(customField.Name, parser.GetValue(content));
                 }
             }
@@ -484,18 +518,18 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             if (azureSearchConfig.SearchFields != null)
             {
-                var types = azureSearchConfig.SearchFields.Where(x => x.IsComputedField()).Select(x => x.ParserType).Distinct().ToArray();
+                string[] types = azureSearchConfig.SearchFields.Where(x => x.IsComputedField()).Select(x => x.ParserType).Distinct().ToArray();
 
-                foreach (var t in types)
+                foreach (var typeName in types)
                 {
-                    var parser = Activator.CreateInstance(Type.GetType(t));
+                    var parser = Activator.CreateInstance(Type.GetType(typeName));
 
                     if (!(parser is IComputedFieldParser))
                     {
-                        throw new Exception(string.Format("Type {0} does not implement {1}", t, typeof(IComputedFieldParser).Name));
+                        throw new Exception(string.Format("Type {0} does not implement {1}", typeName, typeof(IComputedFieldParser).Name));
                     }
 
-                    Parsers.Add(t, (IComputedFieldParser)parser);
+                    Parsers.Add(typeName, (IComputedFieldParser)parser);
                 }
             }
         }
