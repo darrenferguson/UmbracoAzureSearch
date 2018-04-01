@@ -50,6 +50,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         IAzureSearchQuery Any(string field);
 
+        IAzureSearchQuery SearchIn(string field, IEnumerable<string> values);
+
+
         IAzureSearchQuery Highlight(string highlightTag, IEnumerable<string> fields);
 
         IAzureSearchQuery QueryType(QueryType queryType);

@@ -36,5 +36,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         int CreatorId { get; set; }
 
         IDictionary<string, object> Properties { get; set; }
+
+        IDictionary<string, IList<string>> Highlights { get; set; }
     }
 }

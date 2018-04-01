@@ -179,7 +179,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public IAzureSearchQuery Any(string field)
         {
-            _filters.Add(string.Format("{0}/any()", field));
+            this._filters.Add(string.Format("{0}/any()", field));
+            return this;
+        }
+
+        public IAzureSearchQuery SearchIn(string field, IEnumerable<string> values)
+        {
+            this._filters.Add($"search.in({field}, '{string.Join(",", values)}')");
             return this;
         }
 
@@ -202,7 +208,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public IAzureSearchQuery Contains(string field, string value)
         {
-            _filters.Add(string.Format("{0}/any(x: x eq '{1}')", field, value));
+            this._filters.Add(string.Format("{0}/any(x: x eq '{1}')", field, value));
             return this;
         }
 
@@ -235,7 +241,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                                     string.Format("{0}/any(x: x eq '{1}')", x, value)).ToList())
                             );
 
-                _filters.Add(combinedFilter);
+                this._filters.Add(combinedFilter);
             }
             else
             {
@@ -283,7 +289,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                                     string.Format("({0} eq '{1}')", field, x)).ToList())
                             );
 
-                _filters.Add(combinedFilter);
+                this._filters.Add(combinedFilter);
             }
             else
             {
@@ -319,10 +325,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             if (this._highlight.Any())
             {
-                foreach (var highlight in this._highlight)
-                {
-                    searchParameters.HighlightFields.Add(highlight);
-                }
+                searchParameters.HighlightFields = this._highlight;
 
                 searchParameters.HighlightPreTag = "<" + this._highlightTag + ">";
                 searchParameters.HighlightPostTag = "</" + this._highlightTag + ">";

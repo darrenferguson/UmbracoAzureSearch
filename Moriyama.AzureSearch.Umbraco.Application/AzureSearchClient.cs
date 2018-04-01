@@ -30,15 +30,25 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
 
             DateTime startTime = DateTime.UtcNow;
+            
             DocumentSearchResult response = indexClient.Documents.Search(query.Term, query.GetSearchParameters());
 
-            var processStartTime = DateTime.UtcNow;
+            DateTime processStartTime = DateTime.UtcNow;
             var results = new Models.SearchResult();
 
             foreach (var result in response.Results)
             {
                 ISearchContent document = FromDocument(result.Document, result.Score, query.PopulateContentProperties);
-                document.Properties.Add("__highlights", result.Highlights);
+
+                if (result.Highlights != null)
+                {
+                    document.Highlights = new Dictionary<string, IList<string>>();
+
+                    foreach (var highlight in result.Highlights)
+                    {
+                        document.Highlights[highlight.Key] = highlight.Value;
+                    }
+                }
 
                 results.Content.Add(document);
             }

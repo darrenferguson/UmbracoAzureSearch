@@ -20,5 +20,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
         public string[] Path { get; set; }
 
         public IDictionary<string, object> Properties { get; set; }
+
+        public IDictionary<string, IList<string>> Highlights { get; set; }
     }
 }

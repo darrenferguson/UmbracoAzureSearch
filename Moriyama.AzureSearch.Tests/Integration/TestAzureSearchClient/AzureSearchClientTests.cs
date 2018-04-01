@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using Microsoft.Azure.Search.Models;
 using Moq;
 using Moriyama.AzureSearch.Umbraco.Application;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
@@ -31,16 +34,12 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchClient
             this._config.Fields = new SearchField[]
             {
                 new SearchField { Name = "umbracoNaviHide", FieldType = FieldType.Int, IsSearchable = false, IsFilterable = true},
-                new SearchField { Name = "siteTitle", FieldType = FieldType.String, IsFilterable = true},
+                new SearchField { Name = "siteTitle", FieldType = FieldType.String, IsFilterable = true, IsSearchable = true},
                 new SearchField { Name = "siteDescription", FieldType = FieldType.String, IsFilterable = true},
                 new SearchField { Name = "tags", FieldType = FieldType.Collection, IsFacetable = true},
-                new SearchField { Name = "content", FieldType = FieldType.String, IsGridJson = true}
+                new SearchField { Name = "content", FieldType = FieldType.String, IsGridJson = true, IsFilterable = true, IsSearchable = true }
             };
-        }
 
-        [Test]
-        public void TestSimpleSearch()
-        {
 
             Mock<IContentType> contentType = new Mock<IContentType>();
             contentType.Setup(x => x.Alias).Returns("umbracoContent");
@@ -75,7 +74,7 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchClient
             content.Setup(x => x.GetValue("content")).Returns("Hello world");
 
             content.Setup(x => x.HasProperty("siteTitle")).Returns(true);
-            content.Setup(x => x.GetValue("siteTitle")).Returns("Integration Tests");
+            content.Setup(x => x.GetValue("siteTitle")).Returns("Integration Test");
 
 
             Mock<IPublishedContent> publishedContent = new Mock<IPublishedContent>();
@@ -85,7 +84,7 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchClient
             Mock<IUmbracoDependencyHelper> umbracoDependencyHelper = new Mock<IUmbracoDependencyHelper>();
             umbracoDependencyHelper.Setup(x => x.TypedContent(It.IsAny<int>())).Returns(publishedContent.Object);
 
-            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config, 
+            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
 
             bool result = azureSearchIndexClient.DropCreateIndex();
@@ -93,11 +92,18 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchClient
 
             azureSearchIndexClient.ReIndexContent(content.Object);
 
-            IAzureSearchClient azureSearchClient = new AzureSearchClient(this._config);
+            // Not sure what better to do here.... waiting for the index....
 
-            //IList<SuggestResult> results = azureSearchClient.Suggest("hello", 1, true);
+            Thread.Sleep(TimeSpan.FromSeconds(5));
+        }
 
-            AzureSearchQuery query = new AzureSearchQuery("hello");
+        [Test]
+        public void TestSimpleSearch()
+        {
+    
+            IAzureSearchClient azureSearchClient = new AzureSearchClient(this._config);      
+            IAzureSearchQuery query = new AzureSearchQuery("test");
+        
             ISearchResult searchResult  = azureSearchClient.Results(query);
 
             Assert.IsTrue(searchResult.Count > 0);
@@ -107,6 +113,21 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchClient
             searchResult = azureSearchClient.Results(query);
 
             Assert.IsTrue(searchResult.Count == 0);
+        }
+
+
+        [Test]
+        public void TestHighlight()
+        {
+
+            IAzureSearchClient azureSearchClient = new AzureSearchClient(this._config);
+            IAzureSearchQuery query = new AzureSearchQuery("test").Highlight("b", new [] {"Name", "siteTitle"});
+
+            ISearchResult searchResult = azureSearchClient.Results(query);
+
+            Assert.IsTrue(searchResult.Count > 0);
+            Assert.IsNotNull(searchResult.Content.FirstOrDefault(x => x.Id == 10));
+
         }
 
     }

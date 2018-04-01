@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using log4net;
 using Moriyama.AzureSearch.Umbraco.Application.Extensions;
+using Umbraco.Web.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
@@ -333,14 +334,26 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             Document result = GetDocumentToIndex(content, searchFields);
 
-            
-            IPublishedContent media = this._umbracoDependencyHelper.TypedMedia(content.Id);
-
-            if (media != null)
+            if (!content.ContentType.Alias.Equals("Folder") && content.HasProperty("umbracoFile"))
             {
-                result.Add("Url", media.Url);
-            }
+                string value = (content.Properties?["umbracoFile"]?.Value ?? "").ToString();
 
+                if (value.Contains("{") && value.Contains("}"))
+                {
+                    try
+                    {
+                        var obj = JsonConvert.DeserializeObject<ImageCropDataSet>(value);
+                        value = obj.Src;
+                    }
+                    catch (Exception e) when (e is JsonReaderException || e is JsonSerializationException)
+                    {
+                        value = string.Empty;
+                    }
+                }
+
+                result.Add("Url", value);
+            }
+            
             result.Add("IsMedia", true);
             result.Add("IsContent", false);
             result.Add("IsMember", false);
