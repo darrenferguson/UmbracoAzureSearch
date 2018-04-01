@@ -7,8 +7,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
     public interface IAzureSearchIndexClient
     {
         AzureSearchConfig GetConfiguration();
-        void SaveConfiguration(AzureSearchConfig config);
-
+        
         Field[] GetStandardUmbracoFields();
         Index[] GetSearchIndexes();
 
@@ -25,6 +24,5 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         void ReIndexMember(IMember content);
 
         AzureSearchIndexResult Delete(int id);
-
     }
 }

@@ -4,46 +4,26 @@ using Microsoft.Azure.Search;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using Umbraco.Web.WebApi;
-using System.Web.Http;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
 {
     public class AzureSearchApiController : UmbracoAuthorizedApiController
     {
-        private readonly IAzureSearchIndexClient _azureSearchServiceClient;
+        private readonly IAzureSearchIndexClient _azureSearchServiceIndexClient;
 
         public AzureSearchApiController()
         {
-            _azureSearchServiceClient = AzureSearchContext.Instance.SearchIndexClient;
+            this._azureSearchServiceIndexClient = AzureSearchContext.Instance.SearchIndexClient;
         }
 
         public AzureSearchConfig GetConfiguration()
         {
-            return _azureSearchServiceClient.GetConfiguration();
+            return this._azureSearchServiceIndexClient.GetConfiguration();
         }
-
-        [HttpGet]
-        public bool ServiceName(string value)
-        {
-            var config = _azureSearchServiceClient.GetConfiguration();
-            config.SearchServiceName = value;
-            _azureSearchServiceClient.SaveConfiguration(config);
-            return true;
-        }
-
-        [HttpGet]
-        public bool ServiceApiKey(string value)
-        {
-            var config = _azureSearchServiceClient.GetConfiguration();
-            config.SearchServiceAdminApiKey = value;
-            _azureSearchServiceClient.SaveConfiguration(config);
-            return true;
-        }
-
+            
         public string GetTestConfig()
         {
-
-            var config =  _azureSearchServiceClient.GetConfiguration();
+            AzureSearchConfig config =  this._azureSearchServiceIndexClient.GetConfiguration();
 
             int indexCount = 0;
 
@@ -63,43 +43,42 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
 
         public SearchField[] GetStandardUmbracoFields()
         {
-            return Mapper.Map<SearchField[]>(_azureSearchServiceClient.GetStandardUmbracoFields());
+            return Mapper.Map<SearchField[]>(this._azureSearchServiceIndexClient.GetStandardUmbracoFields());
         }
 
         public SearchIndex[] GetSearchIndexes()
         {
-            return Mapper.Map<SearchIndex[]>(_azureSearchServiceClient.GetSearchIndexes());
+            return Mapper.Map<SearchIndex[]>(this._azureSearchServiceIndexClient.GetSearchIndexes());
         }
 
         public bool GetDropCreateIndex()
         {
-            return this._azureSearchServiceClient.DropCreateIndex();
+            return this._azureSearchServiceIndexClient.DropCreateIndex();
         }
 
         public AzureSearchReindexStatus GetReIndexContent()
         {
             var sessionId = Guid.NewGuid().ToString();
-            var result = _azureSearchServiceClient.ReIndexContent(sessionId);
+            var result = this._azureSearchServiceIndexClient.ReIndexContent(sessionId);
             return result;
         }
 
         public AzureSearchReindexStatus GetReIndexContent(string sessionId, int page)
         {
-            var result = _azureSearchServiceClient.ReIndexContent(sessionId, page);
+            var result = this._azureSearchServiceIndexClient.ReIndexContent(sessionId, page);
             return result;
         }
 
         public AzureSearchReindexStatus GetReIndexMedia(string sessionId, int page)
         {
-            var result = _azureSearchServiceClient.ReIndexMedia(sessionId, page);
+            var result = this._azureSearchServiceIndexClient.ReIndexMedia(sessionId, page);
             return result;
         }
 
         public AzureSearchReindexStatus GetReIndexMember(string sessionId, int page)
         {
-            var result = _azureSearchServiceClient.ReIndexMember(sessionId, page);
+            var result = this._azureSearchServiceIndexClient.ReIndexMember(sessionId, page);
             return result;
         }
-
     }
 }

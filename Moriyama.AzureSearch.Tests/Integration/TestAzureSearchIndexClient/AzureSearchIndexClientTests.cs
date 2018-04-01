@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -8,11 +9,10 @@ using Moq;
 using Moriyama.AzureSearch.Tests.Helper;
 using Moriyama.AzureSearch.Umbraco.Application;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
+using Moriyama.AzureSearch.Umbraco.Application.Models;
 using NUnit.Framework;
 using Umbraco.Core.Models;
-using Umbraco.Core.Persistence;
 using Umbraco.Core.Services;
-using Umbraco.Web;
 using File = System.IO.File;
 
 namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
@@ -20,16 +20,27 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
     [TestFixture]
     class AzureSearchIndexClientTests
     {
-
-        private string _configFile;
-
-
+        private AzureSearchConfig _config;
+        
         [SetUp]
         public void Init()
-        {
+        {      
+            this._config = new AzureSearchConfig()
+            {
+                SearchServiceName = ConfigurationManager.AppSettings["searchServiceName"],
+                SearchServiceAdminApiKey = ConfigurationManager.AppSettings["searchServiceAdminApiKey"],
+                IndexName = ConfigurationManager.AppSettings["indexName"],
+                IndexBatchSize = 50
+            };
 
-            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            this._configFile = Path.Combine(path, "AzureSearch.config");
+            this._config.Fields = new SearchField[]
+            {
+                new SearchField { Name = "umbracoNaviHide", FieldType = FieldType.Int, IsSearchable = false, IsFilterable = true},
+                new SearchField { Name = "siteTitle", FieldType = FieldType.String, IsFilterable = true},
+                new SearchField { Name = "siteDescription", FieldType = FieldType.String, IsFilterable = true},
+                new SearchField { Name = "tags", FieldType = FieldType.Collection, IsFacetable = true},
+                new SearchField { Name = "content", FieldType = FieldType.String, IsGridJson = true}
+            };
         }
 
         [Test]
@@ -37,7 +48,7 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
         {
 
             Mock<IUmbracoDependencyHelper> umbracoDependencyHelper = new Mock<IUmbracoDependencyHelper>();
-            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._configFile, 999,
+            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
 
             bool result = azureSearchIndexClient.DropCreateIndex();
@@ -50,7 +61,7 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
         {
             Mock<IUmbracoDependencyHelper> umbracoDependencyHelper = new Mock<IUmbracoDependencyHelper>();
 
-            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._configFile, 999,
+            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
             Index[] indexes = azureSearchIndexClient.GetSearchIndexes();
 
@@ -109,7 +120,7 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
             Mock<IUmbracoDependencyHelper> umbracoDependencyHelper = new Mock<IUmbracoDependencyHelper>();
             umbracoDependencyHelper.Setup(x => x.TypedContent(It.IsAny<int>())).Returns(publishedContent.Object);
 
-            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._configFile, 999,
+            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
 
             bool result = azureSearchIndexClient.DropCreateIndex();
@@ -154,7 +165,7 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
             Mock<IUmbracoDependencyHelper> umbracoDependencyHelper = new Mock<IUmbracoDependencyHelper>();
             umbracoDependencyHelper.Setup(x => x.TypedMedia(It.IsAny<int>())).Returns(publishedContent.Object);
 
-            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._configFile, 999,
+            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
 
             bool result = azureSearchIndexClient.DropCreateIndex();
@@ -195,7 +206,7 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
           
             Mock<IUmbracoDependencyHelper> umbracoDependencyHelper = new Mock<IUmbracoDependencyHelper>();
             
-            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._configFile, 999,
+            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
 
             bool result = azureSearchIndexClient.DropCreateIndex();
@@ -278,8 +289,7 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
             // members
             umbracoDependencyHelper.Setup(x => x.DatabaseFetch<int>(It.IsRegex("39EB0F98-B348-42A1-8662-E7EB18487560"))).Returns(new List<int> { 7, 8, 9 });
 
-
-
+            
             Mock<IPublishedContent> publishedContent = new Mock<IPublishedContent>();
             publishedContent.Setup(x => x.Url).Returns(random.RandomUrl);
 
@@ -294,10 +304,8 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
             umbracoDependencyHelper.Setup(x => x.GetContentService()).Returns(contentService.Object);
 
 
-            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._configFile, 999,
+            IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
             Path.GetTempPath(), umbracoDependencyHelper.Object);
-
-
 
             bool result = azureSearchIndexClient.DropCreateIndex();
             Assert.IsTrue(result);
@@ -305,10 +313,7 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
             string sid = Guid.NewGuid().ToString();
             azureSearchIndexClient.ReIndexContent(sid);
 
-
             azureSearchIndexClient.ReIndexContent(sid, 0);
-
-
         }
     }
 }

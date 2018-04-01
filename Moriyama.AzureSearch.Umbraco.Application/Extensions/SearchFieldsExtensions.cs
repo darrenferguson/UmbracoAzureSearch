@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Search.Models;
+using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
@@ -8,18 +9,18 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
         public static Field ToAzureField(this SearchField field)
         {
             var t = DataType.String;
-            switch (field.Type.ToLower())
+            switch (field.FieldType)
             {
-                case "bool":
+                case FieldType.Bool:
                     t = DataType.Boolean;
                     break;
-                case "int":
+                case FieldType.Int:
                     t = DataType.Int32;
                     break;
-                case "collection":
+                case FieldType.Collection:
                     t = DataType.Collection(DataType.String);
                     break;
-                case "date":
+                case FieldType.Date:
                     t = DataType.DateTimeOffset;
                     break;
             }

@@ -2,8 +2,6 @@
 
     $scope.configLoaded = false;
 
-    
-
     $http.get('/umbraco/backoffice/api/AzureSearchApi/GetConfiguration').then(function (response) {      
         $scope.config = response.data;
         $scope.configLoaded = true;
@@ -13,31 +11,10 @@
         $scope.umbracoFields = response.data;
     });
 
-
     $http.get('/umbraco/backoffice/api/AzureSearchApi/GetSearchIndexes').then(function (response) {
         $scope.searchIndexes = response.data;
     });
     
-    $scope.updateServiceName = function() {
-
-        $scope.updating = true;
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/ServiceName?value=' + escape($scope.config.SearchServiceName)).then(function (response) {
-            $scope.updating = false;
-        });
-
-        
-    };
-
-    $scope.updateServiceApiKey = function () {
-
-        $scope.updating = true;
-        $http.get('/umbraco/backoffice/api/AzureSearchApi/ServiceApiKey?value=' + escape($scope.config.SearchServiceAdminApiKey)).then(function (response) {
-            $scope.updating = false;
-        });
-
-        
-    };
-
     $scope.testConfig = function () {
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetTestConfig').then(function (response) {
             $scope.configTest = response.data;

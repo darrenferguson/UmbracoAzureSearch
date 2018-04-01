@@ -8,8 +8,8 @@
 
         public string IndexName { get; set; }
 
-        public SearchField[] SearchFields { get; set; }
+        public int IndexBatchSize { get; set; }
 
-		public bool LogSearchPerformance { get; set; }
+        public SearchField[] Fields { get; set; }
     }
 }

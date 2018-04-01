@@ -9,8 +9,6 @@ using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using Newtonsoft.Json;
 using Umbraco.Core.Models;
-using Umbraco.Core.Persistence;
-using Umbraco.Web;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using log4net;
@@ -29,10 +27,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private readonly string _tempDirectory;
         private readonly IUmbracoDependencyHelper _umbracoDependencyHelper;
 
-        public AzureSearchIndexClient(string configurationFile, int batchSize, string tempDirectory, IUmbracoDependencyHelper umbracoDependencyHelper) : base(configurationFile)
+        public AzureSearchIndexClient(AzureSearchConfig configuration, string tempDirectory, IUmbracoDependencyHelper umbracoDependencyHelper) : base(configuration)
         {
             this._umbracoDependencyHelper = umbracoDependencyHelper;
-            this._batchSize = batchSize;
+            this._batchSize = configuration.IndexBatchSize;
             this._tempDirectory = tempDirectory;
 
             Parsers = new Dictionary<string, IComputedFieldParser>();
@@ -54,7 +52,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             List<Field> customFields = new List<Field>();
             customFields.AddRange(GetStandardUmbracoFields());
-            customFields.AddRange(this._configuration.SearchFields.Select(x => x.ToAzureField()));
+            customFields.AddRange(this._configuration.Fields.Select(x => x.ToAzureField()));
 
             Index indexDefinition = new Index
             {
@@ -158,7 +156,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             IList<Document> documents = new List<Document>();
             AzureSearchConfig config = GetConfiguration();
 
-            documents.Add(FromUmbracoContent(content, config.SearchFields));
+            documents.Add(FromUmbracoContent(content, config.Fields));
             IndexContentBatch(documents);
         }
 
@@ -167,7 +165,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var documents = new List<Document>();
             var config = GetConfiguration();
 
-            documents.Add(FromUmbracoMedia(content, config.SearchFields));
+            documents.Add(FromUmbracoMedia(content, config.Fields));
             IndexContentBatch(documents);
         }
 
@@ -216,7 +214,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             IList<Document> documents = new List<Document>();
             AzureSearchConfig config = GetConfiguration();
 
-            documents.Add(FromUmbracoMember(content, config.SearchFields));
+            documents.Add(FromUmbracoMember(content, config.Fields));
             IndexContentBatch(documents);
         }
 
@@ -250,7 +248,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {
                     if (content != null)
                     {
-                        documents.Add(FromUmbracoContent(content, config.SearchFields));
+                        documents.Add(FromUmbracoContent(content, config.Fields));
                     }
                 }
             }
@@ -262,7 +260,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {
                     if (media != null)
                     {
-                        documents.Add(FromUmbracoMedia(media, config.SearchFields));
+                        documents.Add(FromUmbracoMedia(media, config.Fields));
                     }
                 }
             }
@@ -279,7 +277,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {
                     if (content != null)
                     {
-                        documents.Add(FromUmbracoMember(content, config.SearchFields));
+                        documents.Add(FromUmbracoMember(content, config.Fields));
                     }
                 }
             }
@@ -438,22 +436,22 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 if (value == null)
                 {
 
-                    if (field.Type == "collection")
+                    if (field.FieldType == FieldType.Collection)
                         document.Add(field.Name, new List<string>());
 
-                    if (field.Type == "string")
+                    if (field.FieldType == FieldType.String)
                         document.Add(field.Name, string.Empty);
 
-                    if (field.Type == "int")
+                    if (field.FieldType == FieldType.Int)
                         document.Add(field.Name, 0);
 
-                    if (field.Type == "bool")
+                    if (field.FieldType == FieldType.Bool)
                         document.Add(field.Name, false);
                 }
                 else
                 {
                     
-                    if (field.Type == "collection")
+                    if (field.FieldType == FieldType.Collection)
                     {
                         if (!string.IsNullOrEmpty(value.ToString()))
                             document.Add(field.Name, value.ToString().Split(','));
@@ -516,9 +514,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private void SetCustomFieldParsers(AzureSearchConfig azureSearchConfig)
         {
-            if (azureSearchConfig.SearchFields != null)
+            if (azureSearchConfig.Fields != null)
             {
-                string[] types = azureSearchConfig.SearchFields.Where(x => x.IsComputedField()).Select(x => x.ParserType).Distinct().ToArray();
+                string[] types = azureSearchConfig.Fields.Where(x => x.IsComputedField()).Select(x => x.ParserType).Distinct().ToArray();
 
                 foreach (var typeName in types)
                 {

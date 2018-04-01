@@ -2,10 +2,11 @@
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Models
 {
+
     public class SearchField : ISearchField
     {
         public string Name { get; set; }
-        public string Type { get; set; }
+        public FieldType FieldType { get; set; }
         public bool IsKey { get; set; }
         public bool IsSortable { get; set; }
         public bool IsSearchable { get; set; }

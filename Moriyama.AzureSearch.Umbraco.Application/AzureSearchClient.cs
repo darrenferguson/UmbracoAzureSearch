@@ -15,17 +15,21 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public AzureSearchClient(string configurationFile) : base(configurationFile)
-        {}
+        public AzureSearchClient(AzureSearchConfig configuration) : base(configuration)
+        {
+
+        }
 
         public ISearchResult Results(IAzureSearchQuery query)
         {
-            var client = GetClient();
-            var config = GetConfiguration();
-            var sp = query.GetSearchParameters();
+            ISearchServiceClient client = GetClient();
+            AzureSearchConfig config = GetConfiguration();
+            SearchParameters searchParameters = query.GetSearchParameters();
+
             ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
-            var startTime = DateTime.UtcNow;
-            var response = indexClient.Documents.Search(query.Term, query.GetSearchParameters());
+
+            DateTime startTime = DateTime.UtcNow;
+            DocumentSearchResult response = indexClient.Documents.Search(query.Term, query.GetSearchParameters());
 
             var processStartTime = DateTime.UtcNow;
             var results = new Models.SearchResult();
@@ -39,7 +43,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             {
                 foreach (var facet in response.Facets)
                 {
-                    var searchFacet = new SearchFacet()
+                    SearchFacet searchFacet = new SearchFacet()
                     {
                         Name = facet.Key,
                         Items = facet.Value.Select(x => new KeyValuePair<string, long>(x.Value.ToString(), x.Count.HasValue ? x.Count.Value : 0))
@@ -51,14 +55,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             if (response.Count != null)
             {
-                results.Count = (int)response.Count;
+                results.Count = (int) response.Count;
             }
 
-            if (config.LogSearchPerformance)
+            if (Log.IsDebugEnabled)
             {
-                string lb = Environment.NewLine;
-                Log.Info($"AzureSearch Log (cached client){lb} - Response Duration: {(int)(processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int)(DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.BaseUri}{lb} - Search term: {query.Term}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
+                Log.Debug($"AzureSearch Log (cached client){Environment.NewLine} - Response Duration: {(int)(processStartTime - startTime).TotalMilliseconds}ms{Environment.NewLine} - Process Duration: {(int)(DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{Environment.NewLine} - Results Count: {results.Count}{Environment.NewLine} - Origin: {HttpContext.Current?.Request?.Url}{Environment.NewLine} - Index name: {config.IndexName}{Environment.NewLine} - Base uri: {indexClient.BaseUri}{Environment.NewLine} - Search term: {query.Term}{Environment.NewLine} - Uri query string: {HttpUtility.UrlDecode(searchParameters.ToString())}{Environment.NewLine}");
             }
+
             return results;
         }
 
@@ -67,7 +71,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var client = GetClient();
             var config = GetConfiguration();
             var indexClient = client.Indexes.GetClient(config.IndexName);
-            var sp = new SuggestParameters()
+
+            SuggestParameters sp = new SuggestParameters()
             {
                 UseFuzzyMatching = fuzzy,
                 Top = count,
@@ -79,14 +84,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private ISearchContent FromDocument(Document document, double score, bool populateContentProperties)
         {
-            var searchContent = new SearchContent
+            SearchContent searchContent = new SearchContent
             {
                 Properties = new Dictionary<string, object>()
             };
 
             searchContent.Score = score;
 
-            var searchContentType = searchContent.GetType();
+            Type searchContentType = searchContent.GetType();
             
             searchContent.Id = Convert.ToInt32(document["Id"]);
 

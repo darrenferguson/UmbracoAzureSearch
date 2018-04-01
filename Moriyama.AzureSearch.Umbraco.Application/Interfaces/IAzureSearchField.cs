@@ -1,9 +1,14 @@
 ﻿namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 {
+    public enum FieldType
+    {
+        Int, String, Collection, Bool, Date
+    }
+
     public interface IAzureSearchField
     {
         string Name { get; set; }
-        string Type { get; set; }
+        FieldType FieldType { get; set; }
 
         // Azure config
         bool IsKey { get; set; }

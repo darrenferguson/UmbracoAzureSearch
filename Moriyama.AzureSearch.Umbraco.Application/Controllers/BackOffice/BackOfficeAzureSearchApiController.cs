@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Web.Http;
 using Moriyama.AzureSearch.Umbraco.Application.Helper;
+using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Umbraco.Core;
 using Umbraco.Web.Editors;
 using Umbraco.Web.Models.ContentEditing;
@@ -10,79 +11,63 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 {
     public class BackOfficeAzureSearchApiController : UmbracoAuthorizedJsonController
     {
+
+        private readonly IAzureSearchClient _azureSearchClient;
+
+        public BackOfficeAzureSearchApiController()
+        {
+            this._azureSearchClient = AzureSearchContext.Instance.SearchClient;
+        }
+
         [HttpGet]
         public IEnumerable<EntityTypeSearchResult> Search(string query)
         {
-            var allowedSections = Security.CurrentUser.AllowedSections.ToArray();
+            string[] allowedSections = Security.CurrentUser.AllowedSections.ToArray();
 
             if (string.IsNullOrEmpty(query))
                 return Enumerable.Empty<EntityTypeSearchResult>();
+         
+            AzureSearchQuery azureSearchQuery = new AzureSearchQuery(query + "*");
 
-            var result = new List<EntityTypeSearchResult>();
-            var client = AzureSearchContext.Instance.SearchClient;
-            var q = new AzureSearchQuery(query + "*");
-            var searchResults = client.Results(q);
+            ISearchResult searchResults = this._azureSearchClient.Results(azureSearchQuery);
 
-            if (allowedSections.InvariantContains(Constants.Applications.Content))
+            IList<EntityBasic> contentEntities = new List<EntityBasic>();
+            IList<EntityBasic> mediaEntities = new List<EntityBasic>();
+            IList<EntityBasic> memberEntities = new List<EntityBasic>();
+
+            foreach (ISearchContent searchResult in searchResults.Content)
             {
-
-                var entities = new List<EntityBasic>();
-
-                foreach (var searchResult in searchResults.Content)
+                EntityBasic entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                if (searchResult.IsContent && allowedSections.InvariantContains(Constants.Applications.Content))
                 {
-                    if (searchResult.IsContent)
-                    {
-                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
-                        entities.Add(entity);
-                    }
+                    contentEntities.Add(entity);
+                } else if (searchResult.IsMedia && allowedSections.InvariantContains(Constants.Applications.Media))
+                {
+                    mediaEntities.Add(entity);
+                } else if (searchResult.IsMember && allowedSections.InvariantContains(Constants.Applications.Members))
+                {
+                    memberEntities.Add(entity);
                 }
+            }
 
-                result.Add(new EntityTypeSearchResult
+            return new List<EntityTypeSearchResult>
+            {
+                new EntityTypeSearchResult
                 {
-                    Results = entities,
+                    Results = contentEntities,
                     EntityType = UmbracoEntityTypes.Document.ToString()
-                });
-            }
-
-            if (allowedSections.InvariantContains(Constants.Applications.Media))
-            {
-                var entities = new List<EntityBasic>();
-                foreach (var searchResult in searchResults.Content)
+                },
+                new EntityTypeSearchResult
                 {
-                    if (searchResult.IsMedia)
-                    {
-                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
-                        entities.Add(entity);
-                    }
-                }
-
-                result.Add(new EntityTypeSearchResult
-                {
-                    Results = entities,
+                    Results = mediaEntities,
                     EntityType = UmbracoEntityTypes.Media.ToString()
-                });
-            }
-
-            if (allowedSections.InvariantContains(Constants.Applications.Members))
-            {
-                var entities = new List<EntityBasic>();
-                foreach (var searchResult in searchResults.Content)
+                },
+                new EntityTypeSearchResult
                 {
-                    if (searchResult.IsMember)
-                    {
-                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
-                        entities.Add(entity);
-                    }
-                }
-
-                result.Add(new EntityTypeSearchResult
-                {
-                    Results = entities,
+                    Results = memberEntities,
                     EntityType = UmbracoEntityTypes.Member.ToString()
-                });
-            }
-
-            return result;
+                }
+            };
         }
     }
 }

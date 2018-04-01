@@ -2,6 +2,7 @@
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using System.Reflection;
 using Moriyama.AzureSearch.Umbraco.Application.Helper;
+using Moriyama.AzureSearch.Umbraco.Application.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
@@ -46,11 +47,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
         }
 
-        public void Initialise(string configurationFile, int batchSize, string tempDirectory)
+        public void Initialise(AzureSearchConfig configuration, string tempDirectory)
         {
             IUmbracoDependencyHelper umbracoDependencyHelper = new UmbracoDependencyHelper();
-            this._searchClient = new AzureSearchClient(configurationFile);
-            this._searchIndexClient = new AzureSearchIndexClient(configurationFile, batchSize, tempDirectory, umbracoDependencyHelper);
+            this._searchClient = new AzureSearchClient(configuration);
+            this._searchIndexClient = new AzureSearchIndexClient(configuration, tempDirectory, umbracoDependencyHelper);
 
             Log.Info("AzureSearchContext initialised.");
         }

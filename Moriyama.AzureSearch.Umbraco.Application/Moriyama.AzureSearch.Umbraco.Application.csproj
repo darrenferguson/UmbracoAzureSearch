@@ -266,6 +266,7 @@
     <Compile Include="AzureSearchContext.cs" />
     <Compile Include="AzureSearchServiceClient.cs" />
     <Compile Include="BaseAzureSearch.cs" />
+    <Compile Include="Configuration\AzureSearchConfigurationSection.cs" />
     <Compile Include="Controllers\BackOffice\BackOfficeAzureSearchApiController.cs" />
     <Compile Include="Examine\DummyUmbracoContentIndexer.cs" />
     <Compile Include="Examine\DummyUmbracoExamineSearcher.cs" />

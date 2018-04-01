@@ -11,25 +11,12 @@
         <h4>Configuration</h4>
 
         <table class="table table-striped">
-            <tr ng-show="updating">
-                <td colspan="2">
-                    Updating....
-                </td>
-            </tr>
+
             <tr>
                 <td>Search Service Name</td>
-                <td>
-                    <input type="text" ng-model="config.SearchServiceName" />
-                    <input type="button" class="btn btn-default" value="Update" ng-click="updateServiceName()"/>
-                </td>
+                <td>{{config.SearchServiceName}}</td>
             </tr>
-            <tr>
-                <td>Search Service Admin Api Key</td>
-                <td>
-                    <input type="text" ng-model="config.SearchServiceAdminApiKey" />
-                    <input type="button" class="btn btn-default" value="Update" ng-click="updateServiceApiKey()"/>
-                </td>
-            </tr>
+
             <tr>
                 <td>Index Name</td>
                 <td>{{config.IndexName}}</td>
@@ -86,13 +73,21 @@
                 <th>IsFilterable</th>
             </tr>
         </thead>
+        Int, String, Collection, Bool, Date
         <tbody>
             <tr ng-repeat="field in umbracoFields">
                 <td>
+                   
                     {{field.Name}}
                 </td>
                 <td>
-                    {{field.Type}}
+                    <span ng-show="field.FieldType == 0">Int</span>
+                    <span ng-show="field.FieldType == 1">String</span>
+                    <span ng-show="field.FieldType == 2">Collection</span>
+                    <span ng-show="field.FieldType == 3">Bool</span>
+                    <span ng-show="field.FieldType == 4">Date</span>
+
+
                 </td>
                 <td>
                     {{field.IsKey}}
@@ -126,12 +121,16 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="searchField in config.SearchFields">
+            <tr ng-repeat="searchField in config.Fields">
                 <td>
                     {{searchField.Name}}
                 </td>
                 <td>
-                    {{searchField.Type}}
+                    <span ng-show="searchField.FieldType == 0">Int</span>
+                    <span ng-show="searchField.FieldType == 1">String</span>
+                    <span ng-show="searchField.FieldType == 2">Collection</span>
+                    <span ng-show="searchField.FieldType == 3">Bool</span>
+                    <span ng-show="searchField.FieldType == 4">Date</span>
                 </td>
                 <td>
                     {{searchField.IsKey}}
@@ -149,9 +148,6 @@
         </tbody>
     </table>
 
-
-
     <hr />
-
 
 </div>

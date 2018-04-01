@@ -3,6 +3,7 @@ using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using Moriyama.AzureSearch.Umbraco.Application.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.Sandbox
 {
@@ -10,7 +11,7 @@ namespace Moriyama.AzureSearch.Umbraco.Sandbox
     {
         static void Main(string[] args)
         {
-            var client = new AzureSearchClient(Directory.GetCurrentDirectory());
+            var client = new AzureSearchClient(new AzureSearchConfig());
 
             IAzureSearchQuery query = new AzureSearchQuery("umbraco");
             var results = client.Results(query);

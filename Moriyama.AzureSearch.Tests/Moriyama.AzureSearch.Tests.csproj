@@ -251,16 +251,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helper\RandomText.cs" />
+    <Compile Include="Integration\TestAzureSearchClient\AzureSearchClientTests.cs" />
     <Compile Include="Integration\TestAzureSearchIndexClient\AzureSearchIndexClientTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Integration\TestAzureSearchContext\AzureSearchContextTests.cs" />
+    <Compile Include="Unit\Config\ConfigurationTests.cs" />
     <Compile Include="Unit\Random\RandomTextTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="AzureSearch.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
