@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
-using Microsoft.Azure.Search;
 using System;
 using System.Linq;
 using Microsoft.Azure.Search.Models;
@@ -11,15 +10,24 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
         #region Fields
 
-        private IList<string> _filters;
-        private string _conjunctive = " and ";
+        private readonly IList<string> _filters;
+        private readonly string _conjunctive = " and ";
+
         private string _searchTerm = "*";
-        private IList<string> _orderBy;
-        private IList<string> _facets;
+        private readonly IList<string> _orderBy;
+        private readonly IList<string> _facets;
+
+        private IList<string> _highlight;
+        private string _highlightTag;
+
         private bool _content;
         private bool _media;
+        private bool _members;
+
         private int _page;
         private int _pageSize;
+
+        private QueryType _queryType = Microsoft.Azure.Search.Models.QueryType.Simple;
 
         #endregion
 
@@ -36,11 +44,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             Term = term;
             PopulateContentProperties = true;
 
-            _pageSize = 999;
-            _page = 1;
-            _filters = new List<string>();
-            _orderBy = new List<string>();
-            _facets = new List<string>();
+            this._pageSize = 999;
+            this._page = 1;
+            this._filters = new List<string>();
+            this._orderBy = new List<string>();
+            this._facets = new List<string>();
+
+            this._highlight = new List<string>();
         }
 
         public AzureSearchQuery() : this(string.Empty) {}
@@ -94,6 +104,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public IAzureSearchQuery Media()
         {
             _media = true;
+            return this;
+        }
+
+        public IAzureSearchQuery Member()
+        {
+            this._members = true;
             return this;
         }
 
@@ -166,6 +182,24 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _filters.Add(string.Format("{0}/any()", field));
             return this;
         }
+
+        public IAzureSearchQuery Highlight(string highlightTag, IEnumerable<string> fields)
+        {
+            foreach (string field in fields)
+            {
+                this._highlight.Add(field);
+            }
+
+            this._highlightTag = highlightTag;
+            return this;
+        }
+
+        public IAzureSearchQuery QueryType(QueryType queryType)
+        {
+            this._queryType = queryType;
+            return this;
+        }
+
         public IAzureSearchQuery Contains(string field, string value)
         {
             _filters.Add(string.Format("{0}/any(x: x eq '{1}')", field, value));
@@ -261,31 +295,50 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public SearchParameters GetSearchParameters()
         {
-            var sp = new SearchParameters();
+            var searchParameters = new SearchParameters();
 
-            if (_content)
+            if (this._content)
             {
-                _filters.Add("IsContent eq true");
+                this._filters.Add("IsContent eq true");
             }
 
-            if (_media)
+            if (this._media)
             {
-                _filters.Add("IsMedia eq true");
+                this._filters.Add("IsMedia eq true");
             }
 
-            if (_filters.Count > 0)
+            if (this._members)
             {
-                sp.Filter = string.Join(_conjunctive, _filters);
+                this._filters.Add("IsMember eq true");
             }
 
-            sp.IncludeTotalResultCount = true;
+            if (this._filters.Count > 0)
+            {
+                searchParameters.Filter = string.Join(_conjunctive, _filters);
+            }
 
-            sp.Top = _pageSize;
-            sp.Skip = (_page - 1) * _pageSize;
-            sp.OrderBy = _orderBy;
-            sp.Facets = _facets;
+            if (this._highlight.Any())
+            {
+                foreach (var highlight in this._highlight)
+                {
+                    searchParameters.HighlightFields.Add(highlight);
+                }
 
-            return sp;
+                searchParameters.HighlightPreTag = "<" + this._highlightTag + ">";
+                searchParameters.HighlightPostTag = "</" + this._highlightTag + ">";
+            }
+
+
+            searchParameters.IncludeTotalResultCount = true;
+
+            searchParameters.Top = this._pageSize;
+            searchParameters.Skip = (_page - 1) * this._pageSize;
+            searchParameters.OrderBy = this._orderBy;
+            searchParameters.Facets = this._facets;
+
+            searchParameters.QueryType = this._queryType;
+
+            return searchParameters;
         }
 
         #endregion

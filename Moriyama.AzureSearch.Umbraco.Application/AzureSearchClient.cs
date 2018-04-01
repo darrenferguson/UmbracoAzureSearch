@@ -15,6 +15,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+       
         public AzureSearchClient(AzureSearchConfig configuration) : base(configuration)
         {
 
@@ -36,7 +37,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             foreach (var result in response.Results)
             {
-                results.Content.Add(FromDocument(result.Document, result.Score, query.PopulateContentProperties));
+                ISearchContent document = FromDocument(result.Document, result.Score, query.PopulateContentProperties);
+                document.Properties.Add("__highlights", result.Highlights);
+
+                results.Content.Add(document);
             }
 
             if (response.Facets != null)

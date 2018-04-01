@@ -20,6 +20,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         IAzureSearchQuery Media();
 
+        IAzureSearchQuery Member();
+
         IAzureSearchQuery Page(int page);
 
         IAzureSearchQuery PageSize(int pageSize);
@@ -47,6 +49,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IAzureSearchQuery Contains(IEnumerable<string> fields, IEnumerable<string> values);
 
         IAzureSearchQuery Any(string field);
+
+        IAzureSearchQuery Highlight(string highlightTag, IEnumerable<string> fields);
+
+        IAzureSearchQuery QueryType(QueryType queryType);
 
         SearchParameters GetSearchParameters();
     }

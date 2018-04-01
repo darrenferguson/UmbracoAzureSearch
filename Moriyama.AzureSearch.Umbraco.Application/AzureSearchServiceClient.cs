@@ -26,6 +26,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private readonly int _batchSize;
         private readonly string _tempDirectory;
         private readonly IUmbracoDependencyHelper _umbracoDependencyHelper;
+        
+        public event EventHandler<Index> CreatingIndex;
 
         public AzureSearchIndexClient(AzureSearchConfig configuration, string tempDirectory, IUmbracoDependencyHelper umbracoDependencyHelper) : base(configuration)
         {
@@ -57,11 +59,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             Index indexDefinition = new Index
             {
                 Name = this._configuration.IndexName,
-                Fields = customFields
+                Fields = customFields,
+                ScoringProfiles = this._configuration.ScoringProfiles,
+                Analyzers = this._configuration.Analyzers
+
             };
 
             try
             {
+                CreatingIndex?.Invoke(this, indexDefinition);
                 serviceClient.Indexes.Create(indexDefinition);
             }
             catch (Exception ex)
@@ -535,10 +541,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public Field[] GetStandardUmbracoFields()
         {
             // Key field has to be a string....
-            return new[]
-            {
-                 new Field("Id", DataType.String) { IsKey = true, IsFilterable = true, IsSortable = true },
+            Field key = new Field("Id", DataType.String) { IsKey = true, IsFilterable = true, IsSortable = true };
 
+            Field[] fields = new[]
+            {
+                    
                  new Field("Name", DataType.String) { IsFilterable = true, IsSortable = true, IsSearchable = true, IsRetrievable = true},
                  new Field("Key", DataType.String) { IsSearchable = true, IsRetrievable = true},
 
@@ -569,6 +576,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("WriterId", DataType.Int32) { IsSortable = true, IsFacetable = true },
                  new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true }
             };
+
+            IList<Field> sorted = new List<Field>(fields.OrderBy(f => f.Name));
+            sorted.Insert(0, key);
+
+            return sorted.ToArray();
+
         }
     }
 }

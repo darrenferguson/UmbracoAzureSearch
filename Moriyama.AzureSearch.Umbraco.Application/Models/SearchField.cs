@@ -14,5 +14,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
         public bool IsFilterable { get; set; }
         public bool IsGridJson { get; set; }
         public string ParserType { get; set; }
+        public string Analyzer { get; set; }
+
     }
 }

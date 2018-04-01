@@ -33,7 +33,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
                 IsFilterable = field.IsFilterable,
                 IsSortable = field.IsSortable,
                 IsSearchable = field.IsSearchable,
-                IsKey = field.IsKey
+                IsKey = field.IsKey,
+                Analyzer = !string.IsNullOrWhiteSpace(field.Analyzer) ? AnalyzerName.Create(field.Analyzer) : null
             };
 
             return f;
