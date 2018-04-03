@@ -60,7 +60,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 
             result.Fields.Add("__IndexType", indexType);
             result.Fields.Add("__NodeId", azureResult.Id.ToString());
-            result.Fields.Add("__Path", $"-{azureResult.SearchablePath}");
+            // result.Fields.Add("__Path", $"-{azureResult.SearchablePath}");
             result.Fields.Add("__NodeTypeAlias", azureResult.ContentTypeAlias?.ToLower());
             result.Fields.Add("__Key", azureResult.Key);
             result.Fields.Add("id", azureResult.Id.ToString());

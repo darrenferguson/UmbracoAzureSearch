@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using Examine;
+﻿using Examine;
 using Examine.SearchCriteria;
-using System.IO;
 using System.Linq;
-using Examine.LuceneEngine;
 using Examine.LuceneEngine.Config;
 using Examine.LuceneEngine.SearchCriteria;
-using Umbraco.Web.Models.ContentEditing;
 using UmbracoExamine;
-using Lucene.Net.Search;
 using Microsoft.Azure.Search.Models;
+using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Newtonsoft.Json;
-using StackExchange.Profiling;
-using Umbraco.Core.Logging;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 {
@@ -21,39 +14,29 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
     {
         public override ISearchResults Search(ISearchCriteria searchCriteria)
         {
-            try
-            {
-                if (searchCriteria != null)
-                {
-                    var client = AzureSearchContext.Instance?.GetSearchClient();
-                    if (client != null)
-                    {
-                        client.SetQueryType(QueryType.Full);
-                        client.Filter("Published", true);
-                        client.Filter("Trashed", false);
+            var client = AzureSearchContext.Instance.SearchClient;
 
-                        var indexSet = IndexSets.Instance?.Sets?[IndexSetName];
-                        if (indexSet != null)
-                        {
-                            client.Filter(GetExcludedDocTypesFilter(indexSet));
-                        }
-                        
-                        var query = GetLuceneQuery(searchCriteria);
-                        var azQuery = client.Term(query);
-                        var azureResults = azQuery?.Results();
+            //client.SetQueryType(QueryType.Full);
+            //client.Filter("Published", true);
+            //client.Filter("Trashed", false);
 
-                        ISearchResults azureExamineResults = new AzureExamineSearchResults(azureResults);
-                        return azureExamineResults;
-                    }
-                }
-            }
-            catch (Exception ex)
+            var indexSet = IndexSets.Instance.Sets[IndexSetName];
+
+            if (indexSet != null)
             {
-                LogHelper.Error(GetType(), ex.Message, ex);
+                //client.Filter(GetExcludedDocTypesFilter(indexSet));
             }
 
-            // Doing this will make Umbraco fallback to the database.
-            throw new FileNotFoundException("");
+            string query = GetLuceneQuery(searchCriteria);
+
+            IAzureSearchQuery azureQuery =
+                new AzureSearchQuery(query)
+                    .QueryType(QueryType.Full);
+
+            var azureResults = client.Results(azureQuery);
+
+            ISearchResults azureExamineResults = new AzureExamineSearchResults(azureResults);
+            return azureExamineResults;
         }
 
         private static string GetLuceneQuery(ISearchCriteria searchCriteria)
