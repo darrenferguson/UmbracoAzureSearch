@@ -1,4 +1,5 @@
-﻿using Examine;
+﻿using System.IO;
+using Examine;
 using Examine.SearchCriteria;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,6 +12,23 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 {
     public partial class DummyUmbracoExamineSearcher : UmbracoExamineSearcher
     {
+
+        public DummyUmbracoExamineSearcher()
+        {
+            
+        }
+
+        public override ISearchResults Search(string searchTerm, bool useWildCards)
+        {
+            AzureSearchContext azureSearchContext = AzureSearchContext.Instance;
+            IAzureSearchQuery query = new AzureSearchQuery(searchTerm);
+
+            var results = azureSearchContext.SearchClient.Results(query);
+            ISearchResults azureExamineResults = new AzureExamineSearchResults(results);
+
+            return azureExamineResults;
+        }
+
         public override ISearchResults Search(ISearchCriteria searchCriteria)
         {
             var client = AzureSearchContext.Instance.SearchClient;

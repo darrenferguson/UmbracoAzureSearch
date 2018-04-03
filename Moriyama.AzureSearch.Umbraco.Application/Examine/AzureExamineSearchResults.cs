@@ -12,19 +12,19 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 {
     public class AzureExamineSearchResults : ISearchResults
     {
-        public AzureExamineSearchResults(ISearchResult results)
-        {
-            _azureResults = results;
-
-            if (results != null) 
-                TotalItemCount = results.Count;
-        }
-
         private readonly ISearchResult _azureResults;
 
+        public AzureExamineSearchResults(ISearchResult results)
+        {
+            this._azureResults = results;
+
+            this.TotalItemCount = results.Count;
+        }
+
+        
         public IEnumerator<SearchResult> GetEnumerator()
         {
-            using (var iterator = _azureResults?.Content?.GetEnumerator())
+            using (var iterator = this._azureResults?.Content?.GetEnumerator())
             {
                 while (iterator != null && iterator.MoveNext())
                 {
@@ -40,12 +40,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
             var result = new SearchResult
             {
                 Id = azureResult.Id,
+                DocId = azureResult.Id,
                 Score = (float) azureResult.Score,
             };
 
-            if (result.Fields == null) return result;
+            if (result.Fields == null)
+                return result;
 
-            var indexType = "content";
+            string indexType = "content";
             if (azureResult.IsMedia)
             {
                 indexType = "media";
@@ -58,7 +60,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Examine
 
             result.Fields.Add("__IndexType", indexType);
             result.Fields.Add("__NodeId", azureResult.Id.ToString());
+
+            // TODO: Ask Tom?
             // result.Fields.Add("__Path", $"-{azureResult.SearchablePath}");
+
             result.Fields.Add("__NodeTypeAlias", azureResult.ContentTypeAlias?.ToLower());
             result.Fields.Add("__Key", azureResult.Key);
             result.Fields.Add("id", azureResult.Id.ToString());
