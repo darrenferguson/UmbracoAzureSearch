@@ -264,9 +264,8 @@
     <Compile Include="AzureSearchQuery.cs" />
     <Compile Include="AzureSearchClient.cs" />
     <Compile Include="AzureSearchContext.cs" />
-    <Compile Include="AzureSearchServiceClient.cs" />
+    <Compile Include="AzureSearchIndexClient.cs" />
     <Compile Include="BaseAzureSearch.cs" />
-    <Compile Include="Configuration\AzureSearchConfigurationSection.cs" />
     <Compile Include="Controllers\BackOffice\BackOfficeAzureSearchApiController.cs" />
     <Compile Include="Examine\DummyUmbracoContentIndexer.cs" />
     <Compile Include="Examine\DummyUmbracoExamineSearcher.cs" />
@@ -287,6 +286,7 @@
     <Compile Include="Models\AzureSearchIndexResult.cs" />
     <Compile Include="Models\BackOfficeSearchResult.cs" />
     <Compile Include="Models\BaseContent.cs" />
+    <Compile Include="Models\Result\CreateIndexResult.cs" />
     <Compile Include="Models\SearchContent.cs" />
     <Compile Include="Models\BoolSearchFacet.cs" />
     <Compile Include="Models\SearchFacet.cs" />

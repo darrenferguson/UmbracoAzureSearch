@@ -68,9 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <Content Include="config\AzureSearch.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="config\AzureSearch.config.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Microsoft.Azure.Search.Models;
 using Moq;
 using Moriyama.AzureSearch.Umbraco.Application;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
+using Moriyama.AzureSearch.Umbraco.Application.Models.Result;
 using NUnit.Framework;
 using Umbraco.Core.Models;
 
@@ -40,6 +39,8 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchClient
                 new SearchField { Name = "content", FieldType = FieldType.String, IsGridJson = true, IsFilterable = true, IsSearchable = true }
             };
 
+
+            
 
             Mock<IContentType> contentType = new Mock<IContentType>();
             contentType.Setup(x => x.Alias).Returns("umbracoContent");
@@ -87,8 +88,8 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchClient
             IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
 
-            bool result = azureSearchIndexClient.DropCreateIndex();
-            Assert.IsTrue(result);
+            CreateIndexResult result = azureSearchIndexClient.DropCreateIndex();
+            Assert.IsTrue(result.Success);
 
             azureSearchIndexClient.ReIndexContent(content.Object);
 
@@ -119,7 +120,6 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchClient
         [Test]
         public void TestHighlight()
         {
-
             IAzureSearchClient azureSearchClient = new AzureSearchClient(this._config);
             IAzureSearchQuery query = new AzureSearchQuery("test").Highlight("b", new [] {"Name", "siteTitle"});
 

@@ -18,5 +18,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 
         public ScoringProfile[] ScoringProfiles { get; set; }
 
+        public Suggester[] Suggesters { get; set; }
+
     }
 }

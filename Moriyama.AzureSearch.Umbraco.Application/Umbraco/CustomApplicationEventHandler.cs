@@ -2,15 +2,16 @@
 using System.IO;
 using AutoMapper;
 using Microsoft.Azure.Search.Models;
-using Moriyama.AzureSearch.Umbraco.Application.Configuration;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
+using Newtonsoft.Json;
 using Umbraco.Core;
 using Umbraco.Core.Events;
 using Umbraco.Core.IO;
 using Umbraco.Core.Models;
 using Umbraco.Core.Publishing;
 using Umbraco.Core.Services;
+using File = System.IO.File;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 {
@@ -57,34 +58,20 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             });
 
             Mapper.CreateMap<Field, SearchField>().ForMember(dest => dest.FieldType, opts => opts.MapFrom(src => src.Type));
-
             Mapper.CreateMap<Index, SearchIndex>();
-            Mapper.CreateMap<AzureSearchConfigurationSection, AzureSearchConfig>();
-            Mapper.CreateMap<SearchFieldConfiguration, SearchField>();
-           
-            AzureSearchConfigurationSection section = (AzureSearchConfigurationSection)ConfigurationManager.GetSection("azureSearch");
-            AzureSearchConfig config = Mapper.Map<AzureSearchConfig>(section);
+
+            // Load the config.
+            string configFile = IOHelper.MapPath("~/config/AzureSearch.config.json");
+            string configJson = File.ReadAllText(configFile);
+            
+
+            AzureSearchConfig config = JsonConvert.DeserializeObject<AzureSearchConfig>(configJson);
+
 
             string tempPath = Path.GetTempPath();
 
-            // You may want to use a custom directory if hosting permissions require.
-            if (!string.IsNullOrEmpty(section.TempDirectory))
-            {
-                if (Path.IsPathRooted(section.TempDirectory))
-                {
-                    tempPath = section.TempDirectory;
-                }
-                else
-                {
-                    tempPath = IOHelper.MapPath(section.TempDirectory);
-                }
-
-                if (!Directory.Exists(tempPath))
-                {
-                    tempPath = Path.GetTempPath();
-                }
-            }
-
+           
+            
             AzureSearchContext.Instance.Initialise(config, tempPath);
             
             ContentService.Saved += ContentServiceSaved;

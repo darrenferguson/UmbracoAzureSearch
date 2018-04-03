@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
+using Moriyama.AzureSearch.Umbraco.Application.Models.Result;
 using Umbraco.Core.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
@@ -11,7 +12,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         Field[] GetStandardUmbracoFields();
         Index[] GetSearchIndexes();
 
-        bool DropCreateIndex();
+        CreateIndexResult DropCreateIndex();
         
         AzureSearchReindexStatus ReIndexContent(string sessionId);
         AzureSearchReindexStatus ReIndexContent(string sessionId, int page);

@@ -10,6 +10,7 @@ using Moriyama.AzureSearch.Tests.Helper;
 using Moriyama.AzureSearch.Umbraco.Application;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
+using Moriyama.AzureSearch.Umbraco.Application.Models.Result;
 using NUnit.Framework;
 using Umbraco.Core.Models;
 using Umbraco.Core.Services;
@@ -51,9 +52,9 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
             IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
 
-            bool result = azureSearchIndexClient.DropCreateIndex();
+            CreateIndexResult result = azureSearchIndexClient.DropCreateIndex();
 
-            Assert.IsTrue(result);
+            Assert.IsTrue(result.Success);
         }
 
         [Test]
@@ -123,8 +124,8 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
             IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
 
-            bool result = azureSearchIndexClient.DropCreateIndex();
-            Assert.IsTrue(result);
+            CreateIndexResult result = azureSearchIndexClient.DropCreateIndex();
+            Assert.IsTrue(result.Success);
 
             azureSearchIndexClient.ReIndexContent(content.Object);
 
@@ -168,8 +169,8 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
             IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
 
-            bool result = azureSearchIndexClient.DropCreateIndex();
-            Assert.IsTrue(result);
+            CreateIndexResult result = azureSearchIndexClient.DropCreateIndex();
+            Assert.IsTrue(result.Success);
 
             azureSearchIndexClient.ReIndexMedia(content.Object);
         }
@@ -209,8 +210,8 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
             IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
                 Path.GetTempPath(), umbracoDependencyHelper.Object);
 
-            bool result = azureSearchIndexClient.DropCreateIndex();
-            Assert.IsTrue(result);
+            CreateIndexResult result = azureSearchIndexClient.DropCreateIndex();
+            Assert.IsTrue(result.Success);
 
             azureSearchIndexClient.ReIndexMember(content.Object);
         }
@@ -307,8 +308,8 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchIndexClient
             IAzureSearchIndexClient azureSearchIndexClient = new AzureSearchIndexClient(this._config,
             Path.GetTempPath(), umbracoDependencyHelper.Object);
 
-            bool result = azureSearchIndexClient.DropCreateIndex();
-            Assert.IsTrue(result);
+            CreateIndexResult result = azureSearchIndexClient.DropCreateIndex();
+            Assert.IsTrue(result.Success);
 
             string sid = Guid.NewGuid().ToString();
             azureSearchIndexClient.ReIndexContent(sid);

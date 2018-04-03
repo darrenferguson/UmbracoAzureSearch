@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.Azure.Search;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
+using Moriyama.AzureSearch.Umbraco.Application.Models.Result;
 using Umbraco.Web.WebApi;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
@@ -51,7 +52,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
             return Mapper.Map<SearchIndex[]>(this._azureSearchServiceIndexClient.GetSearchIndexes());
         }
 
-        public bool GetDropCreateIndex()
+        public CreateIndexResult GetDropCreateIndex()
         {
             return this._azureSearchServiceIndexClient.DropCreateIndex();
         }

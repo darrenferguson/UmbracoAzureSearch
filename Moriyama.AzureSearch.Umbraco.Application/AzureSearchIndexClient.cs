@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using log4net;
 using Moriyama.AzureSearch.Umbraco.Application.Extensions;
+using Moriyama.AzureSearch.Umbraco.Application.Models.Result;
 using Umbraco.Web.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
@@ -40,7 +41,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             SetCustomFieldParsers(GetConfiguration());
         }
 
-        public bool DropCreateIndex()
+        public CreateIndexResult DropCreateIndex()
         {
             var serviceClient = GetClient();
             var indexes = serviceClient.Indexes.List().Indexes;
@@ -57,13 +58,17 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             customFields.AddRange(GetStandardUmbracoFields());
             customFields.AddRange(this._configuration.Fields.Select(x => x.ToAzureField()));
 
+            string temp = JsonConvert.SerializeObject(this._configuration, Formatting.Indented);
+
+
+
             Index indexDefinition = new Index
             {
                 Name = this._configuration.IndexName,
                 Fields = customFields,
                 ScoringProfiles = this._configuration.ScoringProfiles,
-                Analyzers = this._configuration.Analyzers
-
+                Analyzers = this._configuration.Analyzers,
+                Suggesters = this._configuration.Suggesters              
             };
 
             try
@@ -74,10 +79,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             catch (Exception ex)
             {
                 Log.Error($"Can't create index {this._configuration.IndexName}", ex);
-                return false;
+                return new CreateIndexResult {Success = false, Message = ex.Message};
             }
 
-            return true;
+            return new CreateIndexResult {Success = true, Message = "OK"};
         }
 
         public Index[] GetSearchIndexes()
