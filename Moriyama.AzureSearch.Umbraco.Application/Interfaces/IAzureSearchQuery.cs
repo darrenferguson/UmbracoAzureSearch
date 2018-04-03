@@ -57,6 +57,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         IAzureSearchQuery QueryType(QueryType queryType);
 
+        IAzureSearchQuery UseScoringProfile(string name);
+
         SearchParameters GetSearchParameters();
     }
 }

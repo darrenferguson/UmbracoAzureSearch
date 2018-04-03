@@ -1,0 +1,105 @@
+﻿{
+  "SearchServiceName": "atg-media-preview",
+  "SearchServiceAdminApiKey": "77AD9A14E4569CB0DC079B0E49A2D8FF",
+  "IndexName": "inttest",
+  "IndexBatchSize": 50,
+  "Fields": [
+    {
+      "Name": "umbracoNaviHide",
+      "FieldType": 0,
+      "IsKey": false,
+      "IsSortable": false,
+      "IsSearchable": false,
+      "IsFacetable": false,
+      "IsFilterable": true,
+      "IsGridJson": false,
+      "ParserType": null,
+      "Analyzer": null
+    },
+    {
+      "Name": "siteTitle",
+      "FieldType": 1,
+      "IsKey": false,
+      "IsSortable": false,
+      "IsSearchable": true,
+      "IsFacetable": false,
+      "IsFilterable": true,
+      "IsGridJson": false,
+      "ParserType": null,
+      "Analyzer": null
+    },
+    {
+      "Name": "siteDescription",
+      "FieldType": 1,
+      "IsKey": false,
+      "IsSortable": false,
+      "IsSearchable": false,
+      "IsFacetable": false,
+      "IsFilterable": true,
+      "IsGridJson": false,
+      "ParserType": null,
+      "Analyzer": null
+    },
+    {
+      "Name": "tags",
+      "FieldType": 2,
+      "IsKey": false,
+      "IsSortable": false,
+      "IsSearchable": false,
+      "IsFacetable": true,
+      "IsFilterable": false,
+      "IsGridJson": false,
+      "ParserType": null,
+      "Analyzer": null
+    },
+    {
+      "Name": "content",
+      "FieldType": 1,
+      "IsKey": false,
+      "IsSortable": false,
+      "IsSearchable": true,
+      "IsFacetable": false,
+      "IsFilterable": true,
+      "IsGridJson": true,
+      "ParserType": null,
+      "Analyzer": null
+    }
+  ],
+  "Analyzers": [
+    {
+      "name": "tagsAnalyzer",
+      "type": "#Microsoft.Azure.Search.CustomAnalyzer",
+      "charFilters": [ "html_strip" ],
+      "tokenizer": "standard"
+    }
+  ],
+  "ScoringProfiles": [
+    {
+      "name": "geo",
+      "text": {
+        "weights": {
+          "hotelName": 5
+        }
+      },
+      "functions": [
+        {
+          "type": "distance",
+          "boost": 5,
+          "fieldName": "location",
+          "interpolation": "logarithmic",
+          "distance": {
+            "referencePointParameter": "currentLocation",
+            "boostingDistance": 10
+          }
+        }
+      ]
+    }
+  ],
+  "Suggesters": [
+    {
+      "name": "nameSuggest",
+      "searchMode": "analyzingInfixMatching",
+      "sourceFields": [ "Name" ]
+    }
+  ]
+}

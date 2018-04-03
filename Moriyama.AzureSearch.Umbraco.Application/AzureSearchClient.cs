@@ -80,7 +80,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return results;
         }
 
-        public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
+        public IList<SuggestResult> Suggest(string value, string suggesterName, int count, bool fuzzy = true)
         {
             var client = GetClient();
             var config = GetConfiguration();
@@ -93,7 +93,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 Filter = "IsContent eq true"
             };
 
-            return indexClient.Documents.Suggest(value, "sg", sp).Results;
+            return indexClient.Documents.Suggest(value, suggesterName, sp).Results;
         }
 
         private ISearchContent FromDocument(Document document, double score, bool populateContentProperties)

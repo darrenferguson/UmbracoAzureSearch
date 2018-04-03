@@ -7,8 +7,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
     {
         ISearchResult Results(IAzureSearchQuery azureSearchQuery);
 
-
-
-        IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true);
+        IList<SuggestResult> Suggest(string value, string suggesterName, int count, bool fuzzy = true);
     }
 }

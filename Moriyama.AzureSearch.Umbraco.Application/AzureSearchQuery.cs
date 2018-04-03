@@ -14,6 +14,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private readonly string _conjunctive = " and ";
 
         private string _searchTerm = "*";
+
+
+        private string _scoringProfile = String.Empty;
+
         private readonly IList<string> _orderBy;
         private readonly IList<string> _facets;
 
@@ -206,6 +210,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
+        public IAzureSearchQuery UseScoringProfile(string name)
+        {
+            this._scoringProfile = name;
+            return this;
+        }
+
         public IAzureSearchQuery Contains(string field, string value)
         {
             this._filters.Add(string.Format("{0}/any(x: x eq '{1}')", field, value));
@@ -340,6 +350,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             searchParameters.Facets = this._facets;
 
             searchParameters.QueryType = this._queryType;
+
+            if (!string.IsNullOrEmpty(this._scoringProfile))
+            {
+                searchParameters.ScoringProfile = this._scoringProfile;
+            }
 
             return searchParameters;
         }
