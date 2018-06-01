@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Web.Http;
+using System.Web.ModelBinding;
 using AutoMapper;
 using Microsoft.Azure.Search;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
@@ -57,6 +59,33 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
             return this._azureSearchServiceIndexClient.DropCreateIndex();
         }
 
+        [HttpPost]
+        public AzureSearchReindexStatus ReIndex(ReIndexModel reIndexModel)
+        {
+            var status = GetStatus();
+
+            _azureSearchServiceIndexClient.ReIndexContent(status.SessionId);
+
+            if (reIndexModel.content)
+            {
+                GetReIndexContent(status.SessionId, 0);
+            }
+
+            if (reIndexModel.media)
+            {
+                GetReIndexMedia(status.SessionId, 0);
+            }
+
+            if (reIndexModel.members)
+            {
+                GetReIndexMember(status.SessionId, 0);
+            }
+
+            status.Message = "Preparing...";
+
+            return status;
+        }
+
         public AzureSearchReindexStatus GetReIndexContent()
         {
             var sessionId = Guid.NewGuid().ToString();
@@ -80,6 +109,16 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
         {
             var result = this._azureSearchServiceIndexClient.ReIndexMember(sessionId, page);
             return result;
+        }
+
+        private AzureSearchReindexStatus GetStatus()
+        {
+            var sessionKey = Security.CurrentUser.Key.ToString();
+
+            return (AzureSearchReindexStatus)UmbracoContext.Application.ApplicationCache.RuntimeCache.GetCacheItem($"AzureReindex_{sessionKey}", () => new AzureSearchReindexStatus
+            {
+                SessionId = sessionKey
+            });
         }
     }
 }
