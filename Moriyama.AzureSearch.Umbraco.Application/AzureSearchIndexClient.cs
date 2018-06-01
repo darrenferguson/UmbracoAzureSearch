@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using log4net;
 using Moriyama.AzureSearch.Umbraco.Application.Extensions;
+using Moriyama.AzureSearch.Umbraco.Application.Helper;
 using Moriyama.AzureSearch.Umbraco.Application.Models.Result;
 using Umbraco.Web.Models;
 
@@ -339,6 +340,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             Document result = GetDocumentToIndex(content, searchFields);
 
+            var textContent = MediaHelper.GetTextContent(content);
+
             if (!content.ContentType.Alias.Equals("Folder") && content.HasProperty("umbracoFile"))
             {
                 string value = (content.Properties?["umbracoFile"]?.Value ?? "").ToString();
@@ -364,6 +367,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             result.Add("IsMember", false);
             result.Add("ContentTypeAlias", content.ContentType.Alias);
             result.Add("Icon", content.ContentType.Icon);
+
+            if (!string.IsNullOrEmpty(textContent))
+            {
+                result.Add("TextContent", textContent);
+            }
 
             return result;
         }
@@ -592,7 +600,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("SortOrder", DataType.Int32) { IsSortable = true },
 
                  new Field("WriterId", DataType.Int32) { IsSortable = true, IsFacetable = true },
-                 new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true }
+                 new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true },
+
+                 // This field holds the text contents of PDF files, and possibly Office documents.
+                 new Field("TextContent", DataType.String) { IsSearchable = true}
             };
 
             IList<Field> sorted = new List<Field>(fields.OrderBy(f => f.Name));
