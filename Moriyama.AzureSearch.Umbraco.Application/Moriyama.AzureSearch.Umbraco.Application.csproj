@@ -267,6 +267,9 @@
     <Compile Include="AzureSearchContext.cs" />
     <Compile Include="AzureSearchIndexClient.cs" />
     <Compile Include="BaseAzureSearch.cs" />
+    <Compile Include="ComputedFieldParsers\NestedContentParser.cs" />
+    <Compile Include="ConstantNames\FieldNameConstants.cs" />
+    <Compile Include="ConstantNames\PropertyNameConstants.cs" />
     <Compile Include="Controllers\BackOffice\BackOfficeAzureSearchApiController.cs" />
     <Compile Include="Examine\AzureExamineSearchResults.cs" />
     <Compile Include="Examine\DummyUmbracoContentIndexer.cs" />
@@ -290,6 +293,7 @@
     <Compile Include="Models\BackOfficeSearchResult.cs" />
     <Compile Include="Models\BaseContent.cs" />
     <Compile Include="Models\ReIndexModel.cs" />
+    <Compile Include="Models\Result\DropIndexResult.cs" />
     <Compile Include="Models\Result\CreateIndexResult.cs" />
     <Compile Include="Models\SearchContent.cs" />
     <Compile Include="Models\BoolSearchFacet.cs" />

@@ -131,15 +131,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Helper
                 extractedText = ReadPdfFile(filePath);
             }
 
-            if (content.Properties.Contains("textContents"))
-            {
-                var prop = content.Properties["textContents"];
-                prop.Value = extractedText;
-            }
-            else
-            {
-                Log.Error($"textContents field for holding PDF text contents not configured in document type {content.ContentType.Name} ");   
-            }
+            //if (content.Properties.Contains("textContent"))
+            //{
+            //    var prop = content.Properties["textContent"];
+            //    prop.Value = extractedText;
+            //}
+            //else
+            //{
+            //    Log.Error($"textContent field for holding PDF text contents not configured in document type {content.ContentType.Name} ");   
+            //}
 
             return extractedText;
         }

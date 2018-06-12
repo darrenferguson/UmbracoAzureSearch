@@ -12,6 +12,7 @@ using Umbraco.Core.Models;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using log4net;
+using Moriyama.AzureSearch.Umbraco.Application.ConstantNames;
 using Moriyama.AzureSearch.Umbraco.Application.Extensions;
 using Moriyama.AzureSearch.Umbraco.Application.Helper;
 using Moriyama.AzureSearch.Umbraco.Application.Models.Result;
@@ -40,6 +41,23 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             Parsers = new Dictionary<string, IComputedFieldParser>();
             SetCustomFieldParsers(GetConfiguration());
+        }
+
+        public DropIndexResult DropIndex(string indexName)
+        {
+            var serviceClient = GetClient();
+            var indexes = serviceClient.Indexes.List().Indexes;
+
+            foreach (var index in indexes)
+            {
+                if (index.Name == _configuration.IndexName && index.Name == indexName)
+                {
+                    serviceClient.Indexes.Delete(_configuration.IndexName);
+                    return new DropIndexResult { Success = true, Message = $"Index {indexName} deleted" };
+                }
+            }
+
+            return new DropIndexResult { Success = false, Message = "No index deleted" };
         }
 
         public CreateIndexResult DropCreateIndex()
@@ -163,14 +181,25 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             return ReIndex("member.json", sessionId, page);
         }
-
         public void ReIndexContent(IContent content)
         {
-            IList<Document> documents = new List<Document>();
+            IList<Document> documents = new List<Document>(); 
+
             AzureSearchConfig config = GetConfiguration();
 
-            documents.Add(FromUmbracoContent(content, config.Fields));
-            IndexContentBatch(documents);
+            var document = FromUmbracoContent(content, config.Fields);
+
+            if (document == null)
+            {
+                return;
+            }
+
+            documents.Add(document);
+
+            if (documents.Any())
+            {
+                IndexContentBatch(documents);
+            }            
         }
 
         public void ReIndexMedia(IMedia content)
@@ -380,6 +409,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             Document result = GetDocumentToIndex(content, searchFields);
 
+            if (result == null)
+            {
+                return null;
+            }
+
             result.Add("IsContent", true);
             result.Add("IsMedia", false);
             result.Add("IsMember", false);
@@ -388,9 +422,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             result.Add("WriterId", content.WriterId);
             result.Add("ContentTypeAlias", content.ContentType.Alias);
 
-            if (content.Published)
+            if (content.Properties != null && content.HasProperty(PropertyNameConstants.DoNotIndex))
             {
-                
+                var doNotIndex = content.Properties[PropertyNameConstants.DoNotIndex].Value?.ToString();
+
+                result.Add(FieldNameConstants.DoNotIndex, doNotIndex == "1");
+            }
+            
+            if (content.Published)
+            {                
                 IPublishedContent publishedContent = this._umbracoDependencyHelper.TypedContent(content.Id);
 
                 if (publishedContent != null)
@@ -537,7 +577,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 foreach (var customField in customFields)
                 {
                     IComputedFieldParser parser = Parsers.Single(x => x.Key == customField.ParserType).Value;
-                    document.Add(customField.Name, parser.GetValue(content));
+                    document.Add(customField.Name, parser.GetValue(content, customField.Name, this));
                 }
             }
 
@@ -552,7 +592,15 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
                 foreach (var typeName in types)
                 {
-                    var parser = Activator.CreateInstance(Type.GetType(typeName));
+
+                    var type = Type.GetType(typeName);
+
+                    if (type == null)
+                    {
+                        return;                        
+                    }
+
+                    var parser = Activator.CreateInstance(type);
 
                     if (!(parser is IComputedFieldParser))
                     {
@@ -603,7 +651,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true },
 
                  // This field holds the text contents of PDF files, and possibly Office documents.
-                 new Field("TextContent", DataType.String) { IsSearchable = true}
+                 new Field("TextContent", DataType.String) { IsSearchable = true},
+
+                 // Field used to signal document should not be indexed.
+                 new Field(FieldNameConstants.DoNotIndex, DataType.Boolean) { IsSearchable = false}
             };
 
             IList<Field> sorted = new List<Field>(fields.OrderBy(f => f.Name));
