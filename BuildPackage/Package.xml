@@ -3,13 +3,13 @@
   <info>
     <package>
       <name>Moriyama Azure Search for Umbraco</name>
-      <version>1.0.0</version>
+      <version>1.2.6</version>
       <license url="http://opensource.org/licenses/MIT">MIT License</license>
       <url>https://our.umbraco.org/projects/developer-tools/moriyama-azure-search/</url>
       <requirements>
         <major>7</major>
-        <minor>5</minor>
-        <patch>3</patch>
+        <minor>6</minor>
+        <patch>0</patch>
       </requirements>
     </package>
     <author>
