@@ -2,6 +2,8 @@
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using System;
 using System.Linq;
+using Microsoft.Azure.Search;
+using AzureSearchModels = Microsoft.Azure.Search.Models;
 using Microsoft.Azure.Search.Models;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
@@ -12,16 +14,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private readonly IList<string> _filters;
         private readonly string _conjunctive = " and ";
-
-        private string _searchTerm = "*";
-
-
-        private string _scoringProfile = String.Empty;
-
         private readonly IList<string> _orderBy;
         private readonly IList<string> _facets;
 
         private IList<string> _highlight;
+        private string _scoringProfile = String.Empty;
         private string _highlightTag;
 
         private bool _content;
@@ -31,7 +28,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private int _page;
         private int _pageSize;
 
-        private QueryType _queryType = Microsoft.Azure.Search.Models.QueryType.Simple;
+        private QueryType _queryType;
+        private SearchMode _searchMode;
 
         #endregion
 
@@ -55,6 +53,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             this._facets = new List<string>();
 
             this._highlight = new List<string>();
+            this._searchMode = AzureSearchModels.SearchMode.Any;
+            this._queryType = AzureSearchModels.QueryType.Simple;
         }
 
         public AzureSearchQuery() : this(string.Empty) {}
@@ -306,6 +306,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 Filter(field, values.FirstOrDefault());
             }
 
+            return this;
+        }
+
+        public IAzureSearchQuery SearchMode(SearchMode searchMode)
+        {
+            this._searchMode = searchMode;
             return this;
         }
 
