@@ -111,7 +111,7 @@ namespace Moriyama.AzureSearch.Tests.Integration.TestAzureSearchClient
         {
             string scoringProfileJson = @"";
             IAzureSearchClient azureSearchClient = new AzureSearchClient(this._config);      
-            IAzureSearchQuery query = new AzureSearchQuery("test");
+            IAzureSearchQuery query = azureSearchClient.CreateQuery("test");
         
             ISearchResult searchResult  = azureSearchClient.Results(query);
 

@@ -21,6 +21,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         }
 
+        public IAzureSearchQuery CreateQuery(string term)
+        {
+            return new AzureSearchQuery(term);
+        }
+
         public ISearchResult Results(IAzureSearchQuery query)
         {
             ISearchServiceClient client = GetClient();
