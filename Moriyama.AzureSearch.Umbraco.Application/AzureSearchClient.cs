@@ -41,6 +41,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private int _page;
         private int _pageSize;
         private bool _populateContentProperties = true;
+        private SearchMode _searchMode;
 
         public AzureSearchClient(string path) : base(path)
         {
@@ -49,6 +50,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _filters = new List<string>();
             _orderBy = new List<string>();
             _facets = new List<string>();
+            _searchMode = Microsoft.Azure.Search.Models.SearchMode.Any;
         }
 
         public IAzureSearchClient DocumentType(string typeAlias)
@@ -428,6 +430,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             };
 
             return indexClient.Documents.Suggest(value, "sg", sp).Results;
+        }
+
+        public IAzureSearchClient SearchMode(SearchMode searchMode)
+        {
+            this._searchMode = searchMode;
+            return this;
         }
     }
 }
