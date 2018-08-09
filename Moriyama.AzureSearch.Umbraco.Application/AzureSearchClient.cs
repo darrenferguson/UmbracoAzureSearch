@@ -7,7 +7,6 @@ using System;
 using System.Linq;
 using log4net;
 using System.Reflection;
-using Newtonsoft.Json;
 using System.Web;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
@@ -71,22 +70,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private SearchParameters GetSearchParameters(string scoringProfile = null)
         {
-            var sp = new SearchParameters();
-
-            if (_content)
+            var sp = new SearchParameters()
             {
-                _filters.Add("IsContent eq true");
-            }
-
-            if (_media)
-            {
-                _filters.Add("IsMedia eq true");
-            }
-
-            if (_filters.Count > 0)
-            {
-                sp.Filter = string.Join(_conjunctive, _filters);
-            }
+                Filter = ResolveFilter()
+            };
 
             sp.IncludeTotalResultCount = true;
 
@@ -101,6 +88,26 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             sp.Facets = _facets;
 
             return sp;
+        }
+
+        private string ResolveFilter()
+        {
+            if (_content)
+            {
+                _filters.Add("IsContent eq true");
+            }
+
+            if (_media)
+            {
+                _filters.Add("IsMedia eq true");
+            }
+
+            if (_filters.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(_conjunctive, _filters);
         }
 
         public ISearchResult Results()
@@ -424,7 +431,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             {
                 UseFuzzyMatching = fuzzy,
                 Top = count,
-                Filter = "IsContent eq true"
+                Filter = ResolveFilter()
             };
 
             return indexClient.Documents.Suggest(value, "sg", sp).Results;
