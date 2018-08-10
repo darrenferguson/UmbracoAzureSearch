@@ -74,7 +74,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var sp = new SearchParameters()
             {
-                Filter = ResolveFilter()
+                Filter = ResolveFilter(),
+                SearchMode = this._searchMode
             };
 
             sp.IncludeTotalResultCount = true;
