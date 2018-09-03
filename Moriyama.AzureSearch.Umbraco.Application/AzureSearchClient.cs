@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
@@ -250,6 +250,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _populateContentProperties = populate;
             return this;
         }
+
         public IAzureSearchClient DateRange(string field, DateTime? start, DateTime? end)
         {
             if (start != null || end != null)
@@ -319,6 +320,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _filters.Add(string.Format("{0}/any()", field));
             return this;
         }
+
         public IAzureSearchClient Contains(string field, string value)
         {
             _filters.Add(string.Format("{0}/any(x: x eq '{1}')", field, value));
@@ -364,6 +366,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             return this;
         }
+
         public IAzureSearchClient Contains(IEnumerable<string> fields, IEnumerable<string> values)
         {
             if (fields.Count() > 1 && values.Count() > 1)
@@ -395,32 +398,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public IAzureSearchClient Filter(string field, string[] values)
         {
-            return FilterManyValues(field, values.Select(x => $"'{x}'").ToArray());
+            return FilterManyValues(field, values);
         }
 
         public IAzureSearchClient Filter(string field, int[] values)
         {
             return FilterManyValues(field, values.Select(x => x.ToString()).ToArray());
-        }
-
-        private IAzureSearchClient FilterManyValues(string field, string[] values)
-        {
-            if (values.Count() > 1)
-            {
-                var combinedFilter = string.Format("({0})",
-                    string.Join(" or ",
-                        values.Select(x =>
-                            string.Format("({0} eq {1})", field, x)).ToList())
-                );
-
-                _filters.Add(combinedFilter);
-            }
-            else
-            {
-                Filter(field, values.FirstOrDefault());
-            }
-
-            return this;
         }
 
         public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
@@ -443,6 +426,39 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public IAzureSearchClient SearchMode(SearchMode searchMode)
         {
             this._searchMode = searchMode;
+            return this;
+        }
+
+        private IAzureSearchClient FilterManyValues<T>(string field, T[] values)
+        {
+            // T can be only int or string
+            // if array contain one element only AND if a string,
+            // we do not need to stick it between single quote.
+            if (values.Count() == 1)
+            {
+                Filter(field, values.FirstOrDefault().ToString());
+                return this;
+            }
+
+            string[] _values;
+
+            if (typeof(T) == typeof(string))
+            {
+                _values = values.Select(x => $"'{x}'").ToArray();
+            }
+            else
+            {
+                _values = values.Select(x => x.ToString()).ToArray();
+            }
+
+            var combinedFilter = string.Format("({0})",
+                string.Join(" or ",
+                    _values.Select(x =>
+                        string.Format("({0} eq {1})", field, x)).ToList())
+            );
+
+            _filters.Add(combinedFilter);
+
             return this;
         }
     }
