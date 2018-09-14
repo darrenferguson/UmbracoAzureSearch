@@ -19,6 +19,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
     public class BackOfficeAzureSearchApiController : UmbracoAuthorizedJsonController
     {
         private static readonly ConcurrentDictionary<Type, TreeAttribute> TreeAttributeCache = new ConcurrentDictionary<Type, TreeAttribute>();
+        private const int NumberOfItemsPerSection = 10;
 
         [HttpGet]
         public IDictionary<string, TreeSearchResult> Search(string query)
@@ -43,13 +44,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
             {
                 List<SearchResultItem> entities = new List<SearchResultItem>();
 
-                foreach (ISearchContent searchResult in searchResults.Content)
+                foreach (ISearchContent searchResult in searchResults.Content.Where(c => c.IsContent).Take(NumberOfItemsPerSection))
                 {
-                    if (searchResult.IsContent)
-                    {
-                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
-                        entities.Add(entity);
-                    }
+                    var entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                    entities.Add(entity);
                 }
 
                 result.First(x => x.Key.Equals(Constants.Applications.Content, StringComparison.CurrentCultureIgnoreCase))
@@ -60,13 +58,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
             {
                 List<SearchResultItem> entities = new List<SearchResultItem>();
 
-                foreach (ISearchContent searchResult in searchResults.Content)
+                foreach (ISearchContent searchResult in searchResults.Content.Where(c => c.IsMedia).Take(NumberOfItemsPerSection))
                 {
-                    if (searchResult.IsMedia)
-                    {
-                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
-                        entities.Add(entity);
-                    }
+                    var entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                    entities.Add(entity);
                 }
 
                 result.First(x => x.Key.Equals(Constants.Applications.Media, StringComparison.CurrentCultureIgnoreCase))
@@ -78,13 +73,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
                 List<SearchResultItem> entities = new List<SearchResultItem>();
                 ApplicationTree tree = Services.ApplicationTreeService.GetByAlias(Constants.Applications.Members);
 
-                foreach (ISearchContent searchResult in searchResults.Content)
+                foreach (ISearchContent searchResult in searchResults.Content.Where(c => c.IsMember).Take(NumberOfItemsPerSection))
                 {
-                    if (searchResult.IsMember)
-                    {
-                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
-                        entities.Add(entity);
-                    }
+                    var entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                    entities.Add(entity);
                 }
 
                 result.First(x => x.Key.Equals(Constants.Applications.Members, StringComparison.CurrentCultureIgnoreCase))
