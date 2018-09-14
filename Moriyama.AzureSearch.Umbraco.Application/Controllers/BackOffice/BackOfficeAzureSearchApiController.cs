@@ -6,88 +6,160 @@ using Umbraco.Core;
 using Umbraco.Web.Editors;
 using Umbraco.Web.Models.ContentEditing;
 using System.Web;
+using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
+using Umbraco.Web.Search;
+using Umbraco.Core.Models;
+using Umbraco.Web.Trees;
+using System;
+using Umbraco.Core.Services;
+using System.Collections.Concurrent;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 {
     public class BackOfficeAzureSearchApiController : UmbracoAuthorizedJsonController
     {
+        private static readonly ConcurrentDictionary<Type, TreeAttribute> TreeAttributeCache = new ConcurrentDictionary<Type, TreeAttribute>();
+        private const int NumberOfItemsPerSection = 10;
+
         [HttpGet]
-        public IEnumerable<EntityTypeSearchResult> Search(string query)
+        public IDictionary<string, TreeSearchResult> Search(string query)
         {
-            var allowedSections = Security.CurrentUser.AllowedSections.ToArray();
+            IDictionary<string, TreeSearchResult> result = GetTreeSearchResultStructure();
 
             if (string.IsNullOrEmpty(query))
-                return Enumerable.Empty<EntityTypeSearchResult>();
+            {
+                return result;
+            }
 
-            var result = new List<EntityTypeSearchResult>();
+            IAzureSearchClient client = AzureSearchContext.Instance.GetSearchClient();
 
-            var client = AzureSearchContext.Instance.GetSearchClient();
             // if the search term contains a space this will be transformed to %20 and no search results returned
             // so lets decode the query term to turn it back into a proper space
             // will this mess up any other Url encoded terms? or fix them too?
             query = HttpUtility.UrlDecode(query);
-            var searchResults = client.Term(query + "*").Results();
 
-            if (allowedSections.InvariantContains(Constants.Applications.Content))
+            ISearchResult searchResults = client.Term(query + "*").Results();
+
+            if (result.Keys.Any(x => x.Equals(Constants.Applications.Content, StringComparison.CurrentCultureIgnoreCase)))
             {
+                List<SearchResultItem> entities = new List<SearchResultItem>();
 
-                var entities = new List<EntityBasic>();
-
-                foreach (var searchResult in searchResults.Content)
+                foreach (ISearchContent searchResult in searchResults.Content.Where(c => c.IsContent).Take(NumberOfItemsPerSection))
                 {
-                    if (searchResult.IsContent)
-                    {
-                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
-                        entities.Add(entity);
-                    }
+                    var entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                    entities.Add(entity);
                 }
 
-                result.Add(new EntityTypeSearchResult
-                {
-                    Results = entities,
-                    EntityType = UmbracoEntityTypes.Document.ToString()
-                });
+                result.First(x => x.Key.Equals(Constants.Applications.Content, StringComparison.CurrentCultureIgnoreCase))
+                      .Value.Results = entities;
             }
 
-            if (allowedSections.InvariantContains(Constants.Applications.Media))
+            if (result.Keys.Any(x => x.Equals(Constants.Applications.Media, StringComparison.CurrentCultureIgnoreCase)))
             {
-                var entities = new List<EntityBasic>();
-                foreach (var searchResult in searchResults.Content)
+                List<SearchResultItem> entities = new List<SearchResultItem>();
+
+                foreach (ISearchContent searchResult in searchResults.Content.Where(c => c.IsMedia).Take(NumberOfItemsPerSection))
                 {
-                    if (searchResult.IsMedia)
-                    {
-                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
-                        entities.Add(entity);
-                    }
+                    var entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                    entities.Add(entity);
                 }
 
-                result.Add(new EntityTypeSearchResult
-                {
-                    Results = entities,
-                    EntityType = UmbracoEntityTypes.Media.ToString()
-                });
+                result.First(x => x.Key.Equals(Constants.Applications.Media, StringComparison.CurrentCultureIgnoreCase))
+                      .Value.Results = entities;
             }
 
-            if (allowedSections.InvariantContains(Constants.Applications.Members))
+            if (result.Keys.Any(x => x.Equals(Constants.Applications.Members, StringComparison.CurrentCultureIgnoreCase)))
             {
-                var entities = new List<EntityBasic>();
-                foreach (var searchResult in searchResults.Content)
+                List<SearchResultItem> entities = new List<SearchResultItem>();
+                ApplicationTree tree = Services.ApplicationTreeService.GetByAlias(Constants.Applications.Members);
+
+                foreach (ISearchContent searchResult in searchResults.Content.Where(c => c.IsMember).Take(NumberOfItemsPerSection))
                 {
-                    if (searchResult.IsMember)
-                    {
-                        var entity = SearchContentToEntityBasicMapper.Map(searchResult);
-                        entities.Add(entity);
-                    }
+                    var entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                    entities.Add(entity);
                 }
 
-                result.Add(new EntityTypeSearchResult
-                {
-                    Results = entities,
-                    EntityType = UmbracoEntityTypes.Member.ToString()
-                });
+                result.First(x => x.Key.Equals(Constants.Applications.Members, StringComparison.CurrentCultureIgnoreCase))
+                      .Value.Results = entities;
             }
 
             return result;
+        }
+
+        private IDictionary<string, TreeSearchResult> GetTreeSearchResultStructure()
+        {
+            Dictionary<string, TreeSearchResult> result = new Dictionary<string, TreeSearchResult>();
+            string[] allowedSections = Security.CurrentUser.AllowedSections.ToArray();
+            IReadOnlyDictionary<string, SearchableApplicationTree> searchableTrees = SearchableTreeResolver.Current.GetSearchableTrees();
+
+            foreach (var searchableTree in searchableTrees)
+            {
+                if (allowedSections.Contains(searchableTree.Value.AppAlias))
+                {
+                    ApplicationTree tree = Services.ApplicationTreeService.GetByAlias(searchableTree.Key);
+                    if (tree == null) continue; //shouldn't occur
+
+                    SearchableTreeAttribute searchableTreeAttribute = searchableTree.Value.SearchableTree.GetType().GetCustomAttribute<SearchableTreeAttribute>(false);
+                    TreeAttribute treeAttribute = GetTreeAttribute(tree);
+
+                    result[GetRootNodeDisplayName(treeAttribute, Services.TextService)] = new TreeSearchResult
+                    {
+                        Results = Enumerable.Empty<SearchResultItem>(),
+                        TreeAlias = searchableTree.Key,
+                        AppAlias = searchableTree.Value.AppAlias,
+                        JsFormatterService = searchableTreeAttribute == null ? "" : searchableTreeAttribute.ServiceName,
+                        JsFormatterMethod = searchableTreeAttribute == null ? "" : searchableTreeAttribute.MethodName
+                    };
+                }
+            }
+
+            return result;
+        }
+
+        internal static TreeAttribute GetTreeAttribute(ApplicationTree tree)
+        {
+            return GetTreeAttribute(tree.GetRuntimeType());
+        }
+
+        internal static TreeAttribute GetTreeAttribute(Type treeControllerType)
+        {
+            return TreeAttributeCache.GetOrAdd(treeControllerType, type =>
+            {
+                //Locate the tree attribute
+                var treeAttributes = type
+                    .GetCustomAttributes<TreeAttribute>(false)
+                    .ToArray();
+
+                if (treeAttributes.Length == 0)
+                {
+                    throw new InvalidOperationException("The Tree controller is missing the " + typeof(TreeAttribute).FullName + " attribute");
+                }
+
+                //assign the properties of this object to those of the metadata attribute
+                return treeAttributes[0];
+            });
+        }
+
+        internal static string GetRootNodeDisplayName(TreeAttribute attribute, ILocalizedTextService textService)
+        {
+            var label = $"[{attribute.Alias}]";
+
+            // try to look up a the localized tree header matching the tree alias
+            var localizedLabel = textService.Localize("treeHeaders/" + attribute.Alias);
+
+            // if the localizedLabel returns [alias] then return the title attribute from the trees.config file, if it's defined
+            if (localizedLabel != null && localizedLabel.Equals(label, StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (string.IsNullOrEmpty(attribute.Title) == false)
+                    label = attribute.Title;
+            }
+            else
+            {
+                // the localizedLabel translated into something that's not just [alias], so use the translation
+                label = localizedLabel;
+            }
+
+            return label;
         }
     }
 }

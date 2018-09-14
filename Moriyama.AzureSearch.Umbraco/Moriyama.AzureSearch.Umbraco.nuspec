@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Moriyama.AzureSearch.Umbraco.UI</id>
-    <version>1.2.1.0</version>
+    <version>1.3.0.0</version>
     <title>Umbraco Azure Search UI</title>
     <authors>Moriyama Ldt</authors>
     <owners>Moriyama Ldt</owners>
@@ -13,7 +13,7 @@
     <tags>Umbraco Azure Search Moriyama</tags>
     <!-- Dependencies are automatically installed when the package is installed -->
     <dependencies>
-      <dependency id="Moriyama.AzureSearch.Umbraco.Core" version="1.2.9" />
+      <dependency id="Moriyama.AzureSearch.Umbraco.Core" version="1.2.7" />
     </dependencies>
   </metadata>
   <files>
