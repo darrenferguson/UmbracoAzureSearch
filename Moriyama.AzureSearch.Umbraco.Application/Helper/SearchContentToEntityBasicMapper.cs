@@ -1,14 +1,13 @@
 ﻿using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
-using System.Collections.Generic;
 using Umbraco.Web.Models.ContentEditing;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Helper
 {
     public class SearchContentToEntityBasicMapper
     {
-        public static EntityBasic Map(ISearchContent item)
+        public static SearchResultItem Map(ISearchContent item)
         {
-            var e = new EntityBasic();
+            var e = new SearchResultItem();
             e.Name = item.Name;
             e.Id = item.Id;
             e.ParentId = item.ParentId;
