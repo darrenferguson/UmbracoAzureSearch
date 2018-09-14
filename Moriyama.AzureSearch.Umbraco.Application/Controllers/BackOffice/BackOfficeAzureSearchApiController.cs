@@ -21,7 +21,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
         private static readonly ConcurrentDictionary<Type, TreeAttribute> TreeAttributeCache = new ConcurrentDictionary<Type, TreeAttribute>();
 
         [HttpGet]
-        public IDictionary<string, TreeSearchResult> SearchAll(string query)
+        public IDictionary<string, TreeSearchResult> Search(string query)
         {
             IDictionary<string, TreeSearchResult> result = GetTreeSearchResultStructure();
 
@@ -112,7 +112,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 
                     result[GetRootNodeDisplayName(treeAttribute, Services.TextService)] = new TreeSearchResult
                     {
-                        Results = null,
+                        Results = Enumerable.Empty<SearchResultItem>(),
                         TreeAlias = searchableTree.Key,
                         AppAlias = searchableTree.Value.AppAlias,
                         JsFormatterService = searchableTreeAttribute == null ? "" : searchableTreeAttribute.ServiceName,
