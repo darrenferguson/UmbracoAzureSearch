@@ -4,6 +4,7 @@ using Moriyama.AzureSearch.Umbraco.Application.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Moriyama.AzureSearch.Umbraco.Application.ConstantNames;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
 {
@@ -16,7 +17,18 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
 
             foreach (var content in contents)
             {
-                actions.Add(IndexAction.Upload(content));
+                content.TryGetValue(FieldNameConstants.DoNotIndex, out var doNotIndexObject);
+
+                bool.TryParse(doNotIndexObject?.ToString(), out var doNotIndex);
+
+                if (doNotIndex)
+                {
+                    actions.Add(IndexAction.Delete(content));
+                }
+                else
+                {
+                    actions.Add(IndexAction.Upload(content));
+                }                
             }
 
             var batch = IndexBatch.New(actions);

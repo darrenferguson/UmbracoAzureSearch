@@ -21,12 +21,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
         }
 
         [HttpGet]
-        public IEnumerable<EntityTypeSearchResult> Search(string query)
+        public IEnumerable<TreeSearchResult> Search(string query)
         {
             string[] allowedSections = Security.CurrentUser.AllowedSections.ToArray();
 
             if (string.IsNullOrEmpty(query))
-                return Enumerable.Empty<EntityTypeSearchResult>();
+                return Enumerable.Empty<TreeSearchResult>();
 
             // if the search term contains a space this will be transformed to %20 and no search results returned
             // so lets decode the query term to turn it back into a proper space
@@ -36,13 +36,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 
             ISearchResult searchResults = this._azureSearchClient.Results(azureSearchQuery);
 
-            IList<EntityBasic> contentEntities = new List<EntityBasic>();
-            IList<EntityBasic> mediaEntities = new List<EntityBasic>();
-            IList<EntityBasic> memberEntities = new List<EntityBasic>();
+            IList<SearchResultItem> contentEntities = new List<SearchResultItem>();
+            IList<SearchResultItem> mediaEntities = new List<SearchResultItem>();
+            IList<SearchResultItem> memberEntities = new List<SearchResultItem>();
 
             foreach (ISearchContent searchResult in searchResults.Content)
             {
-                EntityBasic entity = SearchContentToEntityBasicMapper.Map(searchResult);
+                SearchResultItem entity = SearchContentToSearchResultItemMapper.Map(searchResult);
                 if (searchResult.IsContent && allowedSections.InvariantContains(Constants.Applications.Content))
                 {
                     contentEntities.Add(entity);
@@ -55,22 +55,26 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
                 }
             }
 
-            return new List<EntityTypeSearchResult>
+            return new List<TreeSearchResult>
             {
-                new EntityTypeSearchResult
+                new TreeSearchResult
                 {
-                    Results = contentEntities,
-                    EntityType = UmbracoEntityTypes.Document.ToString()
+                    Results = contentEntities,                                   
+                    TreeAlias = "content",
+                    AppAlias = "content"
+
                 },
-                new EntityTypeSearchResult
+                new TreeSearchResult
                 {
                     Results = mediaEntities,
-                    EntityType = UmbracoEntityTypes.Media.ToString()
+                    TreeAlias = "media",
+                    AppAlias = "media"
                 },
-                new EntityTypeSearchResult
+                new TreeSearchResult
                 {
                     Results = memberEntities,
-                    EntityType = UmbracoEntityTypes.Member.ToString()
+                    TreeAlias = "member",
+                    AppAlias = "member"
                 }
             };
         }

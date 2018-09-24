@@ -33,6 +33,20 @@
         });
     };
 
+    $scope.reindex = function () {
+
+        if (!confirm('Are you sure!'))
+            return;
+        $scope.finishedIndexing = false;
+        $scope.showReIndexContent = false;
+
+        $http.post('/umbraco/backoffice/api/AzureSearchApi/ReIndex', $scope.reindexModel).then(function (response) {
+            $scope.reIndexContentResult = response.data;
+
+            $scope.reindexContentPage(response.data.SessionId, 1);
+        });
+    };
+
     $scope.reindexContent = function () {
         
         if (!confirm('Are you sure!'))
