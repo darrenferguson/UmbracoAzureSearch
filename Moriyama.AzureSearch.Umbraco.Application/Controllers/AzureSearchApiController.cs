@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web;
 using AutoMapper;
 using Microsoft.Azure.Search;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
@@ -125,37 +124,22 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
 
         public AzureSearchReindexStatus GetReIndexContent(string sessionId, int page)
         {
-            var status = GetStatus();
-            var result = _azureSearchServiceClient.ReIndexContent(sessionId, page);
-            status.DocumentsQueued = result.DocumentsQueued;
-            status.Message = result.Message;
-            status.Error = result.Error;
-
-            return status;
+            var result = this._azureSearchServiceClient.ReIndexContent(sessionId, page);
+            return result;
         }
 
         public AzureSearchReindexStatus GetReIndexMedia(string sessionId, int page)
         {
-            var status = GetStatus();
-            var result = _azureSearchServiceClient.ReIndexMedia(sessionId, page);
-            status.MediaQueued = result.MediaQueued;
-            status.Message = result.Message;
-            status.Error = result.Error;
-
-            return status;
+            var result = this._azureSearchServiceClient.ReIndexMedia(sessionId, page);
+            return result;
         }
 
         public AzureSearchReindexStatus GetReIndexMember(string sessionId, int page)
         {
-            var status = GetStatus();
-            var result = _azureSearchServiceClient.ReIndexMember(sessionId, page);
-            status.MembersQueued = result.MembersQueued;
-            status.Message = result.Message;
-            status.Error = result.Error;
-
-            return status;
+            var result = this._azureSearchServiceClient.ReIndexMember(sessionId, page);
+            return result;
         }
-        
+
         public AzureSearchReindexStatus GetReIndexContent()
         {
             var sessionId = Guid.NewGuid().ToString();
