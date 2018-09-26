@@ -1,246 +1,53 @@
 ﻿<style type="text/css">
-    .ctr {
-        text-align: center !important;
-    }
-    .umb-healthcheck-group__details-status-actions input[type="text"] {
-        width: 100%;
-        margin: 0px;
+    .row {
+        margin-bottom: 30px
     }
 </style>
 <div ng-controller="Umbraco.Dashboard.MoriyamaAzureSearchController">
 
-    <h3 class="bold">Azure Search</h3>
-    
-<div ng-hide="configLoaded">
-    <div class="umb-healthcheck-group__details-status-overlay"></div>
-    <umb-load-indicator></umb-load-indicator>
-</div>
+    <div class="row">
+        <h3>Azure Search</h3>
 
-<div ng-show="configLoaded" class="umb-healthcheck-group__details">
-        <div class="umb-healthcheck-group__details-group-title">
-            <div class="umb-healthcheck-group__details-group-name">Configuration</div>
+        <h4>Configuration</h4>
+
+        <table class="table table-striped">
+            <tr ng-show="updating">
+                <td colspan="2">
+                    Updating....
+                </td>
+            </tr>
+            <tr>
+                <td>Search Service Name</td>
+                <td>
+                    <input type="text" ng-model="config.SearchServiceName" />
+                    <input type="button" class="btn btn-default" value="Update" ng-click="updateServiceName()" />
+                </td>
+            </tr>
+            <tr>
+                <td>Search Service Admin Api Key</td>
+                <td>
+                    <input type="text" ng-model="config.SearchServiceAdminApiKey" />
+                    <input type="button" class="btn btn-default" value="Update" ng-click="updateServiceApiKey()" />
+                </td>
+            </tr>
+            <tr>
+                <td>Index Name</td>
+                <td>{{config.IndexName}}</td>
+            </tr>
+        </table>
+
+        <div ng-show="showConfigTest" class="alert alert-info">
+            Connection test result: {{configTest}}
         </div>
 
-        <div class="umb-healthcheck-group__details-check">
-            <div class="umb-healthcheck-group__details-check-title">
-                <div class="umb-healthcheck-group__details-check-name">Manage Azure search index configuration</div>
-                <div class="umb-healthcheck-group__details-check-description">Allows you to view the details of each index and provides some tools for managing the indexes</div>
-            </div>
-
-            <div class="umb-healthcheck-group__details-status">
-
-                <div class="umb-healthcheck-group__details-status-icon-container">
-                    <i class="umb-healthcheck-status-icon icon-check color-green" ng-class="{'icon-check color-green' : canConnect, 'icon-delete color-red' : !canConnect}"></i>
-                </div>
-
-                <div class="umb-healthcheck-group__details-status-content">
-                    <div class="umb-healthcheck-group__details-status-text">
-                        <a class="btn-link -underline ng-binding" href="">
-                            {{config.IndexName}}
-                        </a>
-                                                
-                        <div class="umb-healthcheck-group__details-status-actions">
-                            <ul>
-                                <li>
-                                    <a href="" ng-click="showConfig = !showConfig">Configuration</a>
-                                    <div ng-show="showConfig">
-                                        <div>
-                                            <br/>
-                                            <div class="umb-healthcheck-group__details-status-action">
-                                                <input type="button" class="umb-era-button -blue" value="Test Configuration" ng-click="testConfig()"/>
-                                            </div>
-
-                                            <div ng-show="showConfigTest" class="text-error">
-                                                Connection test result: {{configTest}}
-                                            </div>
-                                            <div>
-                                                <table class="table table-bordered table-condensed">
-                                                    <caption>&nbsp;</caption>
-                                                    <tr>
-                                                        <th>Search Service Name</th>
-                                                        <td>
-                                                            <input type="text" ng-model="config.SearchServiceName"/>
-                                                        </td>
-                                                        <td>
-                                                            <input type="button" class="umb-era-button -blue" value="Update Name" ng-click="updateServiceName()"/>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>Search Service Admin Api Key</th>
-                                                        <td>
-                                                            <input type="text" ng-model="config.SearchServiceAdminApiKey"/>
-                                                        </td>
-                                                        <td>
-                                                            <input type="button" class="umb-era-button -blue" value="Update Api Key" ng-click="updateServiceApiKey()"/>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <a href="" ng-click="showTools = !showTools">Tools</a>
-                                    <div ng-show="showTools">
-                                        <div>
-                                            <br/>
-                                            <div class="umb-healthcheck-group__details-status-action">
-                                                <input type="button" class="umb-era-button -green" value="Reindex" ng-click="reindex()" style="display: inline"/>
-                                                <label class="checkbox-inline">
-                                                    <input type="checkbox" name="content" ng-model="reindexModel.content"> Content
-                                                </label>
-                                                <label class="checkbox-inline">
-                                                    <input type="checkbox" name="media" ng-model="reindexModel.media"> Media
-                                                </label>
-                                                <label class="checkbox-inline">
-                                                    <input type="checkbox" name="members" ng-model="reindexModel.members"> Members
-                                                </label>
-                                            </div>
-                                            <div ng-show="reIndexContentResult">
-                                                <table class="table table-bordered table-condensed">
-                                                    <caption>&nbsp;</caption>
-                                                    <tr>
-                                                        <th>Reindexing Session Id</th>
-                                                        <td>
-                                                            {{reIndexContentResult.SessionId}}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>Queued Content</th>
-                                                        <td>
-                                                            {{reIndexContentResult.DocumentsQueued}} 
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>Queued Media</th>
-                                                        <td>
-                                                            {{reIndexContentResult.MediaQueued}} 
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>Queued Members</th>
-                                                        <td>
-                                                            {{reIndexContentResult.MembersQueued}} 
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>Status</th>
-                                                        <td>
-                                                            <span>
-                                                                {{reIndexContentResult.Message}}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                            <div class="umb-healthcheck-group__details-status-action">
-                                                <input type="button" class="umb-era-button -red" value="Drop/Create Index" ng-click="dropCreateIndex()"/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <a href="" ng-click="showSystem = !showSystem">System fields</a>
-                                    <div ng-show="showSystem">
-                                        <div>
-                                            <br />
-                                            <table class="table table-bordered table-condensed">
-                                                <thead>
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Type</th>
-                                                    <th class="ctr">IsKey</th>
-                                                    <th class="ctr">IsSortable</th>
-                                                    <th class="ctr">IsFacetable</th>
-                                                    <th class="ctr">IsFilterable</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr ng-repeat="field in umbracoFields">
-                                                    <td>
-                                                        {{field.Name}}
-                                                    </td>
-                                                    <td>
-                                                        {{field.Type}}
-                                                    </td>
-                                                    <td class="ctr">
-                                                        <input type="checkbox"
-                                                               ng-model="field.IsKey" disabled="disabled">
-                                                    </td>
-                                                    <td class="ctr">
-                                                        <input type="checkbox"
-                                                               ng-model="field.IsSortable" disabled="disabled">
-                                                    </td>
-                                                    <td class="ctr">
-                                                        <input type="checkbox"
-                                                               ng-model="field.IsFacetable" disabled="disabled">
-                                                    </td>
-                                                    <td class="ctr">
-                                                        <input type="checkbox"
-                                                               ng-model="field.IsFilterable" disabled="disabled">
-                                                    </td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <a href="" ng-click="showUser = !showUser">User fields</a>
-                                    <div ng-show="showUser">
-                                        <br />
-                                        <form name="configForm">
-                                            <div class="umb-healthcheck-group__details-status-action">
-                                                <input type="button" class="umb-era-button -blue" value="Update user fields" ng-click="saveConfig()" ng-disabled="!configForm.$dirty"/>
-                                            </div>
-
-                                            <table class="table table-bordered table-condensed">
-                                                <thead>
-                                                <tr>
-                                                    <th>Alias</th>
-                                                    <th>Type</th>
-                                                    <th class="ctr">IsSortable</th>
-                                                    <th class="ctr">IsFacetable</th>
-                                                    <th class="ctr">IsFilterable</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr ng-repeat="searchField in config.SearchFields">
-                                                    <td>
-                                                        {{searchField.Name}}
-                                                    </td>
-                                                    <td>
-                                                        {{searchField.Type}}
-                                                    </td>
-                                                    <td class="ctr">
-                                                        <input type="checkbox"
-                                                               ng-model="searchField.IsSortable">
-                                                    </td>
-                                                    <td class="ctr">
-                                                        <input type="checkbox"
-                                                               ng-model="searchField.IsFacetable">
-                                                    </td>
-                                                    <td class="ctr">
-                                                        <input type="checkbox"
-                                                               ng-model="searchField.IsFilterable">
-                                                    </td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
-                                        </form>
-                                    </div>
-                                </li>
-                         </ul>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+        <input type="button" class="btn btn-default" value="Test Configuration" ng-click="testConfig()" ng-show="configLoaded" />
     </div>
-    <!--<div class="row">
 
 
-        <h3 class="bold">Index Manager</h3>
+    <div class="row">
+
+
+        <h4>Index Manager</h4>
 
         <ul>
             <li ng-repeat="index in searchIndexes">Found Index <em>{{index.Name}}</em></li>
@@ -250,94 +57,75 @@
             Dropping and Creating: {{dropCreateResult}}
         </div>
 
-        <div ng-show="reIndexContentResult" class="alert alert-success">
+        <div ng-show="showReIndexContent" class="alert alert-success">
             <p>Reindexing has started.</p>
 
             <p>Session id: {{reIndexContentResult.SessionId}}</p>
 
-            <p ng-show="reindexModel.content && reIndexContentResult.DocumentsQueued > 0">{{reIndexContentResult.DocumentsQueued}} Content items queued.</p>
-            <p ng-show="reindexModel.media && reIndexContentResult.MediaQueued > 0">{{reIndexContentResult.MediaQueued}} Media items queued.</p>
-            <p ng-show="reindexModel.members && reIndexContentResult.MembersQueued > 0">{{reIndexContentResult.MembersQueued}} Members queued.</p>
+            <p>{{reIndexContentResult.DocumentsProcessed}} of {{reIndexContentResult.DocumentCount}} {{TypeProcessing}} processed.</p>
 
-            <p>{{reIndexContentResult.Message}}</p>
-            <p ng-show="finishedIndexing">Finished re-indexing.</p>
+            <p ng-show="finishedIndexing">Finished re-indexing all content and media.</p>
 
         </div>
 
         <input type="button" class="btn btn-default" value="Drop/Create Index" ng-click="dropCreateIndex()" />
 
-        <input type="button" class="btn btn-default" value="Reindex" ng-click="reindex()" />
-
-        <label class="checkbox-inline">
-            <input type="checkbox" name="content" ng-model="reindexModel.content"> Content
-        </label>
-        <label class="checkbox-inline">
-            <input type="checkbox" name="media" ng-model="reindexModel.media"> Media
-        </label>
-        <label class="checkbox-inline">
-            <input type="checkbox" name="members" ng-model="reindexModel.members"> Members
-        </label>
+        <input type="button" class="btn btn-default" value="Reindex Content" ng-click="reindexContent()" />
     </div>
 
     <h3>Standard Umbraco Fields</h3>
 
-    <table class="table table-bordered table-condensed">
+    <table class="table table-striped">
         <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th class="ctr">IsKey</th>
-            <th class="ctr">IsSortable</th>
-            <th class="ctr">IsFacetable</th>
-            <th class="ctr">IsFilterable</th>
-        </tr>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>IsKey</th>
+                <th>IsSortable</th>
+                <th>IsFacetable</th>
+                <th>IsFilterable</th>
+            </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="field in umbracoFields">
-            <td>
-                {{field.Name}}
-            </td>
-            <td>
-                {{field.Type}}
-            </td>
-            <td class="ctr">
-                <input type="checkbox"
-                       ng-model="field.IsKey" disabled="disabled">
-            </td>
-            <td class="ctr">
-                <input type="checkbox"
-                       ng-model="field.IsSortable" disabled="disabled">
-            </td>
-            <td class="ctr">
-                <input type="checkbox"
-                       ng-model="field.IsFacetable" disabled="disabled">
-            </td>
-            <td class="ctr">
-                <input type="checkbox"
-                       ng-model="field.IsFilterable" disabled="disabled">
-            </td>
-        </tr>
+            <tr ng-repeat="field in umbracoFields">
+                <td>
+                    {{field.Name}}
+                </td>
+                <td>
+                    {{field.Type}}
+                </td>
+                <td>
+                    {{field.IsKey}}
+                </td>
+                <td>
+                    {{field.IsSortable}}
+                </td>
+                <td>
+                    {{field.IsFacetable}}
+                </td>
+                <td>
+                    {{field.IsFilterable}}
+                </td>
+            </tr>
         </tbody>
     </table>
-    <form name="configForm">
-        <h3>Custom Umbraco Fields</h3>
 
-        <p>These are defined in /config/AzureSearch.config</p>
+    <h3>Custom Umbraco Fields</h3>
 
-        <input type="button" class="umb-era-button -blue" value="Update Configuration" ng-click="saveConfig()" ng-disabled="!configForm.$dirty" />
+    <p>These are defined in /config/AzureSearch.config</p>
 
-        <table class="table table-striped">
-            <thead>
+    <table class="table table-striped">
+        <thead>
             <tr>
                 <th>Alias</th>
                 <th>Type</th>
-                <th class="ctr">IsKey</th>
-                <th class="ctr">IsSortable</th>
-                <th class="ctr">IsFacetable</th>
-                <th class="ctr">IsFilterable</th>
+                <th>IsKey</th>
+                <th>IsSortable</th>
+                <th>IsFacetable</th>
+                <th>IsFilterable</th>
             </tr>
-            </thead>
-            <tbody>
+        </thead>
+        <tbody>
             <tr ng-repeat="searchField in config.SearchFields">
                 <td>
                     {{searchField.Name}}
@@ -345,27 +133,25 @@
                 <td>
                     {{searchField.Type}}
                 </td>
-                <td class="ctr">
-                    <input type="checkbox"
-                           ng-model="searchField.IsKey" disabled="disabled">
+                <td>
+                    {{searchField.IsKey}}
                 </td>
-                <td class="ctr">
-                    <input type="checkbox"
-                           ng-model="searchField.IsSortable">
+                <td>
+                    {{searchField.IsSortable}}
                 </td>
-                <td class="ctr">
-                    <input type="checkbox"
-                           ng-model="searchField.IsFacetable">
+                <td>
+                    {{searchField.IsFacetable}}
                 </td>
-                <td class="ctr">
-                    <input type="checkbox"
-                           ng-model="searchField.IsFilterable">
+                <td>
+                    {{searchField.IsFilterable}}
                 </td>
             </tr>
-            </tbody>
-        </table>
-    </form>
+        </tbody>
+    </table>
 
 
-    <hr />-->
+
+    <hr />
+
+
 </div>
