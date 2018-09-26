@@ -184,3 +184,4 @@ BuildPackage/NugetBuild/
 BuildPackage/Package/
 *.nupkg
 .vs/Moriyama.AzureSearch.Umbraco/v15/Server/sqlite3/
+!Moriyama.AzureSearch.Umbraco/App_Data/Umbraco-7-12-2.sdf
