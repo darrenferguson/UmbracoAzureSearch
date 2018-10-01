@@ -156,20 +156,26 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public void ReIndexContent(IContent content)
         {
-            var documents = new List<Document>();
-            var config = GetConfiguration();
+            AzureSearchConfig config = GetConfiguration();
+            Document document = FromUmbracoContent(content, config.SearchFields);
 
-            documents.Add(FromUmbracoContent(content, config.SearchFields));
-            IndexContentBatch(documents);
+            if (document != null)
+            {
+                List<Document> documents = new List<Document>() { document };
+                IndexContentBatch(documents);
+            }
         }
 
         public void ReIndexContent(IMedia content)
         {
-            var documents = new List<Document>();
-            var config = GetConfiguration();
+            AzureSearchConfig config = GetConfiguration();
+            Document document = FromUmbracoMedia(content, config.SearchFields);
 
-            documents.Add(FromUmbracoMedia(content, config.SearchFields));
-            IndexContentBatch(documents);
+            if (document != null)
+            {
+                List<Document> documents = new List<Document>() { document };
+                IndexContentBatch(documents);
+            }
         }
 
         public void Delete(int id)
@@ -210,11 +216,14 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public void ReIndexMember(IMember content)
         {
-            var documents = new List<Document>();
-            var config = GetConfiguration();
+            AzureSearchConfig config = GetConfiguration();
+            Document document = FromUmbracoMember(content, config.SearchFields);
 
-            documents.Add(FromUmbracoMember(content, config.SearchFields));
-            IndexContentBatch(documents);
+            if (document != null)
+            {
+                List<Document> documents = new List<Document>() { document };
+                IndexContentBatch(documents);
+            }
         }
 
         public AzureSearchReindexStatus ReIndex(string filename, string sessionId, int page)
@@ -251,7 +260,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     {
                         try
                         {
-                            documents.Add(FromUmbracoContent(content, config.SearchFields));
+                            Document document = FromUmbracoContent(content, config.SearchFields);
+
+                            if (document != null)
+                            {
+                                documents.Add(document);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -271,7 +285,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     {
                         try
                         {
-                            documents.Add(FromUmbracoMedia(content, config.SearchFields));
+                            Document document = FromUmbracoMedia(content, config.SearchFields);
+
+                            if (document != null)
+                            {
+                                documents.Add(document);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -294,7 +313,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     {
                         try
                         {
-                            documents.Add(FromUmbracoMember(content, config.SearchFields));
+                            Document document = FromUmbracoMember(content, config.SearchFields);
+
+                            if (document != null)
+                            {
+                                documents.Add(document);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -336,6 +360,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var result = GetDocumentToIndex((ContentBase)member, searchFields);
 
+            if (result == null)
+            {
+                return null;
+            }
+
             result.Add("IsMedia", false);
             result.Add("IsContent", false);
             result.Add("IsMember", true);
@@ -354,6 +383,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private Document FromUmbracoMedia(IMedia content, SearchField[] searchFields)
         {
             var result = GetDocumentToIndex((ContentBase)content, searchFields);
+
+            if (result == null)
+            {
+                return null;
+            }
 
             if (!content.ContentType.Alias.Equals("Folder"))
             {
@@ -390,6 +424,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private Document FromUmbracoContent(IContent content, SearchField[] searchFields)
         {
             var result = GetDocumentToIndex((ContentBase)content, searchFields);
+
+            if (result == null)
+            {
+                return null;
+            }
 
             result.Add("IsContent", true);
             result.Add("IsMedia", false);
