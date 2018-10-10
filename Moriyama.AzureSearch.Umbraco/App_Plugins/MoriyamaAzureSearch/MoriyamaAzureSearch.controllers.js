@@ -71,7 +71,7 @@
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexContent?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
             $scope.reIndexContentResult = response.data;
 
-            var docsFinished = response.data.DocumentsQueued == 0;
+            var docsFinished = response.data.Finished;
 
             if (!response.data.Error && !docsFinished) {
                 $scope.reindexContentPage(sessionId, page + 1);
@@ -86,7 +86,7 @@
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexMedia?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
             $scope.reIndexContentResult = response.data;
 
-            var mediaFinished = response.data.MediaQueued == 0;
+            var mediaFinished = response.data.Finished == 0;
 
             if (!response.data.Error && !mediaFinished) {
                 $scope.reindexMediaPage(sessionId, page + 1);
@@ -102,7 +102,7 @@
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexMember?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
             $scope.reIndexContentResult = response.data;
 
-            var membersFinished = response.data.MembersQueued == 0;
+            var membersFinished = response.data.Finished == 0;
 
             if (!response.data.Error && !membersFinished) {
                 $scope.reindexMemberPage(sessionId, page + 1);
