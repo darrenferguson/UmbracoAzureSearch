@@ -57,6 +57,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 				ScoringProfiles = _config.ScoringProfiles.Select(x => x.GetEffectiveScoringProfile()).ToList()
             };
 
+			if (!String.IsNullOrEmpty(_config.DefaultScoringProfile) && definition.ScoringProfiles.Any(x => x.Name == _config.DefaultScoringProfile))
+			{
+				definition.DefaultScoringProfile = _config.DefaultScoringProfile;
+			}
+
             try
             {
                 serviceClient.Indexes.Create(definition);
