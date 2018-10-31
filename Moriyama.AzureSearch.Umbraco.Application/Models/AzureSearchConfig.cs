@@ -16,6 +16,6 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 		public bool LogSearchPerformance { get; set; }
 
 		public List<AzureSearchScoringProfile> ScoringProfiles { get; set; }
-
-    }
+		public int ReIndexBatchSize { get; set; }
+	}
 }

@@ -21,11 +21,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     public class AzureSearchIndexClient : BaseAzureSearch, IAzureSearchIndexClient
     {
         private Dictionary<string, IComputedFieldParser> Parsers { get; set; }
+		private const int DefaultBatchSize = 999;
 
-        // Number of docs to be processed at a time.
-        const int BatchSize = 999;
-
-        public AzureSearchIndexClient(string path) : base(path)
+		public AzureSearchIndexClient(string path) : base(path)
         {
             Parsers = new Dictionary<string, IComputedFieldParser>();
             SetCustomFieldParsers(GetConfiguration());
@@ -136,7 +134,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private int[] Page(int[] collection, int page)
         {
-            return collection.Skip((page - 1) * BatchSize).Take(BatchSize).ToArray();
+            return collection.Skip((page - 1) * ReindexBatchSize).Take(ReindexBatchSize).ToArray();
         }
 
         public AzureSearchReindexStatus ReIndexContent(string sessionId, int page)
@@ -336,7 +334,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             var indexStatus = IndexContentBatch(documents);
             
-            result.DocumentsProcessed = page * BatchSize;
+            result.DocumentsProcessed = page * ReindexBatchSize;
 
             if (indexStatus.Success)
             {
@@ -639,5 +637,19 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                  new Field("CreatorId", DataType.Int32) { IsSortable = true, IsFacetable = true }
             };
         }
+
+		/// <summary>
+		/// Number of docs to be processed at a time.
+		/// </summary>
+		public int ReindexBatchSize
+		{
+			get {
+				if (_config.ReIndexBatchSize == 0)
+				{
+					return DefaultBatchSize;
+				}
+				return _config.ReIndexBatchSize;
+			}
+		}
     }
 }
