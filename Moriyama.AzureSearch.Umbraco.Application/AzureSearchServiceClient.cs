@@ -21,9 +21,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     public class AzureSearchIndexClient : BaseAzureSearch, IAzureSearchIndexClient
     {
         private Dictionary<string, IComputedFieldParser> Parsers { get; set; }
-		private const int DefaultBatchSize = 999;
+        private const int DefaultBatchSize = 999;
 
-		public AzureSearchIndexClient(string path) : base(path)
+        public AzureSearchIndexClient(string path) : base(path)
         {
             Parsers = new Dictionary<string, IComputedFieldParser>();
             SetCustomFieldParsers(GetConfiguration());
@@ -52,7 +52,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             {
                 Name = _config.IndexName,
                 Fields = customFields,
-				ScoringProfiles = _config.ScoringProfiles.Select(x => x.GetEffectiveScoringProfile()).ToList()
+                ScoringProfiles = _config.ScoringProfiles.Select(x => x.GetEffectiveScoringProfile()).ToList()
             };
 
             try
@@ -333,7 +333,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
 
             var indexStatus = IndexContentBatch(documents);
-            
+
             result.DocumentsProcessed = page * ReindexBatchSize;
 
             if (indexStatus.Success)
@@ -638,18 +638,19 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             };
         }
 
-		/// <summary>
-		/// Number of docs to be processed at a time.
-		/// </summary>
-		public int ReindexBatchSize
-		{
-			get {
-				if (_config.ReIndexBatchSize == 0)
-				{
-					return DefaultBatchSize;
-				}
-				return _config.ReIndexBatchSize;
-			}
-		}
+        /// <summary>
+        /// Number of docs to be processed at a time.
+        /// </summary>
+        public int ReindexBatchSize
+        {
+            get
+            {
+                if (_config.ReIndexBatchSize < 1)
+                {
+                    return DefaultBatchSize;
+                }
+                return _config.ReIndexBatchSize;
+            }
+        }
     }
 }
