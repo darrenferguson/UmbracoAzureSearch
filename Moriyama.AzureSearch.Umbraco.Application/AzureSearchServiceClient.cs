@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Interfaces;
@@ -54,6 +53,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 Fields = customFields,
                 ScoringProfiles = _config.ScoringProfiles.Select(x => x.GetEffectiveScoringProfile()).ToList()
             };
+
+            if (!String.IsNullOrEmpty(_config.DefaultScoringProfile) && definition.ScoringProfiles.Any(x => x.Name == _config.DefaultScoringProfile))
+            {
+                definition.DefaultScoringProfile = _config.DefaultScoringProfile;
+            }
 
             try
             {

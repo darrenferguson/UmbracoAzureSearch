@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.Search.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Models
 {
@@ -15,7 +14,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 
 		public bool LogSearchPerformance { get; set; }
 
-		public List<AzureSearchScoringProfile> ScoringProfiles { get; set; }
-		public int ReIndexBatchSize { get; set; }
+        public string DefaultScoringProfile { get; set; }
+
+        public List<AzureSearchScoringProfile> ScoringProfiles { get; set; }
+
+        public int ReIndexBatchSize { get; set; }
 	}
 }
