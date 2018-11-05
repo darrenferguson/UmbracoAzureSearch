@@ -12,6 +12,11 @@
         $scope.umbracoFields = response.data;
     });
 
+	$scope.resetUi = function () {
+		$scope.showReIndexContent = false;
+		$scope.showIndexDropCreate = false;
+		$scope.showConfigTest = false;
+	};
 
 	$scope.loadIndexes = function () {
 		$scope.indexesLoaded = false;
@@ -38,7 +43,8 @@
         });  
     };
 
-    $scope.testConfig = function () {
+	$scope.testConfig = function () {
+		$scope.resetUi();
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetTestConfig').then(function (response) {
             $scope.configTest = response.data;
             $scope.canConnect = $scope.configTest.includes("Connected");
@@ -53,6 +59,7 @@
         if (!confirm('Are you sure!'))
             return;
 
+		$scope.resetUi();
 		$scope.indexesLoaded = false;
         $scope.showIndexDropCreate = true;
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetDropCreateIndex').then(function (response) {
@@ -66,8 +73,8 @@
         if (!confirm('Are you sure!'))
             return;
 
+		$scope.resetUi();
         $scope.finishedIndexing = false;
-        $scope.showReIndexContent = false;
 
 		$scope.reindexResultStatus = "";
 		$scope.reindexResultContent = "";
@@ -128,6 +135,7 @@
             }
         });
 	};
+
 
 
 	$scope.getIndexingStatusMessage = function(processed, documentCount, typeProcessing) {
