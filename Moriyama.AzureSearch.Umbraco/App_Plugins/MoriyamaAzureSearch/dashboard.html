@@ -60,7 +60,10 @@
 
 			<p>Session id: {{reIndexContentResult.SessionId}}</p>
 
-			<p>{{reIndexContentResult.DocumentsProcessed}} of {{reIndexContentResult.DocumentCount}} {{TypeProcessing}} processed.</p>
+			<p ng-if="reindexResultContent">{{reindexResultContent}}</p>
+			<p ng-if="reindexResultMedia">{{reindexResultMedia}}</p>
+
+			<p>{{reindexResultStatus}}</p>
 
 			<p ng-show="finishedIndexing">Finished re-indexing all content and media.</p>
 
