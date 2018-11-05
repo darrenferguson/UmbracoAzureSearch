@@ -20,8 +20,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
               ));
 
             Mapper.CreateMap<Index, SearchIndex>();
-
-            var appRoot = HttpContext.Current.Server.MapPath("/");
+			Mapper.CreateMap<ScoringProfile, AzureItemBase>();
+			Mapper.CreateMap<Suggester, AzureItemBase>();
+			Mapper.CreateMap<Field, AzureItemBase>();
+			
+			var appRoot = HttpContext.Current.Server.MapPath("/");
             AzureSearchContext.Instance.SetupSearchClient<AzureSearchClient>(appRoot);
             AzureSearchContext.Instance.SearchIndexClient = new AzureSearchIndexClient(appRoot);
 

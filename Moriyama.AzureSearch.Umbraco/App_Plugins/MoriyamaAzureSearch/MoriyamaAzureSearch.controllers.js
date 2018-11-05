@@ -1,6 +1,7 @@
 ﻿function moriyamaAzureSearchController($scope, umbRequestHelper, $filter, $log, $http) {
 
     $scope.configLoaded = false;
+	$scope.indexesLoaded = false;
 
     $http.get('/umbraco/backoffice/api/AzureSearchApi/GetConfiguration').then(function (response) {      
         $scope.config = response.data;
@@ -12,9 +13,14 @@
     });
 
 
-    $http.get('/umbraco/backoffice/api/AzureSearchApi/GetSearchIndexes').then(function (response) {
-        $scope.searchIndexes = response.data;
-    });
+	$scope.loadIndexes = function () {
+		$scope.indexesLoaded = false;
+		$http.get('/umbraco/backoffice/api/AzureSearchApi/GetSearchIndexes').then(function (response) {
+			$scope.searchIndexes = response.data;
+			$scope.indexesLoaded = true;
+		});
+	};
+	$scope.loadIndexes();
     
     $scope.updateServiceName = function() {
 
@@ -37,17 +43,21 @@
             $scope.configTest = response.data;
             $scope.canConnect = $scope.configTest.includes("Connected");
             $scope.showConfigTest = true;
-        });
+		});
+		$scope.loadIndexes();
     };
+
 
     $scope.dropCreateIndex = function () {
 
         if (!confirm('Are you sure!'))
             return;
 
+		$scope.indexesLoaded = false;
         $scope.showIndexDropCreate = true;
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetDropCreateIndex').then(function (response) {
-            $scope.dropCreateResult = response.data;      
+			$scope.dropCreateResult = response.data;      
+			$scope.loadIndexes();
         });
     };
 

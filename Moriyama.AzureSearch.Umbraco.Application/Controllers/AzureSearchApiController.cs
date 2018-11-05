@@ -51,7 +51,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers
         public string GetTestConfig()
         {
 
-            var config = _azureSearchServiceClient.GetConfiguration();
+			AzureSearchConfig config = _azureSearchServiceClient.GetConfiguration();
 
             int indexCount = 0;
 
