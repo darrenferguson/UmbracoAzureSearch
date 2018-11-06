@@ -18,6 +18,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 
         public List<AzureSearchScoringProfile> ScoringProfiles { get; set; }
 
-        public int ReIndexBatchSize { get; set; }
+		public List<AzureSearchSuggester> Suggesters { get; set; }
+
+		public int ReIndexBatchSize { get; set; }
+
+
+		
 	}
 }
