@@ -1,6 +1,7 @@
 ﻿function moriyamaAzureSearchController($scope, umbRequestHelper, $filter, $log, $http) {
 
     $scope.configLoaded = false;
+	$scope.indexesLoaded = false;
 
     $http.get('/umbraco/backoffice/api/AzureSearchApi/GetConfiguration').then(function (response) {      
         $scope.config = response.data;
@@ -11,10 +12,20 @@
         $scope.umbracoFields = response.data;
     });
 
+	$scope.resetUi = function () {
+		$scope.showReIndexContent = false;
+		$scope.showIndexDropCreate = false;
+		$scope.showConfigTest = false;
+	};
 
-    $http.get('/umbraco/backoffice/api/AzureSearchApi/GetSearchIndexes').then(function (response) {
-        $scope.searchIndexes = response.data;
-    });
+	$scope.loadIndexes = function () {
+		$scope.indexesLoaded = false;
+		$http.get('/umbraco/backoffice/api/AzureSearchApi/GetSearchIndexes').then(function (response) {
+			$scope.searchIndexes = response.data;
+			$scope.indexesLoaded = true;
+		});
+	};
+	$scope.loadIndexes();
     
     $scope.updateServiceName = function() {
 
@@ -32,22 +43,28 @@
         });  
     };
 
-    $scope.testConfig = function () {
+	$scope.testConfig = function () {
+		$scope.resetUi();
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetTestConfig').then(function (response) {
             $scope.configTest = response.data;
             $scope.canConnect = $scope.configTest.includes("Connected");
             $scope.showConfigTest = true;
-        });
+		});
+		$scope.loadIndexes();
     };
+
 
     $scope.dropCreateIndex = function () {
 
         if (!confirm('Are you sure!'))
             return;
 
+		$scope.resetUi();
+		$scope.indexesLoaded = false;
         $scope.showIndexDropCreate = true;
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetDropCreateIndex').then(function (response) {
-            $scope.dropCreateResult = response.data;      
+			$scope.dropCreateResult = response.data;      
+			$scope.loadIndexes();
         });
     };
 
@@ -56,8 +73,12 @@
         if (!confirm('Are you sure!'))
             return;
 
+		$scope.resetUi();
         $scope.finishedIndexing = false;
-        $scope.showReIndexContent = false;
+
+		$scope.reindexResultStatus = "";
+		$scope.reindexResultContent = "";
+		$scope.reindexResultMedia = "";
 
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexContent').then(function (response) {
             $scope.reIndexContentResult = response.data;
@@ -67,30 +88,35 @@
         });
     };
 
-    $scope.reindexContentPage = function (sessionId, page) {
+	$scope.reindexContentPage = function (sessionId, page) {
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexContent?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
             $scope.reIndexContentResult = response.data;
+			$scope.reindexResultStatus = $scope.getIndexingStatusMessage($scope.reIndexContentResult.DocumentsProcessed, $scope.reIndexContentResult.DocumentCount, "content items");
 
             var docsFinished = response.data.Finished;
-
+			
             if (!response.data.Error && !docsFinished) {
-                $scope.reindexContentPage(sessionId, page + 1);
+				$scope.reindexContentPage(sessionId, page + 1);				
             } else {
-                $scope.reindexMediaPage(sessionId, 1);
+				$scope.reindexResultContent = $scope.reindexResultStatus;
+				$scope.reindexResultStatus = "";
+				$scope.reindexMediaPage(sessionId, 1);
             }
         });
     };
     
     $scope.reindexMediaPage = function (sessionId, page) {
-
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexMedia?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
             $scope.reIndexContentResult = response.data;
+			$scope.reindexResultStatus = $scope.getIndexingStatusMessage($scope.reIndexContentResult.DocumentsProcessed, $scope.reIndexContentResult.DocumentCount, "media items");
 
-            var mediaFinished = response.data.Finished == 0;
+            var mediaFinished = response.data.Finished;
 
             if (!response.data.Error && !mediaFinished) {
                 $scope.reindexMediaPage(sessionId, page + 1);
-            } else {
+			} else {
+				$scope.reindexResultMedia = $scope.reindexResultStatus;
+				$scope.reindexResultStatus = "";
                 $scope.reindexMemberPage(sessionId, 1);
             }
         });
@@ -98,19 +124,25 @@
     };
 
     $scope.reindexMemberPage = function (sessionId, page) {
-
         $http.get('/umbraco/backoffice/api/AzureSearchApi/GetReIndexMember?sessionId=' + escape(sessionId) + '&page=' + page).then(function (response) {
             $scope.reIndexContentResult = response.data;
+			$scope.reindexResultStatus = $scope.getIndexingStatusMessage($scope.reIndexContentResult.DocumentsProcessed, $scope.reIndexContentResult.DocumentCount, "members");
 
-            var membersFinished = response.data.Finished == 0;
+            var membersFinished = response.data.Finished;
 
             if (!response.data.Error && !membersFinished) {
                 $scope.reindexMemberPage(sessionId, page + 1);
-            } else {
+			} else {
                 $scope.finishedIndexing = true;
             }
         });
-    };
+	};
+
+
+
+	$scope.getIndexingStatusMessage = function(processed, documentCount, typeProcessing) {
+		return processed + " of " + documentCount + " " + typeProcessing + " processed.";
+	}
 
     $scope.saveConfig = function() {
         $http.post('/umbraco/backoffice/api/AzureSearchApi/SetConfiguration', $scope.config).then(function (response) {      
@@ -121,3 +153,4 @@
 }
 
 angular.module("umbraco").controller("Umbraco.Dashboard.MoriyamaAzureSearchController", moriyamaAzureSearchController);
+

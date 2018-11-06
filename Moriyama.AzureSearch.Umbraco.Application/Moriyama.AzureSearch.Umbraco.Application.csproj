@@ -254,6 +254,7 @@
     <Compile Include="Interfaces\ISearchFacet.cs" />
     <Compile Include="Interfaces\ISearchResult.cs" />
     <Compile Include="Interfaces\IAzureSearchField.cs" />
+    <Compile Include="Models\AzureItemBase.cs" />
     <Compile Include="Models\AzureSearchIndexResult.cs" />
     <Compile Include="Models\AzureSearchScoringFunction.cs" />
     <Compile Include="Models\AzureSearchScoringFunctionType.cs" />

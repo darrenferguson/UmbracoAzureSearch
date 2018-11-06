@@ -5,73 +5,109 @@
 </style>
 <div ng-controller="Umbraco.Dashboard.MoriyamaAzureSearchController">
 
-    <div class="row">
-        <h3>Azure Search</h3>
+	<div class="row">
+		<h3>Azure Search</h3>
 
-        <h4>Configuration</h4>
+		<h4>Configuration</h4>
 
-        <table class="table table-striped">
-            <tr ng-show="updating">
-                <td colspan="2">
-                    Updating....
-                </td>
-            </tr>
-            <tr>
-                <td>Search Service Name</td>
-                <td>
-                    <input type="text" ng-model="config.SearchServiceName" />
-                    <input type="button" class="btn btn-default" value="Update" ng-click="updateServiceName()" />
-                </td>
-            </tr>
-            <tr>
-                <td>Search Service Admin Api Key</td>
-                <td>
-                    <input type="text" ng-model="config.SearchServiceAdminApiKey" />
-                    <input type="button" class="btn btn-default" value="Update" ng-click="updateServiceApiKey()" />
-                </td>
-            </tr>
-            <tr>
-                <td>Index Name</td>
-                <td>{{config.IndexName}}</td>
-            </tr>
-        </table>
+		<table class="table table-striped">
+			<tr ng-show="updating">
+				<td colspan="2">
+					Updating....
+				</td>
+			</tr>
+			<tr>
+				<td width="25%">Search Service Name</td>
+				<td>
+					<input type="text" ng-model="config.SearchServiceName" />
+					<input type="button" class="btn btn-default" value="Update" ng-click="updateServiceName()" />
+				</td>
+			</tr>
+			<tr>
+				<td>Search Service Admin Api Key</td>
+				<td>
+					<input type="text" ng-model="config.SearchServiceAdminApiKey" />
+					<input type="button" class="btn btn-default" value="Update" ng-click="updateServiceApiKey()" />
+				</td>
+			</tr>
+			<tr>
+				<td>Index Name</td>
+				<td>
+					{{config.IndexName}}
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<input type="button" class="btn btn-default" value="Test Configuration" ng-click="testConfig()" ng-show="configLoaded" />
+				</td>
+				<td>
+					<div ng-show="showConfigTest" class="alert alert-info">
+						Connection test result: {{configTest}}
+					</div>
+				</td>
+			</tr>
+		</table>
 
-        <div ng-show="showConfigTest" class="alert alert-info">
-            Connection test result: {{configTest}}
-        </div>
+	</div>
 
-        <input type="button" class="btn btn-default" value="Test Configuration" ng-click="testConfig()" ng-show="configLoaded" />
-    </div>
+	<div class="row">
+		<div ng-show="showIndexDropCreate" class="alert alert-info">
+			Dropping and Creating '{{config.IndexName}}' index: {{dropCreateResult}}
+		</div>
 
+		<div ng-show="showReIndexContent" class="alert alert-success">
+			<p>Reindexing of '{{config.IndexName}}' has started.</p>
 
-    <div class="row">
+			<p>Session id: {{reIndexContentResult.SessionId}}</p>
 
+			<p ng-if="reindexResultContent">{{reindexResultContent}}</p>
+			<p ng-if="reindexResultMedia">{{reindexResultMedia}}</p>
 
-        <h4>Index Manager</h4>
+			<p>{{reindexResultStatus}}</p>
 
-        <ul>
-            <li ng-repeat="index in searchIndexes">Found Index <em>{{index.Name}}</em></li>
-        </ul>
+			<p ng-show="finishedIndexing">Finished re-indexing all content and media.</p>
 
-        <div ng-show="showIndexDropCreate" class="alert alert-info">
-            Dropping and Creating: {{dropCreateResult}}
-        </div>
+		</div>
 
-        <div ng-show="showReIndexContent" class="alert alert-success">
-            <p>Reindexing has started.</p>
+		<input type="button" class="btn btn-default" value="Drop/Create '{{config.IndexName}}' Index" ng-click="dropCreateIndex()" />
 
-            <p>Session id: {{reIndexContentResult.SessionId}}</p>
+		<input type="button" class="btn btn-default" value="Reindex Content" ng-click="reindexAll()" />
 
-            <p>{{reIndexContentResult.DocumentsProcessed}} of {{reIndexContentResult.DocumentCount}} {{TypeProcessing}} processed.</p>
+	</div>
 
-            <p ng-show="finishedIndexing">Finished re-indexing all content and media.</p>
+	<div class="row">
 
-        </div>
+		<h3>Index Status for Search Service '{{config.SearchServiceName}}'</h3>
+		<table class="table table-striped" ng-style="{opacity : indexesLoaded ? '1' : '0.4'}">
+			<thead>
+				<tr>
+					<th>Index name</th>
+					<th>Fields</th>
+					<th>Scoring profiles</th>
+					<th>Suggesters</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="index in searchIndexes">
+					<td>{{index.Name}}  <span class="alert-info" ng-if="index.Name === config.IndexName"> &nbsp;current&nbsp; </span></td>
+					<td>{{index.Fields.length}}</td>
+					<td>
+						<ul>
+							<li ng-repeat="sp in index.ScoringProfiles">{{sp.Name}} <span ng-if="sp.Name === index.DefaultScoringProfile"> (default)</span></li>
+						</ul>
+					</td>
+					<td>
+						<ul>
+							<li ng-repeat="suggester in index.Suggesters">{{suggester.Name}}</li>
+						</ul>
+					</td>
+				</tr>
+			</tbody>
+		</table>
 
-        <input type="button" class="btn btn-default" value="Drop/Create Index" ng-click="dropCreateIndex()" />
+		<input type="button" class="btn btn-default" value="Reload status" title="Get index details from Azure Search Service" ng-click="loadIndexes()" />
 
-        <input type="button" class="btn btn-default" value="Reindex Content" ng-click="reindexAll()" />
-    </div>
+	</div>
 
     <h3>Standard Umbraco Fields</h3>
 
