@@ -17,7 +17,7 @@ namespace Moriyama.AzureSearch.Umbraco.Sandbox
 			var config = client.GetConfiguration();
 
 			int count = config.ScoringProfiles.Count;
-			var scoringProfiles = config.ScoringProfiles.Select(x => x.GetEffectiveScoringProfile()).ToList();
+			var scoringProfiles = config.ScoringProfiles.Select(x => x.GetScoringProfile()).ToList();
 						
             var results = client.Term("umbraco").Results();
             Console.WriteLine();
