@@ -99,6 +99,7 @@
 				$scope.reindexContentPage(sessionId, page + 1);				
             } else {
 				$scope.reindexResultContent = $scope.reindexResultStatus;
+				$scope.reindexResultStatus = "";
 				$scope.reindexMediaPage(sessionId, 1);
             }
         });
@@ -115,6 +116,7 @@
                 $scope.reindexMediaPage(sessionId, page + 1);
 			} else {
 				$scope.reindexResultMedia = $scope.reindexResultStatus;
+				$scope.reindexResultStatus = "";
                 $scope.reindexMemberPage(sessionId, 1);
             }
         });
