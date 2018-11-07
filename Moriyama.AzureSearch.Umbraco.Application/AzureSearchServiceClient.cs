@@ -51,10 +51,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             {
                 Name = _config.IndexName,
                 Fields = customFields,
-                ScoringProfiles = _config.ScoringProfiles.Select(x => x.GetEffectiveScoringProfile()).ToList()
+                ScoringProfiles = _config.ScoringProfiles?.Select(x => x.GetScoringProfile()).ToList(),
+				Suggesters = _config.Suggesters?.Select(x => x.GetSuggester()).ToList()
             };
 
-            if (!String.IsNullOrEmpty(_config.DefaultScoringProfile) && definition.ScoringProfiles.Any(x => x.Name == _config.DefaultScoringProfile))
+            if (!String.IsNullOrEmpty(_config.DefaultScoringProfile) && definition.ScoringProfiles != null && definition.ScoringProfiles.Any(x => x.Name == _config.DefaultScoringProfile))
             {
                 definition.DefaultScoringProfile = _config.DefaultScoringProfile;
             }

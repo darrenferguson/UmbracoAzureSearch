@@ -14,7 +14,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 		public AzureSearchScoringTextWeights Text { get; set; }
 		public List<AzureSearchScoringFunction> Functions { get; set; }
 
-		public ScoringProfile GetEffectiveScoringProfile()
+		public ScoringProfile GetScoringProfile()
 		{
 			return new ScoringProfile()
 			{
