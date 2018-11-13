@@ -14,11 +14,14 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using Moriyama.AzureSearch.Umbraco.Application.Extensions;
 using Umbraco.Web.Models;
+using log4net;
+using System.Reflection;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchIndexClient : BaseAzureSearch, IAzureSearchIndexClient
     {
+		private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private Dictionary<string, IComputedFieldParser> Parsers { get; set; }
         private const int DefaultBatchSize = 999;
 
@@ -231,6 +234,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public AzureSearchReindexStatus ReIndex(string filename, string sessionId, int page)
         {
+			string logPrefix = $"ReIndex: Filename: {filename}. Session: {sessionId}. Page: {page}";
+			_logger.Debug(logPrefix);
+
             var ids = GetIds(sessionId, filename);
             var conversionErrors = false;
             var failedDocumentConversionIds = new List<int>();
@@ -248,9 +254,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             {
                 result.DocumentsProcessed = ids.Length;
                 result.Finished = true;
+				_logger.Debug($"{logPrefix}. Result: {JsonConvert.SerializeObject(result)}");
                 return result;
             }
 
+			_logger.Debug($"{logPrefix}. Processing {ids.Length} items.");
             var documents = new List<Document>();
             var config = GetConfiguration();
 
@@ -272,7 +280,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                         }
                         catch (Exception ex)
                         {
-                            conversionErrors = true;
+							_logger.Debug($"{logPrefix}. Content {content.Id} conversion error: {ex}");
+							conversionErrors = true;
                             failedDocumentConversionIds.Add(content.Id);
                         }
                     }
@@ -297,7 +306,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                         }
                         catch (Exception ex)
                         {
-                            conversionErrors = true;
+							_logger.Debug($"{logPrefix}. Media {content.Id} conversion error: {ex}");
+							conversionErrors = true;
                             failedDocumentConversionIds.Add(content.Id);
                         }
                     }
@@ -308,7 +318,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 var contents = new List<IMember>();
 
                 foreach (var id in idsToProcess)
+				{
                     contents.Add(UmbracoContext.Current.Application.Services.MemberService.GetById(id));
+				}
 
                 foreach (var content in contents)
                 {
@@ -325,7 +337,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                         }
                         catch (Exception ex)
                         {
-                            conversionErrors = true;
+							_logger.Debug($"{logPrefix}. Member {content.Id} conversion error: {ex}");
+							conversionErrors = true;
                             failedDocumentConversionIds.Add(content.Id);
                         }
                     }
@@ -338,11 +351,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
 
             var indexStatus = IndexContentBatch(documents);
+			_logger.Debug($"{logPrefix}. AzureSearchIndexResult: {JsonConvert.SerializeObject(indexStatus)}");
 
             result.DocumentsProcessed = page * ReindexBatchSize;
 
             if (indexStatus.Success)
             {
+				_logger.Debug($"{logPrefix}. Result: {JsonConvert.SerializeObject(result)}");
                 return result;
             }
 
@@ -350,6 +365,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             result.Finished = true;
             result.Message += indexStatus.Message;
 
+			_logger.Debug($"{logPrefix}. Result: {JsonConvert.SerializeObject(result)}");
             return result;
         }
 
