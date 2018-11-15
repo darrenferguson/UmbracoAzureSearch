@@ -280,7 +280,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                         }
                         catch (Exception ex)
                         {
-							_logger.Debug($"{logPrefix}. Content {content.Id} conversion error: {ex}");
+							_logger.Warn($"{logPrefix}. Content {content.Id} conversion error: {ex}");
 							conversionErrors = true;
                             failedDocumentConversionIds.Add(content.Id);
                         }
@@ -306,7 +306,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                         }
                         catch (Exception ex)
                         {
-							_logger.Debug($"{logPrefix}. Media {content.Id} conversion error: {ex}");
+							_logger.Warn($"{logPrefix}. Media {content.Id} conversion error: {ex}");
 							conversionErrors = true;
                             failedDocumentConversionIds.Add(content.Id);
                         }
@@ -337,7 +337,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                         }
                         catch (Exception ex)
                         {
-							_logger.Debug($"{logPrefix}. Member {content.Id} conversion error: {ex}");
+							_logger.Warn($"{logPrefix}. Member {content.Id} conversion error: {ex}");
 							conversionErrors = true;
                             failedDocumentConversionIds.Add(content.Id);
                         }
