@@ -31,7 +31,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
     {
         public IContentBase Item { get; set; }
         public Document Entry { get; set; }
-
+		public string EventSource { get; set; }
         public bool Cancel { get; set; }
     }
 }

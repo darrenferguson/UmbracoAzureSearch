@@ -160,10 +160,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return ReIndex("member.json", sessionId, page);
         }
 
-        public void ReIndexContent(IContent content, bool raiseContentIndexingEvent = true)
+        public void ReIndexContent(IContent content, string eventArgsSource = null)
         {
             AzureSearchConfig config = GetConfiguration();
-            Document document = FromUmbracoContent(content, config.SearchFields, raiseContentIndexingEvent);
+            Document document = FromUmbracoContent(content, config.SearchFields, eventArgsSource);
 
             if (document != null)
             {
@@ -172,10 +172,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
         }
 
-        public void ReIndexContent(IMedia content, bool raiseContentIndexingEvent = true)
+        public void ReIndexContent(IMedia content, string eventArgsSource = null)
         {
             AzureSearchConfig config = GetConfiguration();
-            Document document = FromUmbracoMedia(content, config.SearchFields, raiseContentIndexingEvent);
+            Document document = FromUmbracoMedia(content, config.SearchFields, eventArgsSource);
 
             if (document != null)
             {
@@ -184,10 +184,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
         }
 
-		public void ReIndexMember(IMember content, bool raiseContentIndexingEvent = true)
+		public void ReIndexMember(IMember content, string eventArgsSource = null)
         {
             AzureSearchConfig config = GetConfiguration();
-            Document document = FromUmbracoMember(content, config.SearchFields, raiseContentIndexingEvent);
+            Document document = FromUmbracoMember(content, config.SearchFields, eventArgsSource);
 
             if (document != null)
             {
@@ -273,7 +273,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     {
                         try
                         {
-                            Document document = FromUmbracoContent(content, config.SearchFields, raiseContentIndexingEvent);
+                            Document document = FromUmbracoContent(content, config.SearchFields);
 
                             if (document != null)
                             {
@@ -299,7 +299,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     {
                         try
                         {
-                            Document document = FromUmbracoMedia(content, config.SearchFields, raiseContentIndexingEvent);
+                            Document document = FromUmbracoMedia(content, config.SearchFields);
 
                             if (document != null)
                             {
@@ -330,7 +330,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     {
                         try
                         {
-                            Document document = FromUmbracoMember(content, config.SearchFields, raiseContentIndexingEvent);
+                            Document document = FromUmbracoMember(content, config.SearchFields);
 
                             if (document != null)
                             {
@@ -377,9 +377,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return serviceClient.IndexContentBatch(_config.IndexName, contents);
         }
 
-        private Document FromUmbracoMember(IMember member, SearchField[] searchFields, bool raiseContentIndexingEvent)
+        private Document FromUmbracoMember(IMember member, SearchField[] searchFields, string eventArgsSource = null)
         {
-            var result = GetDocumentToIndex((ContentBase)member, searchFields, raiseContentIndexingEvent);
+            var result = GetDocumentToIndex((ContentBase)member, searchFields, eventArgsSource);
 
             if (result == null)
             {
@@ -401,9 +401,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document FromUmbracoMedia(IMedia content, SearchField[] searchFields, bool raiseContentIndexingEvent)
+        private Document FromUmbracoMedia(IMedia content, SearchField[] searchFields, string eventArgsSource = null)
         {
-            var result = GetDocumentToIndex((ContentBase)content, searchFields, raiseContentIndexingEvent);
+            var result = GetDocumentToIndex((ContentBase)content, searchFields, eventArgsSource);
 
             if (result == null)
             {
@@ -442,9 +442,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document FromUmbracoContent(IContent content, SearchField[] searchFields, bool raiseContentIndexingEvent)
+        private Document FromUmbracoContent(IContent content, SearchField[] searchFields, string eventArgsSource = null)
         {
-            var result = GetDocumentToIndex((ContentBase)content, searchFields, raiseContentIndexingEvent);
+            var result = GetDocumentToIndex((ContentBase)content, searchFields, eventArgsSource);
 
             if (result == null)
             {
@@ -482,7 +482,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document GetDocumentToIndex(IContentBase content, SearchField[] searchFields, bool raiseContentIndexingEvent)
+        private Document GetDocumentToIndex(IContentBase content, SearchField[] searchFields, string eventArgsSource = null)
         {
             var c = new Document
             {
@@ -497,20 +497,18 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {"Key", content.Key.ToString() }
             };
 
-			if (raiseContentIndexingEvent)
-			{
-				bool cancelIndex = AzureSearch.FireContentIndexing(
-					new AzureSearchEventArgs()
-					{
-						Item = content,
-						Entry = c
-					});
-
-				if (cancelIndex)
+			bool cancelIndex = AzureSearch.FireContentIndexing(
+				new AzureSearchEventArgs()
 				{
-					// cancel was set in an event, so we don't index this item. 
-					return null;
-				}
+					Item = content,
+					Entry = c,
+					EventSource = eventArgsSource
+				});
+
+			if (cancelIndex)
+			{
+				// cancel was set in an event, so we don't index this item. 
+				return null;
 			}
 
             var umbracoFields = searchFields.Where(x => !x.IsComputedField()).ToArray();
@@ -523,7 +521,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 new AzureSearchEventArgs()
                 {
                     Item = content,
-                    Entry = c
+                    Entry = c,
+					EventSource = eventArgsSource
                 });
 
             return c;

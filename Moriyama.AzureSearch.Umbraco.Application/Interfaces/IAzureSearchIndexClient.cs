@@ -20,12 +20,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         AzureSearchReindexStatus ReIndexContent(string sessionId, int page);
         AzureSearchReindexStatus ReIndexMedia(string sessionId, int page);
         AzureSearchReindexStatus ReIndexMember(string sessionId, int page);
-        
-        void ReIndexContent(IContent content, bool raiseContentIndexingEvent = true);
-        void ReIndexContent(IMedia content, bool raiseContentIndexingEvent = true);
-        void ReIndexMember(IMember content, bool raiseContentIndexingEvent = true);
 
-        void Delete(int id);
+		
+		void ReIndexContent(IContent content, string eventArgsSource = null);
+		void ReIndexContent(IMedia content, string eventArgsSource = null);
+		void ReIndexMember(IMember content, string eventArgsSource = null);
+
+		void Delete(int id);
 
     }
 }
