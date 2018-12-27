@@ -36,6 +36,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private bool _content;
         private bool _media;
+        private bool _member;
 
         private int _page;
         private int _pageSize;
@@ -80,10 +81,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             sp.IncludeTotalResultCount = true;
 
-			if (!String.IsNullOrEmpty(scoringProfile))
-			{
-				sp.ScoringProfile = scoringProfile;
-			}
+            if (!String.IsNullOrEmpty(scoringProfile))
+            {
+                sp.ScoringProfile = scoringProfile;
+            }
 
             sp.Top = _pageSize;
             sp.Skip = (_page - 1) * _pageSize;
@@ -104,7 +105,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             {
                 _filters.Add("IsMedia eq true");
             }
-
+            if (_member)
+            {
+                _filters.Add("IsMember eq true");
+            }
             if (_filters.Count == 0)
             {
                 return string.Empty;
@@ -119,10 +123,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return Results(sp);
         }
 
-		public ISearchResult Results(string scoringProfile)
+        public ISearchResult Results(string scoringProfile)
         {
             var sp = GetSearchParameters(scoringProfile);
-			return Results(sp);
+            return Results(sp);
         }
 
         private ISearchResult Results(SearchParameters sp)
@@ -130,10 +134,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var client = GetClient();
             var config = GetConfiguration();
             ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
-			var startTime = DateTime.UtcNow;
+            var startTime = DateTime.UtcNow;
             var response = indexClient.Documents.Search(_searchTerm, sp);
 
-			var processStartTime = DateTime.UtcNow;
+            var processStartTime = DateTime.UtcNow;
             var results = new Models.SearchResult();
 
             foreach (var result in response.Results)
@@ -160,11 +164,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 results.Count = (int)response.Count;
             }
 
-			if (config.LogSearchPerformance)
-			{
-				string lb = Environment.NewLine;
-				Log.Info($"AzureSearch Log (cached client){lb} - Response Duration: {(int)(processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int)(DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.BaseUri}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
-			}
+            if (config.LogSearchPerformance)
+            {
+                string lb = Environment.NewLine;
+                Log.Info($"AzureSearch Log (cached client){lb} - Response Duration: {(int)(processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int)(DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.BaseUri}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
+            }
             return results;
         }
 
@@ -179,7 +183,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             var t = searchContent.GetType();
             searchContent.Id = Convert.ToInt32(d["Id"]);
-            
+
             foreach (var key in d.Keys)
             {
                 var property = t.GetProperty(key);
@@ -244,7 +248,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             _media = true;
             return this;
         }
-
+        public IAzureSearchClient Member()
+        {
+            _member = true;
+            return this;
+        }
         public IAzureSearchClient PopulateContentProperties(bool populate)
         {
             _populateContentProperties = populate;
