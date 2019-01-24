@@ -9,7 +9,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
         IList<string> Filters { get; set; }
 
         ISearchResult Results();
-
+        ISearchResult Results(string scoringProfile);
         IAzureSearchClient Term(string query);
         IAzureSearchClient DocumentType(string typeAlias);
         IAzureSearchClient DocumentTypes(IEnumerable<string> typeAlias);
@@ -17,7 +17,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         IAzureSearchClient Content();
         IAzureSearchClient Media();
-
+        IAzureSearchClient Member();
         IAzureSearchClient Page(int page);
         IAzureSearchClient PageSize(int pageSize);
         IAzureSearchClient PopulateContentProperties(bool populate);

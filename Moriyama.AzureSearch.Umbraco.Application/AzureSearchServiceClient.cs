@@ -397,7 +397,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
 
             result.Add("Icon", member.ContentType.Icon);
-
+            //finished populating index items
+            AzureSearch.FireContentIndexed(
+            new AzureSearchEventArgs()
+            {
+                Item = member,
+                Entry = result
+            });
             return result;
         }
 
@@ -438,7 +444,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             result.Add("IsMember", false);
             result.Add("ContentTypeAlias", content.ContentType.Alias);
             result.Add("Icon", content.ContentType.Icon);
-
+            //finished populating index items
+            AzureSearch.FireContentIndexed(
+            new AzureSearchEventArgs()
+            {
+                Item = content,
+                Entry = result
+            });
             return result;
         }
 
@@ -478,7 +490,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 result.Add("Template", content.Template.Alias);
 
             result.Add("Icon", content.ContentType.Icon);
-
+            //finished populating index items
+            AzureSearch.FireContentIndexed(
+            new AzureSearchEventArgs()
+            {
+                Item = content,
+                Entry = result
+            });
             return result;
         }
 
@@ -517,7 +535,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             c = FromUmbracoContentBase(c, content, umbracoFields);
             c = FromComputedFields(c, content, computedFields);
 
-            AzureSearch.FireContentIndexed(
+          AzureSearch.FireContentIndexed(
                 new AzureSearchEventArgs()
                 {
                     Item = content,
