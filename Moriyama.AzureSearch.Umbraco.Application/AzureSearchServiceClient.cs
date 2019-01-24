@@ -160,10 +160,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return ReIndex("member.json", sessionId, page);
         }
 
-        public void ReIndexContent(IContent content)
+        public void ReIndexContent(IContent content, string eventArgsSource = null)
         {
             AzureSearchConfig config = GetConfiguration();
-            Document document = FromUmbracoContent(content, config.SearchFields);
+            Document document = FromUmbracoContent(content, config.SearchFields, eventArgsSource);
 
             if (document != null)
             {
@@ -172,10 +172,22 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             }
         }
 
-        public void ReIndexContent(IMedia content)
+        public void ReIndexContent(IMedia content, string eventArgsSource = null)
         {
             AzureSearchConfig config = GetConfiguration();
-            Document document = FromUmbracoMedia(content, config.SearchFields);
+            Document document = FromUmbracoMedia(content, config.SearchFields, eventArgsSource);
+
+            if (document != null)
+            {
+                List<Document> documents = new List<Document>() { document };
+                IndexContentBatch(documents);
+            }
+        }
+
+		public void ReIndexMember(IMember content, string eventArgsSource = null)
+        {
+            AzureSearchConfig config = GetConfiguration();
+            Document document = FromUmbracoMember(content, config.SearchFields, eventArgsSource);
 
             if (document != null)
             {
@@ -219,18 +231,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             result.Success = true;
         }
-
-        public void ReIndexMember(IMember content)
-        {
-            AzureSearchConfig config = GetConfiguration();
-            Document document = FromUmbracoMember(content, config.SearchFields);
-
-            if (document != null)
-            {
-                List<Document> documents = new List<Document>() { document };
-                IndexContentBatch(documents);
-            }
-        }
+		
 
         public AzureSearchReindexStatus ReIndex(string filename, string sessionId, int page)
         {
@@ -261,6 +262,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 			_logger.Debug($"{logPrefix}. Processing {ids.Length} items.");
             var documents = new List<Document>();
             var config = GetConfiguration();
+			bool raiseContentIndexingEvent = true; //Trigger all events on reindexing multiple
 
             if (filename == "content.json")
             {
@@ -375,9 +377,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return serviceClient.IndexContentBatch(_config.IndexName, contents);
         }
 
-        private Document FromUmbracoMember(IMember member, SearchField[] searchFields)
+        private Document FromUmbracoMember(IMember member, SearchField[] searchFields, string eventArgsSource = null)
         {
-            var result = GetDocumentToIndex((ContentBase)member, searchFields);
+            var result = GetDocumentToIndex((ContentBase)member, searchFields, eventArgsSource);
 
             if (result == null)
             {
@@ -405,9 +407,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document FromUmbracoMedia(IMedia content, SearchField[] searchFields)
+        private Document FromUmbracoMedia(IMedia content, SearchField[] searchFields, string eventArgsSource = null)
         {
-            var result = GetDocumentToIndex((ContentBase)content, searchFields);
+            var result = GetDocumentToIndex((ContentBase)content, searchFields, eventArgsSource);
 
             if (result == null)
             {
@@ -452,9 +454,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document FromUmbracoContent(IContent content, SearchField[] searchFields)
+        private Document FromUmbracoContent(IContent content, SearchField[] searchFields, string eventArgsSource = null)
         {
-            var result = GetDocumentToIndex((ContentBase)content, searchFields);
+            var result = GetDocumentToIndex((ContentBase)content, searchFields, eventArgsSource);
 
             if (result == null)
             {
@@ -498,7 +500,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return result;
         }
 
-        private Document GetDocumentToIndex(IContentBase content, SearchField[] searchFields)
+        private Document GetDocumentToIndex(IContentBase content, SearchField[] searchFields, string eventArgsSource = null)
         {
             var c = new Document
             {
@@ -513,24 +515,33 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 {"Key", content.Key.ToString() }
             };
 
-            bool cancelIndex = AzureSearch.FireContentIndexing(
-                new AzureSearchEventArgs()
-                {
-                    Item = content,
-                    Entry = c
-                });
+			bool cancelIndex = AzureSearch.FireContentIndexing(
+				new AzureSearchEventArgs()
+				{
+					Item = content,
+					Entry = c,
+					EventSource = eventArgsSource
+				});
 
-            if (cancelIndex)
-            {
-                // cancel was set in an event, so we don't index this item. 
-                return null;
-            }
+			if (cancelIndex)
+			{
+				// cancel was set in an event, so we don't index this item. 
+				return null;
+			}
 
             var umbracoFields = searchFields.Where(x => !x.IsComputedField()).ToArray();
             var computedFields = searchFields.Where(x => x.IsComputedField()).ToArray();
 
             c = FromUmbracoContentBase(c, content, umbracoFields);
             c = FromComputedFields(c, content, computedFields);
+
+          AzureSearch.FireContentIndexed(
+                new AzureSearchEventArgs()
+                {
+                    Item = content,
+                    Entry = c,
+					EventSource = eventArgsSource
+                });
 
             return c;
         }

@@ -170,6 +170,7 @@
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="MiniProfiler, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b44f9351044011a3, processorArchitecture=MSIL">
       <HintPath>..\packages\MiniProfiler.2.1.0\lib\net40\MiniProfiler.dll</HintPath>
@@ -327,10 +328,14 @@
     <Content Include="Config\umbracoSettings.config" />
     <Content Include="Config\trees.config" />
     <Content Include="Config\tinyMceConfig.config" />
-    <Content Include="Config\log4net.config" />
+    <Content Include="Config\log4net.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Config\ExamineIndex.config" />
     <Content Include="Config\Dashboard.config" />
-    <Content Include="Config\AzureSearch.config" />
+    <Content Include="Config\AzureSearch.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="App_Plugins\MoriyamaAzureSearch\package.manifest" />
     <Content Include="Views\BlogOverview.cshtml" />
     <Content Include="Views\BlogPost.cshtml" />
@@ -350,7 +355,6 @@
     <Content Include="Views\Partials\Grid\Editors\Rte.cshtml" />
     <Content Include="Views\Partials\Grid\Editors\Macro.cshtml" />
     <Content Include="Views\Partials\Grid\Editors\Base.cshtml" />
-    <Content Include="Media\Web.config" />
     <Content Include="Config\scripting.config" />
     <Content Include="Config\metablogConfig.config" />
     <Content Include="Config\HealthChecks.config" />
@@ -363,6 +367,12 @@
     <Content Include="Config\BackOfficeTours\getting-started.json" />
     <Content Include="Config\applications.config" />
     <Content Include="Config\404handlers.config" />
+    <Content Include="Config\imageprocessor\security.config" />
+    <Content Include="Config\imageprocessor\processing.config" />
+    <Content Include="Config\imageprocessor\cache.config" />
+    <Content Include="Views\Partials\Grid\Bootstrap3-Fluid.cshtml" />
+    <Content Include="Views\Partials\Grid\Bootstrap2-Fluid.cshtml" />
+    <Content Include="Media\Web.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
