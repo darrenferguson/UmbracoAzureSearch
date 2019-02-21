@@ -4,6 +4,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 {
     public class AzureSearchConfig
     {
+        public bool DisableIndexingOnUmbracoEvents { get; set; }
         public string SearchServiceName { get; set; }
 
         public string SearchServiceAdminApiKey { get; set; }
