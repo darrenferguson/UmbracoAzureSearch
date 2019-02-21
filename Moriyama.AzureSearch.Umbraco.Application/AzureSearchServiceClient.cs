@@ -100,7 +100,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                     from cmsContent, umbracoNode where
                     cmsContent.nodeId = umbracoNode.id and
                     umbracoNode.nodeObjectType = 'C66BA18E-EAF3-4CFF-8A22-41B16D66A972'
- and umbracoNode.[trashed] = 0");
+ 		    and umbracoNode.[trashed] = 0");
 
                 mediaIds = db.Fetch<int>(@"select distinct cmsContent.NodeId
                     from cmsContent, umbracoNode where
