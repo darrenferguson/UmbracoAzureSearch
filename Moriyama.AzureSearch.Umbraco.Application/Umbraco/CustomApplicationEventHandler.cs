@@ -9,6 +9,8 @@ using Umbraco.Core.Models;
 using Umbraco.Core.Publishing;
 using Umbraco.Core.Services;
 using Newtonsoft.Json;
+using Umbraco.Web;
+
 namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 {
     public class CustomApplicationEventHandler : ApplicationEventHandler
@@ -77,12 +79,22 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             }
         }
 
+        private void SetARequestVariableIfScheduledPublishing(string id)
+        {
+            UmbracoContext.Current.HttpContext.Items.Add("contentIdPublishing", id);
+        }
+
         private void ContentServiceSaved(IContentService sender, SaveEventArgs<IContent> e)
         {
             var azureSearchServiceClient = AzureSearchContext.Instance.SearchIndexClient;
 
             foreach (var entity in e.SavedEntities)
             {
+
+                if (HttpContext.Current == null)
+                {
+                    SetARequestVariableIfScheduledPublishing(entity.Id.ToString());
+                }
                 azureSearchServiceClient.ReIndexContent(entity);
             }
         }

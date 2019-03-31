@@ -206,7 +206,7 @@
     <Reference Include="TidyNet, Version=1.0.0.0, Culture=neutral">
       <HintPath>..\packages\UmbracoCms.Core.7.12.2\lib\net45\TidyNet.dll</HintPath>
     </Reference>
-    <Reference Include="umbraco, Version=1.0.6820.12888, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="umbraco">
       <HintPath>..\packages\UmbracoCms.Core.7.12.2\lib\net45\umbraco.dll</HintPath>
     </Reference>
     <Reference Include="Umbraco.Core, Version=1.0.6820.12881, Culture=neutral, processorArchitecture=MSIL">
