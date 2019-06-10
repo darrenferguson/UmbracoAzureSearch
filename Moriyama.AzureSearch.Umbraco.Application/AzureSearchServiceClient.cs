@@ -96,6 +96,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             using (var db = new UmbracoDatabase("umbracoDbDSN"))
             {
+
                 contentIds = db.Fetch<int>(@"select distinct cmsContent.NodeId
                     from cmsContent, umbracoNode where
                     cmsContent.nodeId = umbracoNode.id and
@@ -166,7 +167,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             AzureSearchConfig config = GetConfiguration();
             Document document = FromUmbracoContent(content, config.SearchFields, eventArgsSource);
 
-            if (document != null)
+            if (document != null && !IsIgnored(content, config))
             {
                 List<Document> documents = new List<Document>() { document };
                 IndexContentBatch(documents);
@@ -270,7 +271,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 var contents = UmbracoContext.Current.Application.Services.ContentService.GetByIds(idsToProcess);
                 foreach (var content in contents)
                 {
-                    if (content != null)
+                    if (content != null && !IsIgnored(content, config))
                     {
                         try
                         {
@@ -370,6 +371,29 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
 			_logger.Debug($"{logPrefix}. Result: {JsonConvert.SerializeObject(result)}");
             return result;
+        }
+
+        private bool IsIgnored(IContent content, AzureSearchConfig config)
+        {
+            try
+            {
+                foreach (var id in config.FoldersToIgnoreArray)
+                {
+                    foreach (var pathId in content.Path.Split(','))
+                    {
+                        if (pathId == id)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                _logger.Debug(exception);
+            }
+
+            return false;
         }
 
         private AzureSearchIndexResult IndexContentBatch(IEnumerable<Document> contents)

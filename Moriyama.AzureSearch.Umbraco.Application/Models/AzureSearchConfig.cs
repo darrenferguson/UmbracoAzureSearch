@@ -22,6 +22,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 		public List<AzureSearchSuggester> Suggesters { get; set; }
 
 		public int ReIndexBatchSize { get; set; }
+		public string FoldersToIgnore { get; set; }
+		public string[] FoldersToIgnoreArray
+        {
+            get { return FoldersToIgnore.Split(','); }
+        }
 
 
 		
