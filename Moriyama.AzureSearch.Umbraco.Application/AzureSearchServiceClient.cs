@@ -237,140 +237,155 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public AzureSearchReindexStatus ReIndex(string filename, string sessionId, int page)
         {
-			string logPrefix = $"ReIndex: Filename: {filename}. Session: {sessionId}. Page: {page}";
-			_logger.Debug(logPrefix);
-
-            var ids = GetIds(sessionId, filename);
-            var conversionErrors = false;
-            var failedDocumentConversionIds = new List<int>();
-
-            var result = new AzureSearchReindexStatus
+            try
             {
-                SessionId = sessionId,
-                DocumentCount = ids.Length,
-                Message = string.Empty
-            };
+                string logPrefix = $"ReIndex: Filename: {filename}. Session: {sessionId}. Page: {page}";
+                _logger.Debug(logPrefix);
 
-            var idsToProcess = Page(ids, page);
+                var ids = GetIds(sessionId, filename);
+                var conversionErrors = false;
+                var failedDocumentConversionIds = new List<int>();
 
-            if (!idsToProcess.Any())
-            {
-                result.DocumentsProcessed = ids.Length;
+                var result = new AzureSearchReindexStatus
+                {
+                    SessionId = sessionId,
+                    DocumentCount = ids.Length,
+                    Message = string.Empty
+                };
+
+                var idsToProcess = Page(ids, page);
+
+                if (!idsToProcess.Any())
+                {
+                    result.DocumentsProcessed = ids.Length;
+                    result.Finished = true;
+                    _logger.Debug($"{logPrefix}. Result: {JsonConvert.SerializeObject(result)}");
+                    return result;
+                }
+
+                _logger.Debug($"{logPrefix}. Processing {ids.Length} items.");
+                var documents = new List<Document>();
+                var config = GetConfiguration();
+                bool raiseContentIndexingEvent = true; //Trigger all events on reindexing multiple
+
+                if (filename == "content.json")
+                {
+                    var contents = UmbracoContext.Current.Application.Services.ContentService.GetByIds(idsToProcess);
+                    foreach (var content in contents)
+                    {
+                        if (content != null && !IsIgnored(content, config))
+                        {
+                            try
+                            {
+                                Document document = FromUmbracoContent(content, config.SearchFields);
+
+                                if (document != null)
+                                {
+                                    documents.Add(document);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Warn($"{logPrefix}. Content {content.Id} conversion error: {ex}");
+                                conversionErrors = true;
+                                failedDocumentConversionIds.Add(content.Id);
+                            }
+                        }
+                    }
+                }
+                else if (filename == "media.json")
+                {
+                    var contents = UmbracoContext.Current.Application.Services.MediaService.GetByIds(idsToProcess);
+
+                    foreach (var content in contents)
+                    {
+                        if (content != null)
+                        {
+                            try
+                            {
+                                Document document = FromUmbracoMedia(content, config.SearchFields);
+
+                                if (document != null)
+                                {
+                                    documents.Add(document);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Warn($"{logPrefix}. Media {content.Id} conversion error: {ex}");
+                                conversionErrors = true;
+                                failedDocumentConversionIds.Add(content.Id);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    var contents = new List<IMember>();
+
+                    foreach (var id in idsToProcess)
+                    {
+                        contents.Add(UmbracoContext.Current.Application.Services.MemberService.GetById(id));
+                    }
+
+                    foreach (var content in contents)
+                    {
+                        if (content != null)
+                        {
+                            try
+                            {
+                                Document document = FromUmbracoMember(content, config.SearchFields);
+
+                                if (document != null)
+                                {
+                                    documents.Add(document);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Warn($"{logPrefix}. Member {content.Id} conversion error: {ex}");
+                                conversionErrors = true;
+                                failedDocumentConversionIds.Add(content.Id);
+                            }
+                        }
+                    }
+                }
+
+                if (conversionErrors)
+                {
+                    result.Message +=
+                        $"Failed to convert Umbraco content to Azure search documents: {string.Join(", ", failedDocumentConversionIds)}\n";
+                }
+
+                var indexStatus = IndexContentBatch(documents);
+                _logger.Debug($"{logPrefix}. AzureSearchIndexResult: {JsonConvert.SerializeObject(indexStatus)}");
+
+                result.DocumentsProcessed = page * ReindexBatchSize;
+
+                if (indexStatus.Success)
+                {
+                    _logger.Debug($"{logPrefix}. Result: {JsonConvert.SerializeObject(result)}");
+                    return result;
+                }
+
+                result.Error = true;
                 result.Finished = true;
-				_logger.Debug($"{logPrefix}. Result: {JsonConvert.SerializeObject(result)}");
+                result.Message += indexStatus.Message;
+
+                _logger.Debug($"{logPrefix}. Result: {JsonConvert.SerializeObject(result)}");
                 return result;
+
             }
-
-			_logger.Debug($"{logPrefix}. Processing {ids.Length} items.");
-            var documents = new List<Document>();
-            var config = GetConfiguration();
-			bool raiseContentIndexingEvent = true; //Trigger all events on reindexing multiple
-
-            if (filename == "content.json")
+            catch (Exception exception)
             {
-                var contents = UmbracoContext.Current.Application.Services.ContentService.GetByIds(idsToProcess);
-                foreach (var content in contents)
+                return  new AzureSearchReindexStatus
                 {
-                    if (content != null && !IsIgnored(content, config))
-                    {
-                        try
-                        {
-                            Document document = FromUmbracoContent(content, config.SearchFields);
-
-                            if (document != null)
-                            {
-                                documents.Add(document);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-							_logger.Warn($"{logPrefix}. Content {content.Id} conversion error: {ex}");
-							conversionErrors = true;
-                            failedDocumentConversionIds.Add(content.Id);
-                        }
-                    }
-                }
+                    SessionId = sessionId,
+                    DocumentCount =0,
+                    Message = string.Empty,
+                    Finished = false
+                };
             }
-            else if (filename == "media.json")
-            {
-                var contents = UmbracoContext.Current.Application.Services.MediaService.GetByIds(idsToProcess);
-
-                foreach (var content in contents)
-                {
-                    if (content != null)
-                    {
-                        try
-                        {
-                            Document document = FromUmbracoMedia(content, config.SearchFields);
-
-                            if (document != null)
-                            {
-                                documents.Add(document);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-							_logger.Warn($"{logPrefix}. Media {content.Id} conversion error: {ex}");
-							conversionErrors = true;
-                            failedDocumentConversionIds.Add(content.Id);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                var contents = new List<IMember>();
-
-                foreach (var id in idsToProcess)
-				{
-                    contents.Add(UmbracoContext.Current.Application.Services.MemberService.GetById(id));
-				}
-
-                foreach (var content in contents)
-                {
-                    if (content != null)
-                    {
-                        try
-                        {
-                            Document document = FromUmbracoMember(content, config.SearchFields);
-
-                            if (document != null)
-                            {
-                                documents.Add(document);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-							_logger.Warn($"{logPrefix}. Member {content.Id} conversion error: {ex}");
-							conversionErrors = true;
-                            failedDocumentConversionIds.Add(content.Id);
-                        }
-                    }
-                }
-            }
-
-            if (conversionErrors)
-            {
-                result.Message += $"Failed to convert Umbraco content to Azure search documents: {string.Join(", ", failedDocumentConversionIds)}\n";
-            }
-
-            var indexStatus = IndexContentBatch(documents);
-			_logger.Debug($"{logPrefix}. AzureSearchIndexResult: {JsonConvert.SerializeObject(indexStatus)}");
-
-            result.DocumentsProcessed = page * ReindexBatchSize;
-
-            if (indexStatus.Success)
-            {
-				_logger.Debug($"{logPrefix}. Result: {JsonConvert.SerializeObject(result)}");
-                return result;
-            }
-
-            result.Error = true;
-            result.Finished = true;
-            result.Message += indexStatus.Message;
-
-			_logger.Debug($"{logPrefix}. Result: {JsonConvert.SerializeObject(result)}");
-            return result;
         }
 
         private bool IsIgnored(IContent content, AzureSearchConfig config)
