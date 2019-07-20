@@ -25,7 +25,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
                     break;
             }
 
-            var f = new Field()
+            var f = new Field(field.Name, dataType:t)
             {
                 Name = field.Name,
                 Type = t,

@@ -8,6 +8,8 @@ using System.Linq;
 using log4net;
 using System.Reflection;
 using System.Web;
+using StackExchange.Profiling;
+using umbraco;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
@@ -73,25 +75,29 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private SearchParameters GetSearchParameters(string scoringProfile = null)
         {
-            var sp = new SearchParameters()
+            var profiler = MiniProfiler.Current;
+            using (profiler.Step($"Calling GetSearchParameters"))
             {
-                Filter = ResolveFilter(),
-                SearchMode = this._searchMode
-            };
+                var sp = new SearchParameters()
+                {
+                    Filter = ResolveFilter(),
+                    SearchMode = this._searchMode
+                };
 
-            sp.IncludeTotalResultCount = true;
+                sp.IncludeTotalResultCount = true;
 
-            if (!String.IsNullOrEmpty(scoringProfile))
-            {
-                sp.ScoringProfile = scoringProfile;
+                if (!String.IsNullOrEmpty(scoringProfile))
+                {
+                    sp.ScoringProfile = scoringProfile;
+                }
+
+                sp.Top = _pageSize;
+                sp.Skip = (_page - 1) * _pageSize;
+                sp.OrderBy = _orderBy;
+                sp.Facets = _facets;
+
+                return sp;
             }
-
-            sp.Top = _pageSize;
-            sp.Skip = (_page - 1) * _pageSize;
-            sp.OrderBy = _orderBy;
-            sp.Facets = _facets;
-
-            return sp;
         }
 
         private string ResolveFilter()
@@ -119,8 +125,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public ISearchResult Results()
         {
-            var sp = GetSearchParameters();
-            return Results(sp);
+            var profiler = MiniProfiler.Current;
+            using (profiler.Step(  $"Calling results"))
+            {
+                var sp = GetSearchParameters();
+                return Results(sp);
+            }
         }
 
         public ISearchResult Results(string scoringProfile)
@@ -131,86 +141,107 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private ISearchResult Results(SearchParameters sp)
         {
-            var client = GetClient();
-            var config = GetConfiguration();
-            ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
-            var startTime = DateTime.UtcNow;
-            var response = indexClient.Documents.Search(_searchTerm, sp);
-
-            var processStartTime = DateTime.UtcNow;
-            var results = new Models.SearchResult();
-
-            foreach (var result in response.Results)
+            var profiler = MiniProfiler.Current;
+            using (profiler.Step($"Calling Results(SearchParameters sp)"))
             {
-                results.Content.Add(FromDocument(result.Document, result.Score));
-            }
+                var client = GetClient();
+                var config = GetConfiguration();
 
-            if (response.Facets != null)
-            {
-                foreach (var facet in response.Facets)
+                ISearchIndexClient indexClient = null;
+                using (profiler.Step($"Calling client.Indexes.GetClient"))
                 {
-                    var searchFacet = new SearchFacet()
-                    {
-                        Name = facet.Key,
-                        Items = facet.Value.Select(x => new KeyValuePair<string, long>(x.Value.ToString(), x.Count.HasValue ? x.Count.Value : 0))
-                    };
-
-                    results.Facets.Add(searchFacet);
+                    indexClient = client.Indexes.GetClient(config.IndexName);
                 }
-            }
 
-            if (response.Count != null)
-            {
-                results.Count = (int)response.Count;
-            }
+                var startTime = DateTime.UtcNow;
 
-            if (config.LogSearchPerformance)
-            {
-                string lb = Environment.NewLine;
-                Log.Info($"AzureSearch Log (cached client){lb} - Response Duration: {(int)(processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int)(DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.BaseUri}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
+              
+                   var response = indexClient.Documents.Search(_searchTerm, sp);
+                
+        
+                var processStartTime = DateTime.UtcNow;
+                var results = new Models.SearchResult();
+
+                foreach (var result in response.Results)
+                {
+                    results.Content.Add(FromDocument(result.Document, result.Score));
+                }
+
+                if (response.Facets != null)
+                {
+                    foreach (var facet in response.Facets)
+                    {
+                        var searchFacet = new SearchFacet()
+                        {
+                            Name = facet.Key,
+                            Items = facet.Value.Select(x =>
+                                new KeyValuePair<string, long>(x.Value.ToString(),
+                                    x.Count.HasValue ? x.Count.Value : 0))
+                        };
+
+                        results.Facets.Add(searchFacet);
+                    }
+                }
+
+                if (response.Count != null)
+                {
+                    results.Count = (int) response.Count;
+                }
+
+                if (config.LogSearchPerformance)
+                {
+                    string lb = Environment.NewLine;
+                    Log.Info(
+                        $"AzureSearch Log (cached client){lb} - Response Duration: {(int) (processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int) (DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.SearchServiceName}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
+                }
+
+                return results;
             }
-            return results;
         }
 
         private ISearchContent FromDocument(Document d, double score)
         {
-            var searchContent = new SearchContent
+            var profiler = MiniProfiler.Current;
+            using (profiler.Step($"Calling FromDocument"))
             {
-                Properties = new Dictionary<string, object>()
-            };
-
-            searchContent.Score = score;
-
-            var t = searchContent.GetType();
-            searchContent.Id = Convert.ToInt32(d["Id"]);
-
-            foreach (var key in d.Keys)
-            {
-                var property = t.GetProperty(key);
-                if (property == null && _populateContentProperties)
+                var searchContent = new SearchContent
                 {
-                    searchContent.Properties.Add(key, d[key]);
-                }
-                else if (property != null && (property.CanWrite && property.Name != "Id"))
+                    Properties = new Dictionary<string, object>()
+                };
+
+                searchContent.Score = score;
+
+                var t = searchContent.GetType();
+                searchContent.Id = Convert.ToInt32(d["Id"]);
+
+                foreach (var key in d.Keys)
                 {
+                    var property = t.GetProperty(key);
+                    if (property == null && _populateContentProperties)
+                    {
+                        searchContent.Properties.Add(key, d[key]);
+                    }
+                    else if (property != null && (property.CanWrite && property.Name != "Id"))
+                    {
 
-                    object val = d[key];
+                        object val = d[key];
 
-                    if (val == null)
-                        continue;
+                        if (val == null)
+                            continue;
 
-                    if (val is long)
-                        val = Convert.ToInt32(val);
+                        if (val is long)
+                            val = Convert.ToInt32(val);
 
-                    if (val is DateTimeOffset)
-                        val = ((DateTimeOffset)val).DateTime;
+                        if (val is DateTimeOffset)
+                            val = ((DateTimeOffset) val).DateTime;
 
-                    if (property.PropertyType == val.GetType())
-                        property.SetValue(searchContent, val);
+                        if (property.PropertyType == val.GetType())
+                            property.SetValue(searchContent, val);
+                    }
                 }
+
+                return searchContent;
             }
-
-            return searchContent;
         }
 
         public IAzureSearchClient Term(string query)
@@ -414,22 +445,22 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return FilterManyValues(field, values.Select(x => x.ToString()).ToArray());
         }
 
-        public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
-        {
-            var client = GetClient();
-            var config = GetConfiguration();
+        //public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
+        //{
+        //    var client = GetClient();
+        //    var config = GetConfiguration();
 
-            ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
+        //    ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
 
-            SuggestParameters sp = new SuggestParameters()
-            {
-                UseFuzzyMatching = fuzzy,
-                Top = count,
-                Filter = ResolveFilter()
-            };
+        //    SuggestParameters sp = new SuggestParameters()
+        //    {
+        //        UseFuzzyMatching = fuzzy,
+        //        Top = count,
+        //        Filter = ResolveFilter()
+        //    };
 
-            return indexClient.Documents.Suggest(value, "sg", sp).Results;
-        }
+        //    return indexClient.Documents.Suggest(value, "sg", sp).Results;
+        //}
 
         public IAzureSearchClient SearchMode(SearchMode searchMode)
         {

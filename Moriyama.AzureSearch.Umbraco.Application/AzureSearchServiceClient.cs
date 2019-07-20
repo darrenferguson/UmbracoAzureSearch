@@ -55,7 +55,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 Name = _config.IndexName,
                 Fields = customFields,
                 ScoringProfiles = _config.ScoringProfiles?.Select(x => x.GetScoringProfile()).ToList(),
-				Suggesters = _config.Suggesters?.Select(x => x.GetSuggester()).ToList()
+				Suggesters = null //_config.Suggesters?.Select(x => x.GetSuggester()).ToList()
             };
 
             if (!String.IsNullOrEmpty(_config.DefaultScoringProfile) && definition.ScoringProfiles != null && definition.ScoringProfiles.Any(x => x.Name == _config.DefaultScoringProfile))
@@ -204,7 +204,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
             var serviceClient = GetClient();
 
-            var actions = new List<IndexAction>();
+            var actions = new List<IndexAction<Document>>();
             var d = new Document();
             d.Add("Id", id.ToString());
 

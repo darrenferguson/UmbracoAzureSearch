@@ -20,7 +20,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
 				return result;
 			}
             
-            var actions = new List<IndexAction>();
+            var actions = new List<IndexAction<Document>>();
             foreach (var content in contents)
             {
                 actions.Add(IndexAction.Upload(content));
