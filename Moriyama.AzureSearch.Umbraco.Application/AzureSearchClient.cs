@@ -48,7 +48,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public AzureSearchClient(string path) : base(path)
         {
             _pageSize = 999;
-            _page = 1;
+            _page = 0;
             _filters = new List<string>();
             _orderBy = new List<string>();
             _facets = new List<string>();
@@ -92,7 +92,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 }
 
                 sp.Top = _pageSize;
-                sp.Skip = (_page - 1) * _pageSize;
+                sp.Skip = _page * _pageSize;
                 sp.OrderBy = _orderBy;
                 sp.Facets = _facets;
 
