@@ -144,59 +144,73 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var profiler = MiniProfiler.Current;
             using (profiler.Step($"Calling Results(SearchParameters sp)"))
             {
-                var client = GetClient();
-                var config = GetConfiguration();
-
                 ISearchIndexClient indexClient = null;
-                using (profiler.Step($"Calling client.Indexes.GetClient"))
+                SearchServiceClient client = null;
+                try
                 {
+
+                   
+                    client = GetClient();
+
+                    var config = GetConfiguration();
+                    
+                  
                     indexClient = client.Indexes.GetClient(config.IndexName);
-                }
 
-                var startTime = DateTime.UtcNow;
 
-              
-                   var response = indexClient.Documents.Search(_searchTerm, sp);
-                
-        
-                var processStartTime = DateTime.UtcNow;
-                var results = new Models.SearchResult();
+                    var startTime = DateTime.UtcNow;
 
-                foreach (var result in response.Results)
-                {
-                    results.Content.Add(FromDocument(result.Document, result.Score));
-                }
 
-                if (response.Facets != null)
-                {
-                    foreach (var facet in response.Facets)
+                    var response = indexClient.Documents.Search(_searchTerm, sp);
+
+
+                    var processStartTime = DateTime.UtcNow;
+                    var results = new Models.SearchResult();
+
+                    foreach (var result in response.Results)
                     {
-                        var searchFacet = new SearchFacet()
-                        {
-                            Name = facet.Key,
-                            Items = facet.Value.Select(x =>
-                                new KeyValuePair<string, long>(x.Value.ToString(),
-                                    x.Count.HasValue ? x.Count.Value : 0))
-                        };
-
-                        results.Facets.Add(searchFacet);
+                        results.Content.Add(FromDocument(result.Document, result.Score));
                     }
-                }
 
-                if (response.Count != null)
+                    if (response.Facets != null)
+                    {
+                        foreach (var facet in response.Facets)
+                        {
+                            var searchFacet = new SearchFacet()
+                            {
+                                Name = facet.Key,
+                                Items = facet.Value.Select(x =>
+                                    new KeyValuePair<string, long>(x.Value.ToString(),
+                                        x.Count.HasValue ? x.Count.Value : 0))
+                            };
+
+                            results.Facets.Add(searchFacet);
+                        }
+                    }
+
+                    if (response.Count != null)
+                    {
+                        results.Count = (int) response.Count;
+                    }
+
+                    if (config.LogSearchPerformance)
+                    {
+                        string lb = Environment.NewLine;
+                        Log.Info(
+                            $"AzureSearch Log (cached client){lb} - Response Duration: {(int) (processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int) (DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.SearchServiceName}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
+                    }
+
+                    return results;
+                }
+                finally
                 {
-                    results.Count = (int) response.Count;
+                    client.Dispose();
+
+                    indexClient.Dispose();
                 }
 
-                if (config.LogSearchPerformance)
-                {
-                    string lb = Environment.NewLine;
-                    Log.Info(
-                        $"AzureSearch Log (cached client){lb} - Response Duration: {(int) (processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int) (DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.SearchServiceName}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
-                }
-
-                return results;
             }
+            
         }
 
         private ISearchContent FromDocument(Document d, double score)

@@ -39,47 +39,52 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public string DropCreateIndex()
         {
-            var serviceClient = GetClient();
-            var indexes = serviceClient.Indexes.List().Indexes;
-
-            foreach (var index in indexes)
-                if (index.Name == _config.IndexName)
-                    serviceClient.Indexes.Delete(_config.IndexName);
-
-            var customFields = new List<Field>();
-            customFields.AddRange(GetStandardUmbracoFields());
-            customFields.AddRange(_config.SearchFields.Select(x => x.ToAzureField()));
-
-            var definition = new Index
+            using (var serviceClient = GetClient())
             {
-                Name = _config.IndexName,
-                Fields = customFields,
-                ScoringProfiles = _config.ScoringProfiles?.Select(x => x.GetScoringProfile()).ToList(),
-				Suggesters = null //_config.Suggesters?.Select(x => x.GetSuggester()).ToList()
-            };
+                var indexes = serviceClient.Indexes.List().Indexes;
 
-            if (!String.IsNullOrEmpty(_config.DefaultScoringProfile) && definition.ScoringProfiles != null && definition.ScoringProfiles.Any(x => x.Name == _config.DefaultScoringProfile))
-            {
-                definition.DefaultScoringProfile = _config.DefaultScoringProfile;
+                foreach (var index in indexes)
+                    if (index.Name == _config.IndexName)
+                        serviceClient.Indexes.Delete(_config.IndexName);
+
+                var customFields = new List<Field>();
+                customFields.AddRange(GetStandardUmbracoFields());
+                customFields.AddRange(_config.SearchFields.Select(x => x.ToAzureField()));
+
+                var definition = new Index
+                {
+                    Name = _config.IndexName,
+                    Fields = customFields,
+                    ScoringProfiles = _config.ScoringProfiles?.Select(x => x.GetScoringProfile()).ToList(),
+                    Suggesters = null //_config.Suggesters?.Select(x => x.GetSuggester()).ToList()
+                };
+
+                if (!String.IsNullOrEmpty(_config.DefaultScoringProfile) && definition.ScoringProfiles != null &&
+                    definition.ScoringProfiles.Any(x => x.Name == _config.DefaultScoringProfile))
+                {
+                    definition.DefaultScoringProfile = _config.DefaultScoringProfile;
+                }
+
+                try
+                {
+                    serviceClient.Indexes.Create(definition);
+                }
+                catch (Exception ex)
+                {
+                    return ex.Message;
+                }
+
+                return "Index created";
             }
-
-            try
-            {
-                serviceClient.Indexes.Create(definition);
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-
-            return "Index created";
         }
 
         public Index[] GetSearchIndexes()
         {
-            var serviceClient = GetClient();
-            var indexes = serviceClient.Indexes.List().Indexes;
-            return indexes.ToArray();
+            using (var serviceClient = GetClient())
+            {
+                var indexes = serviceClient.Indexes.List().Indexes;
+                return indexes.ToArray();
+            }
         }
 
         private void EnsurePath(string path)
@@ -202,36 +207,39 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         {
             var result = new AzureSearchIndexResult();
 
-            var serviceClient = GetClient();
-
-            var actions = new List<IndexAction<Document>>();
-            var d = new Document();
-            d.Add("Id", id.ToString());
-
-            actions.Add(IndexAction.Delete(d));
-
-            var batch = IndexBatch.New(actions);
-            var indexClient = serviceClient.Indexes.GetClient(_config.IndexName);
-
-            try
+            using (var serviceClient = GetClient())
             {
-                indexClient.Documents.Index(batch);
+
+                var actions = new List<IndexAction<Document>>();
+                var d = new Document();
+                d.Add("Id", id.ToString());
+
+                actions.Add(IndexAction.Delete(d));
+
+                var batch = IndexBatch.New(actions);
+                var indexClient = serviceClient.Indexes.GetClient(_config.IndexName);
+
+                try
+                {
+                    indexClient.Documents.Index(batch);
+                }
+                catch (IndexBatchException e)
+                {
+                    // Sometimes when your Search service is under load, indexing will fail for some of the documents in
+                    // the batch. Depending on your application, you can take compensating actions like delaying and
+                    // retrying. For this simple demo, we just log the failed document keys and continue.
+                    var error =
+                        "Failed to index some of the documents: {0}" + String.Join(", ",
+                            e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key));
+
+                    result.Success = false;
+                    result.Message = error;
+
+
+                }
+
+                result.Success = true;
             }
-            catch (IndexBatchException e)
-            {
-                // Sometimes when your Search service is under load, indexing will fail for some of the documents in
-                // the batch. Depending on your application, you can take compensating actions like delaying and
-                // retrying. For this simple demo, we just log the failed document keys and continue.
-                var error =
-                     "Failed to index some of the documents: {0}" + String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key));
-
-                result.Success = false;
-                result.Message = error;
-
-
-            }
-
-            result.Success = true;
         }
 		
 
@@ -413,8 +421,10 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private AzureSearchIndexResult IndexContentBatch(IEnumerable<Document> contents)
         {
-            var serviceClient = GetClient();
-            return serviceClient.IndexContentBatch(_config.IndexName, contents);
+            using (var serviceClient = GetClient())
+            {
+                return serviceClient.IndexContentBatch(_config.IndexName, contents);
+            }
         }
 
         private Document FromUmbracoMember(IMember member, SearchField[] searchFields, string eventArgsSource = null)
