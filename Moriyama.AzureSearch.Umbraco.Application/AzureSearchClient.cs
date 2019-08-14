@@ -15,6 +15,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchClient : BaseAzureSearch, IAzureSearchClient
     {
+        private readonly ISearchIndexClient _indexClient;
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public IList<string> _filters;
@@ -45,8 +46,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private bool _populateContentProperties = true;
         private SearchMode _searchMode;
 
-        public AzureSearchClient(string path) : base(path)
+        public AzureSearchClient(string path, ISearchIndexClient indexClient) : base(path)
         {
+            _indexClient = indexClient;
             _pageSize = 999;
             _page = 0;
             _filters = new List<string>();
@@ -144,24 +146,20 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             var profiler = MiniProfiler.Current;
             using (profiler.Step($"Calling Results(SearchParameters sp)"))
             {
-                ISearchIndexClient indexClient = null;
-                SearchServiceClient client = null;
-                try
-                {
-
+             
                    
-                    client = GetClient();
+                    //client = GetClient();
 
-                    var config = GetConfiguration();
+                    //var config = GetConfiguration();
                     
                   
-                    indexClient = client.Indexes.GetClient(config.IndexName);
+                    //indexClient = client.Indexes.GetClient(config.IndexName);
 
 
                     var startTime = DateTime.UtcNow;
 
 
-                    var response = indexClient.Documents.Search(_searchTerm, sp);
+                    var response = _indexClient.Documents.Search(_searchTerm, sp);
 
 
                     var processStartTime = DateTime.UtcNow;
@@ -193,21 +191,9 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                         results.Count = (int) response.Count;
                     }
 
-                    if (config.LogSearchPerformance)
-                    {
-                        string lb = Environment.NewLine;
-                        Log.Info(
-                            $"AzureSearch Log (cached client){lb} - Response Duration: {(int) (processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int) (DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.SearchServiceName}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
-                    }
-
+                   
                     return results;
-                }
-                finally
-                {
-                    client.Dispose();
-
-                    indexClient.Dispose();
-                }
+                
 
             }
             
