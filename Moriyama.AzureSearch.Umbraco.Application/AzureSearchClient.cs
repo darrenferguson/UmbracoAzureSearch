@@ -71,6 +71,24 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return this;
         }
 
+        public IAzureSearchClient ExcludeDocumentType(string typeAlias)
+        {
+            _filters.Add(string.Format("ContentTypeAlias ne '{0}'", typeAlias));
+            return this;
+        }
+
+        public IAzureSearchClient ExcludeDocumentTypes(IEnumerable<string> typeAliases)
+        {
+            var combinedFilter = string.Format("({0})",
+                string.Join(" or ",
+                    typeAliases.Select(x =>
+                        string.Format("ContentTypeAlias ne '{0}'", x)).ToList())
+            );
+
+            _filters.Add(combinedFilter);
+            return this;
+        }
+
         private SearchParameters GetSearchParameters(string scoringProfile = null)
         {
             var sp = new SearchParameters()
