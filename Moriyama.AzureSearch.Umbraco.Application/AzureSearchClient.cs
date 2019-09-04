@@ -80,7 +80,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         public IAzureSearchClient ExcludeDocumentTypes(IEnumerable<string> typeAliases)
         {
             var combinedFilter = string.Format("({0})",
-                string.Join(" or ",
+                string.Join(" and ",
                     typeAliases.Select(x =>
                         string.Format("ContentTypeAlias ne '{0}'", x)).ToList())
             );
