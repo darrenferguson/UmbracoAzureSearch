@@ -34,7 +34,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             var config = JsonConvert.DeserializeObject<AzureSearchConfig>(System.IO.File.ReadAllText(Path.Combine(appRoot, @"config\AzureSearch.config")));
             if (config.DisableIndexingOnUmbracoEvents == false) //this is because you don't want these to run on the Content delivery servers. Only on CMS instance.
             {
-                ContentService.Saved += ContentServiceSaved;
+               // ContentService.Saved += ContentServiceSaved;
                 ContentService.Published += ContentServicePublished;
                 ContentService.Trashed += ContentServiceTrashed;
                 ContentService.Deleted += ContentServiceDeleted;
