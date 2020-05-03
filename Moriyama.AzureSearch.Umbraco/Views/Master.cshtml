@@ -1,77 +1,80 @@
-﻿@inherits Umbraco.Web.Mvc.UmbracoTemplatePage
+﻿@using Umbraco.Core.PropertyEditors
+@inherits UmbracoViewPage
 @{
     Layout = null;
-	var home = @CurrentPage.Site();
+    // Get basic design settings from the homepage
+    var home = (Home)Model.Root();
+    var font = home.Font;
+    var colorTheme = home.ColorTheme;
 }
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-
-    <!-- Meta tags -->
+<!doctype html>
+<html>
+<head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="@CurrentPage.siteDescription">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>@Model.Name - @home.Sitename</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-    <title>@CurrentPage.Name | @CurrentPage._siteTitle</title>
-	
-	<!-- Fonts -->
-	<link href="//fonts.googleapis.com/css?family=Merriweather:400,700,300,900" rel="stylesheet" type="text/css">
-	<link href="//fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet" type="text/css">
-	
-    <!-- CSS -->
-    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="/css/fanoe.css">
-    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <link rel="stylesheet" href="@Url.Content("~/css/umbraco-starterkit-style.css")" />
+    @RenderSection("Header", required: false)
+</head>
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="//oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="//oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  </head>
+<body class="frontpage theme-font-@font theme-color-@colorTheme">
+    <div class="mobile-nav">
+        <nav class="nav-bar">
+            @Html.Partial("~/views/partials/navigation/topNavigation.cshtml")
+        </nav>
+    </div>
 
-  <body>
-    <header>
-      <div class="container">
-        <div class="row">
-          <div class="col-xs-8 col-sm-12 col-md-4">
-			<a href="@home.Url">
-            	<div class="brand" style="background-image:url('@(home.SiteLogo)?height=65&width=205&bgcolor=000')"></div>
-			</a>
-          </div>
-          <div class="col-sm-12 col-md-8">
-            <nav>
-			  
-              @{ Html.RenderPartial("MainNavigation"); }
+    <header class="header">
 
-            </nav>
-          </div>
+        <div class="logo">
+            @if (home.SiteLogo != null && !string.IsNullOrEmpty(home.SiteLogo.Url))
+            {
+                <div class="nav-link--home">
+                    <img class="logo-image" src="@home.SiteLogo.Url" alt="@home.Sitename">
+                </div>
+            }
+            else
+            {
+                <a class="nav-link nav-link--home nav-link--home__text logo-text" href="/">@home.Sitename</a>
+            }
         </div>
-      </div>
 
-      <div id="toggle" class="toggle">
-        <a href="#" class="cross"><span></span></a>
-      </div>
+        <nav class="nav-bar top-nav">
+            @Html.Partial("~/Views/Partials/Navigation/TopNavigation.cshtml")
+        </nav>
+
+        <div class="mobile-nav-handler">
+            <div class="hamburger lines" id="toggle-nav">
+                <span></span>
+            </div>
+        </div>
+
     </header>
-	
-    @RenderBody()
 
-    <footer class="field dark">
-      <div class="container">
-        <div class="row">
-			
-		  @{ Html.RenderPartial("BottomNavigation"); }
+    <main>
+        @RenderBody()
+    </main>
 
+    <footer class="section--themed">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 ta-center">
+                    @home.FooterAddress
+                </div>
+            </div>
         </div>
-      </div>
     </footer>
-    
-    <!-- Javascripts -->
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
-	<script src="/scripts/fanoe.js"></script>
-  </body>
+
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.13.1/jquery.validate.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/mvc/5.2.3/jquery.validate.unobtrusive.min.js"></script>
+    <script src="@Url.Content("~/scripts/umbraco-starterkit-app.js")"></script>
+
+</body>
+
 </html>

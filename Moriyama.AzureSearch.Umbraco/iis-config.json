@@ -1,0 +1,6 @@
+{
+    "IIS-Site-Name": "azuresearch",
+    "App-Pool-Name": "azuresearch",
+    "IIS-App-Pool-Dot-Net-Version": "v4.0",
+    "bindings": ["azuresearch.localtest.me"]
+}
