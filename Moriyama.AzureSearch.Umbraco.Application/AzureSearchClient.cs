@@ -4,6 +4,7 @@ using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using System;
+using System.Globalization;
 using System.Linq;
 using log4net;
 using System.Reflection;
@@ -297,8 +298,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 if (start != null && end != null)
                 {
                     // is there a better way to format this datetime into a string for azure search?
-                    var startDateUtc = (start ?? DateTime.MinValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-                    var endDateUtc = (end ?? DateTime.MaxValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                    var startDateUtc = (start ?? DateTime.MinValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
+                    var endDateUtc = (end ?? DateTime.MaxValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
                     // with a range dates that are greater than or equal to start date, but less than and not equal to end date?
                     _filters.Add(string.Format("({0} ge {1} and {0} lt {2})", field, startDateUtc, endDateUtc));
 
