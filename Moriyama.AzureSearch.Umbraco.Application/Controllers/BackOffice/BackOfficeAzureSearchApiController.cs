@@ -13,6 +13,12 @@ using Umbraco.Web.Trees;
 using System;
 using Umbraco.Core.Services;
 using System.Collections.Concurrent;
+using System.IO;
+using Microsoft.Azure.Search;
+using Moriyama.AzureSearch.Umbraco.Application.Models;
+using Newtonsoft.Json;
+using StackExchange.Profiling;
+using File = System.IO.File;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
 {
@@ -37,6 +43,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
             // so lets decode the query term to turn it back into a proper space
             // will this mess up any other Url encoded terms? or fix them too?
             query = HttpUtility.UrlDecode(query);
+          
 
             ISearchResult searchResults = client.Term(query + "*").Results();
 
@@ -84,6 +91,17 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Controllers.BackOffice
             }
 
             return result;
+        }
+
+        public SearchServiceClient GetClient(AzureSearchConfig config)
+        {
+            
+            var profiler = MiniProfiler.Current;
+            using (profiler.Step($"Calling GetClient"))
+            {
+                var serviceClient = new SearchServiceClient(config.SearchServiceName,  new SearchCredentials(config.SearchServiceAdminApiKey));
+                return serviceClient;
+            }
         }
 
         private IDictionary<string, TreeSearchResult> GetTreeSearchResultStructure()

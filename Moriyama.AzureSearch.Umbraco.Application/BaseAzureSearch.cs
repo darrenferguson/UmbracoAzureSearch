@@ -2,6 +2,7 @@
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using Newtonsoft.Json;
 using System.IO;
+using StackExchange.Profiling;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
@@ -32,8 +33,13 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public SearchServiceClient GetClient()
         {
-            var serviceClient = new SearchServiceClient(_config.SearchServiceName, new SearchCredentials(_config.SearchServiceAdminApiKey));
-            return serviceClient;
+            var profiler = MiniProfiler.Current;
+            using (profiler.Step($"Calling GetClient"))
+            {
+                var serviceClient = new SearchServiceClient(_config.SearchServiceName,
+                    new SearchCredentials(_config.SearchServiceAdminApiKey));
+                return serviceClient;
+            }
         }
     }
 }

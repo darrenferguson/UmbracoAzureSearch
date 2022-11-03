@@ -4,15 +4,19 @@ using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using System;
+using System.Globalization;
 using System.Linq;
 using log4net;
 using System.Reflection;
 using System.Web;
+using StackExchange.Profiling;
+using umbraco;
 
 namespace Moriyama.AzureSearch.Umbraco.Application
 {
     public class AzureSearchClient : BaseAzureSearch, IAzureSearchClient
     {
+        private readonly ISearchIndexClient _indexClient;
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public IList<string> _filters;
@@ -43,10 +47,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application
         private bool _populateContentProperties = true;
         private SearchMode _searchMode;
 
-        public AzureSearchClient(string path) : base(path)
+        public AzureSearchClient(string path, ISearchIndexClient indexClient) : base(path)
         {
+            _indexClient = indexClient;
             _pageSize = 999;
-            _page = 1;
+            _page = 0;
             _filters = new List<string>();
             _orderBy = new List<string>();
             _facets = new List<string>();
@@ -73,25 +78,29 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private SearchParameters GetSearchParameters(string scoringProfile = null)
         {
-            var sp = new SearchParameters()
+            var profiler = MiniProfiler.Current;
+            using (profiler.Step($"Calling GetSearchParameters"))
             {
-                Filter = ResolveFilter(),
-                SearchMode = this._searchMode
-            };
+                var sp = new SearchParameters()
+                {
+                    Filter = ResolveFilter(),
+                    SearchMode = this._searchMode
+                };
 
-            sp.IncludeTotalResultCount = true;
+                sp.IncludeTotalResultCount = true;
 
-            if (!String.IsNullOrEmpty(scoringProfile))
-            {
-                sp.ScoringProfile = scoringProfile;
+                if (!String.IsNullOrEmpty(scoringProfile))
+                {
+                    sp.ScoringProfile = scoringProfile;
+                }
+
+                sp.Top = _pageSize;
+                sp.Skip = _page * _pageSize;
+                sp.OrderBy = _orderBy;
+                sp.Facets = _facets;
+
+                return sp;
             }
-
-            sp.Top = _pageSize;
-            sp.Skip = (_page - 1) * _pageSize;
-            sp.OrderBy = _orderBy;
-            sp.Facets = _facets;
-
-            return sp;
         }
 
         private string ResolveFilter()
@@ -119,8 +128,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         public ISearchResult Results()
         {
-            var sp = GetSearchParameters();
-            return Results(sp);
+            var profiler = MiniProfiler.Current;
+            using (profiler.Step(  $"Calling results"))
+            {
+                var sp = GetSearchParameters();
+                return Results(sp);
+            }
         }
 
         public ISearchResult Results(string scoringProfile)
@@ -131,86 +144,105 @@ namespace Moriyama.AzureSearch.Umbraco.Application
 
         private ISearchResult Results(SearchParameters sp)
         {
-            var client = GetClient();
-            var config = GetConfiguration();
-            ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
-            var startTime = DateTime.UtcNow;
-            var response = indexClient.Documents.Search(_searchTerm, sp);
-
-            var processStartTime = DateTime.UtcNow;
-            var results = new Models.SearchResult();
-
-            foreach (var result in response.Results)
+            var profiler = MiniProfiler.Current;
+            using (profiler.Step($"Calling Results(SearchParameters sp)"))
             {
-                results.Content.Add(FromDocument(result.Document, result.Score));
-            }
+             
+                   
+                    //client = GetClient();
 
-            if (response.Facets != null)
-            {
-                foreach (var facet in response.Facets)
-                {
-                    var searchFacet = new SearchFacet()
+                    //var config = GetConfiguration();
+                    
+                  
+                    //indexClient = client.Indexes.GetClient(config.IndexName);
+
+
+                    var startTime = DateTime.UtcNow;
+
+
+                    var response = _indexClient.Documents.Search(_searchTerm, sp);
+
+
+                    var processStartTime = DateTime.UtcNow;
+                    var results = new Models.SearchResult();
+
+                    foreach (var result in response.Results)
                     {
-                        Name = facet.Key,
-                        Items = facet.Value.Select(x => new KeyValuePair<string, long>(x.Value.ToString(), x.Count.HasValue ? x.Count.Value : 0))
-                    };
+                        results.Content.Add(FromDocument(result.Document, result.Score));
+                    }
 
-                    results.Facets.Add(searchFacet);
-                }
-            }
+                    if (response.Facets != null)
+                    {
+                        foreach (var facet in response.Facets)
+                        {
+                            var searchFacet = new SearchFacet()
+                            {
+                                Name = facet.Key,
+                                Items = facet.Value.Select(x =>
+                                    new KeyValuePair<string, long>(x.Value.ToString(),
+                                        x.Count.HasValue ? x.Count.Value : 0))
+                            };
 
-            if (response.Count != null)
-            {
-                results.Count = (int)response.Count;
-            }
+                            results.Facets.Add(searchFacet);
+                        }
+                    }
 
-            if (config.LogSearchPerformance)
-            {
-                string lb = Environment.NewLine;
-                Log.Info($"AzureSearch Log (cached client){lb} - Response Duration: {(int)(processStartTime - startTime).TotalMilliseconds}ms{lb} - Process Duration: {(int)(DateTime.UtcNow - processStartTime).TotalMilliseconds}ms{lb} - Results Count: {results.Count}{lb} - Origin: {HttpContext.Current?.Request?.Url}{lb} - Index name: {config.IndexName}{lb} - Base uri: {indexClient.BaseUri}{lb} - Search term: {_searchTerm}{lb} - Uri query string: {HttpUtility.UrlDecode(sp.ToString())}{lb}");
+                    if (response.Count != null)
+                    {
+                        results.Count = (int) response.Count;
+                    }
+
+                   
+                    return results;
+                
+
             }
-            return results;
+            
         }
 
         private ISearchContent FromDocument(Document d, double score)
         {
-            var searchContent = new SearchContent
+            var profiler = MiniProfiler.Current;
+            using (profiler.Step($"Calling FromDocument"))
             {
-                Properties = new Dictionary<string, object>()
-            };
-
-            searchContent.Score = score;
-
-            var t = searchContent.GetType();
-            searchContent.Id = Convert.ToInt32(d["Id"]);
-
-            foreach (var key in d.Keys)
-            {
-                var property = t.GetProperty(key);
-                if (property == null && _populateContentProperties)
+                var searchContent = new SearchContent
                 {
-                    searchContent.Properties.Add(key, d[key]);
-                }
-                else if (property != null && (property.CanWrite && property.Name != "Id"))
+                    Properties = new Dictionary<string, object>()
+                };
+
+                searchContent.Score = score;
+
+                var t = searchContent.GetType();
+                searchContent.Id = Convert.ToInt32(d["Id"]);
+
+                foreach (var key in d.Keys)
                 {
+                    var property = t.GetProperty(key);
+                    if (property == null && _populateContentProperties)
+                    {
+                        searchContent.Properties.Add(key, d[key]);
+                    }
+                    else if (property != null && (property.CanWrite && property.Name != "Id"))
+                    {
 
-                    object val = d[key];
+                        object val = d[key];
 
-                    if (val == null)
-                        continue;
+                        if (val == null)
+                            continue;
 
-                    if (val is long)
-                        val = Convert.ToInt32(val);
+                        if (val is long)
+                            val = Convert.ToInt32(val);
 
-                    if (val is DateTimeOffset)
-                        val = ((DateTimeOffset)val).DateTime;
+                        if (val is DateTimeOffset)
+                            val = ((DateTimeOffset) val).DateTime;
 
-                    if (property.PropertyType == val.GetType())
-                        property.SetValue(searchContent, val);
+                        if (property.PropertyType == val.GetType())
+                            property.SetValue(searchContent, val);
+                    }
                 }
+
+                return searchContent;
             }
-
-            return searchContent;
         }
 
         public IAzureSearchClient Term(string query)
@@ -266,8 +298,8 @@ namespace Moriyama.AzureSearch.Umbraco.Application
                 if (start != null && end != null)
                 {
                     // is there a better way to format this datetime into a string for azure search?
-                    var startDateUtc = (start ?? DateTime.MinValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-                    var endDateUtc = (end ?? DateTime.MaxValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                    var startDateUtc = (start ?? DateTime.MinValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
+                    var endDateUtc = (end ?? DateTime.MaxValue).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
                     // with a range dates that are greater than or equal to start date, but less than and not equal to end date?
                     _filters.Add(string.Format("({0} ge {1} and {0} lt {2})", field, startDateUtc, endDateUtc));
 
@@ -414,22 +446,22 @@ namespace Moriyama.AzureSearch.Umbraco.Application
             return FilterManyValues(field, values.Select(x => x.ToString()).ToArray());
         }
 
-        public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
-        {
-            var client = GetClient();
-            var config = GetConfiguration();
+        //public IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true)
+        //{
+        //    var client = GetClient();
+        //    var config = GetConfiguration();
 
-            ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
+        //    ISearchIndexClient indexClient = client.Indexes.GetClient(config.IndexName);
 
-            SuggestParameters sp = new SuggestParameters()
-            {
-                UseFuzzyMatching = fuzzy,
-                Top = count,
-                Filter = ResolveFilter()
-            };
+        //    SuggestParameters sp = new SuggestParameters()
+        //    {
+        //        UseFuzzyMatching = fuzzy,
+        //        Top = count,
+        //        Filter = ResolveFilter()
+        //    };
 
-            return indexClient.Documents.Suggest(value, "sg", sp).Results;
-        }
+        //    return indexClient.Documents.Suggest(value, "sg", sp).Results;
+        //}
 
         public IAzureSearchClient SearchMode(SearchMode searchMode)
         {

@@ -15,12 +15,12 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Extensions
 
 			if (contents == null || !contents.Any())
 			{
-				result.Success = false;
+				result.Success = true;
 				result.Message = $"{nameof(IndexContentBatch)} received no content to index for {indexName}";
 				return result;
 			}
             
-            var actions = new List<IndexAction>();
+            var actions = new List<IndexAction<Document>>();
             foreach (var content in contents)
             {
                 actions.Add(IndexAction.Upload(content));

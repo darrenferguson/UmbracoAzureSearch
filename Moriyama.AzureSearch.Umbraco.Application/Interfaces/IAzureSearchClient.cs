@@ -40,7 +40,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Interfaces
 
         IAzureSearchClient Any(string field);
 
-        IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true);
+       // IList<SuggestResult> Suggest(string value, int count, bool fuzzy = true);
 
         IAzureSearchClient SearchMode(SearchMode searchMode);
     }

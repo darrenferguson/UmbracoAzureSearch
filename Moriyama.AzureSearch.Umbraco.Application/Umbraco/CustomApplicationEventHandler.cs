@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.IO;
+using AutoMapper;
 using Microsoft.Azure.Search.Models;
 using Moriyama.AzureSearch.Umbraco.Application.Models;
 using System.Web;
@@ -7,6 +8,8 @@ using Umbraco.Core.Events;
 using Umbraco.Core.Models;
 using Umbraco.Core.Publishing;
 using Umbraco.Core.Services;
+using Newtonsoft.Json;
+using Umbraco.Web;
 
 namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
 {
@@ -28,18 +31,22 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             AzureSearchContext.Instance.SetupSearchClient<AzureSearchClient>(appRoot);
             AzureSearchContext.Instance.SearchIndexClient = new AzureSearchIndexClient(appRoot);
 
-            ContentService.Saved += ContentServiceSaved;
-            ContentService.Published += ContentServicePublished;
-            ContentService.Trashed += ContentServiceTrashed;
-            ContentService.Deleted += ContentServiceDeleted;
-            ContentService.EmptiedRecycleBin += ContentServiceEmptiedRecycleBin;
+            var config = JsonConvert.DeserializeObject<AzureSearchConfig>(System.IO.File.ReadAllText(Path.Combine(appRoot, @"config\AzureSearch.config")));
+            if (config.DisableIndexingOnUmbracoEvents == false) //this is because you don't want these to run on the Content delivery servers. Only on CMS instance.
+            {
+               // ContentService.Saved += ContentServiceSaved;
+                ContentService.Published += ContentServicePublished;
+                ContentService.Trashed += ContentServiceTrashed;
+                ContentService.Deleted += ContentServiceDeleted;
+                ContentService.EmptiedRecycleBin += ContentServiceEmptiedRecycleBin;
 
-            MediaService.Saved += MediaServiceSaved;
-            MediaService.Trashed += MediaServiceTrashed;
-            MediaService.Deleted += MediaServiceDeleted;
+                MediaService.Saved += MediaServiceSaved;
+                MediaService.Trashed += MediaServiceTrashed;
+                MediaService.Deleted += MediaServiceDeleted;
 
-            MemberService.Saved += MemberServiceSaved;
-            MemberService.Deleted += MemberServiceDeleted;
+                MemberService.Saved += MemberServiceSaved;
+                MemberService.Deleted += MemberServiceDeleted;
+            }
         }
 
         private void ContentServiceEmptiedRecycleBin(IContentService sender, RecycleBinEventArgs e)
@@ -72,12 +79,22 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Umbraco
             }
         }
 
+        private void SetARequestVariableIfScheduledPublishing(string id)
+        {
+            UmbracoContext.Current.HttpContext.Items.Add("contentIdPublishing", id);
+        }
+
         private void ContentServiceSaved(IContentService sender, SaveEventArgs<IContent> e)
         {
             var azureSearchServiceClient = AzureSearchContext.Instance.SearchIndexClient;
 
             foreach (var entity in e.SavedEntities)
             {
+
+                if (HttpContext.Current == null)
+                {
+                    SetARequestVariableIfScheduledPublishing(entity.Id.ToString());
+                }
                 azureSearchServiceClient.ReIndexContent(entity);
             }
         }

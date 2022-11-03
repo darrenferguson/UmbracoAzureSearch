@@ -4,6 +4,7 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 {
     public class AzureSearchConfig
     {
+        public bool DisableIndexingOnUmbracoEvents { get; set; }
         public string SearchServiceName { get; set; }
 
         public string SearchServiceAdminApiKey { get; set; }
@@ -21,6 +22,11 @@ namespace Moriyama.AzureSearch.Umbraco.Application.Models
 		public List<AzureSearchSuggester> Suggesters { get; set; }
 
 		public int ReIndexBatchSize { get; set; }
+		public string FoldersToIgnore { get; set; }
+		public string[] FoldersToIgnoreArray
+        {
+            get { return FoldersToIgnore.Split(','); }
+        }
 
 
 		
